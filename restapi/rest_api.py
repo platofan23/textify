@@ -4,7 +4,7 @@ from io import BytesIO
 from flask import Flask, request, jsonify, send_file
 from pymongo import MongoClient
 import gridfs
-from ocr.ocr import Ocr
+from ocr.multi_ocr import MultiOcr
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
@@ -22,7 +22,7 @@ client = MongoClient(config['MONGO_DB']['MONGO_URI'])
 db = client[config['MONGO_DB']['MONGO_UPLOADS']]
 fs = gridfs.GridFS(db, collection=config['MONGO_DB']['MONGO_COLLECTION'])
 
-easy_ocr = Ocr()
+easy_ocr = MultiOcr()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

@@ -1,7 +1,7 @@
 import easyocr
 from parso.python.tree import Class
 
-class Ocr:
+class MultiOcr:
     def __init__(self, model=easyocr, languages=None):
         if languages is None:
             languages = ['en']
