@@ -1,4 +1,6 @@
 import requests
+from pymongo import MongoClient
+import gridfs
 
 # URL of the Flask route
 url = 'http://localhost:5000/upload_files'

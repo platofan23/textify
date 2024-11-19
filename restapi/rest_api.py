@@ -1,8 +1,10 @@
 
 import configparser
-from flask import Flask, request, jsonify
+from io import BytesIO
+from flask import Flask, request, jsonify, send_file
 from pymongo import MongoClient
 import gridfs
+from ocr.ocr import Ocr
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
@@ -20,6 +22,7 @@ client = MongoClient(config['MONGO_DB']['MONGO_URI'])
 db = client[config['MONGO_DB']['MONGO_UPLOADS']]
 fs = gridfs.GridFS(db, collection=config['MONGO_DB']['MONGO_COLLECTION'])
 
+easy_ocr = Ocr()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -70,6 +73,46 @@ def upload_files():
             return 'Invalid file type'
 
     return 'Files uploaded successfully'
+
+
+@app.route('/download_file', methods=['GET'])
+def get_file():
+    filename = request.args.get('filename')
+    if not filename:
+        return 'No filename provided', 400
+
+    try:
+        # Retrieve the file from GridFS using the filename
+        grid_out = fs.find_one({'filename': filename})
+        if not grid_out:
+            return 'File not found', 404
+
+        # Return the file as a response
+        return send_file(BytesIO(grid_out.read()), download_name=filename, as_attachment=True)
+    except Exception as e:
+        return f'Error occurred: {str(e)}', 500
+
+
+@app.route('/read_file', methods=['GET'])
+def read_file():
+    filename = request.args.get('filename')
+    if not filename:
+        return 'No filename provided', 400
+
+    try:
+        # Retrieve the file from GridFS using the filename
+        grid_out = fs.find_one({'filename': filename})
+        if not grid_out:
+            return 'File not found', 404
+
+        # Perform OCR on the file
+        text = easy_ocr.read_text(grid_out.read())
+
+
+
+        return jsonify(text)
+    except Exception as e:
+        return f'Error occurred: {str(e)}', 500
 
 if __name__ == '__main__':
     app.run()
