@@ -16,5 +16,5 @@ class MultiOcr:
         # Extract the text from the detections
         text = ""
         for detection in detections:
-            text += detection[1]
+            text += detection[1] + " "
         return text

@@ -1,5 +1,7 @@
 
 import configparser
+import os
+import shutil
 from io import BytesIO
 from flask import Flask, request, jsonify, send_file
 from pymongo import MongoClient
@@ -27,7 +29,6 @@ easy_ocr = MultiOcr()
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 '''
 Route to upload files
 POST request should contain:
@@ -48,7 +49,12 @@ def upload_files():
     files = request.files.getlist('files')
     total_size = 0
 
-    file_ids = []
+    # Create user folder and title folder if they don't exist
+    user_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], request.headers.get("User"))
+    os.makedirs(user_folder_path, exist_ok=True) # Create user folder if it doesn't exist
+    title_folder_path = os.path.join(user_folder_path, request.headers.get("Title"))
+    os.makedirs(title_folder_path, exist_ok=True) # Create title folder if it doesn't exist
+
 
     for file in files:
 
@@ -62,53 +68,57 @@ def upload_files():
             # Check if total file size exceeds limit
             if total_size > MAX_TOTAL_SIZE:
                 # Delete files already uploaded
-                for file_id in file_ids:
-                    fs.delete(file_id)
+                shutil.rmtree(title_folder_path)
                 return 'Total file size exceeds ' + str(MAX_TOTAL_SIZE) + ' bytes'
 
-            file_ids.append(fs.put(file, filename=file.filename, user=request.headers.get("User")
-                                   , title=request.headers.get("Title")))
+            file.save(os.path.join(title_folder_path, file.filename))  # Save file to user folder
 
         else:
             return 'Invalid file type'
 
     return 'Files uploaded successfully'
 
-
+'''
+Route to download a saved file
+'''
 @app.route('/download_file', methods=['GET'])
 def get_file():
     filename = request.args.get('filename')
-    if not filename:
-        return 'No filename provided', 400
+    user = request.args.get('user')
+    title = request.args.get('title')
+    if not filename or not user or not title:
+        return 'File not found', 404
 
     try:
         # Retrieve the file from GridFS using the filename
-        grid_out = fs.find_one({'filename': filename})
-        if not grid_out:
-            return 'File not found', 404
+        user_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], user)
+        title_folder_path = os.path.join(user_folder_path, title)
+        file_path = os.path.join(title_folder_path, filename)
 
         # Return the file as a response
-        return send_file(BytesIO(grid_out.read()), download_name=filename, as_attachment=True)
+        return send_file(file_path, download_name=filename, as_attachment=True)
     except Exception as e:
         return f'Error occurred: {str(e)}', 500
 
-
+'''
+Route to read the text from a saved file
+'''
 @app.route('/read_file', methods=['GET'])
 def read_file():
     filename = request.args.get('filename')
-    if not filename:
-        return 'No filename provided', 400
+    user = request.args.get('user')
+    title = request.args.get('title')
+    if not filename or not user or not title:
+        return 'File not found', 404
 
     try:
         # Retrieve the file from GridFS using the filename
-        grid_out = fs.find_one({'filename': filename})
-        if not grid_out:
-            return 'File not found', 404
+        user_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], user)
+        title_folder_path = os.path.join(user_folder_path, title)
+        file_path = os.path.join(title_folder_path, filename)
 
         # Perform OCR on the file
-        text = easy_ocr.read_text(grid_out.read())
-
-
+        text = easy_ocr.read_text(file_path)
 
         return jsonify(text)
     except Exception as e:
