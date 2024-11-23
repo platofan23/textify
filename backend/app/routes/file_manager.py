@@ -2,7 +2,7 @@ import configparser
 from flask import Blueprint, request, jsonify, send_file
 import os
 import shutil
-from backend.app.ocr.multi_ocr import MultiOcr
+
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
@@ -14,12 +14,10 @@ UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']
 file_manager_bp = Blueprint('files', __name__)
 
 
-easy_ocr = MultiOcr()
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@files_bp.route('/upload_files', methods=['POST'])
+@file_manager_bp.route('/upload_files', methods=['POST'])
 def upload_files():
     if 'files' not in request.files:
         return 'No file part'
@@ -50,7 +48,7 @@ def upload_files():
             return 'Invalid file type'
     return 'Files uploaded successfully'
 
-@files_bp.route('/download_file', methods=['GET'])
+@file_manager_bp.route('/download_file', methods=['GET'])
 def get_file():
     filename = request.args.get('filename')
     user = request.args.get('user')
@@ -62,21 +60,5 @@ def get_file():
         title_folder_path = os.path.join(user_folder_path, title)
         file_path = os.path.join(title_folder_path, filename)
         return send_file(file_path, download_name=filename, as_attachment=True)
-    except Exception as e:
-        return f'Error occurred: {str(e)}', 500
-
-@files_bp.route('/read_file', methods=['GET'])
-def read_file():
-    filename = request.args.get('filename')
-    user = request.args.get('user')
-    title = request.args.get('title')
-    if not filename or not user or not title:
-        return 'File not found', 404
-    try:
-        user_folder_path = os.path.join(UPLOAD_FOLDER, user)
-        title_folder_path = os.path.join(user_folder_path, title)
-        file_path = os.path.join(title_folder_path, filename)
-        text = easy_ocr.read_text(file_path)
-        return jsonify(text)
     except Exception as e:
         return f'Error occurred: {str(e)}', 500
