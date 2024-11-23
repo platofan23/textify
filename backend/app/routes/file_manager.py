@@ -11,8 +11,7 @@ MAX_TOTAL_SIZE = int(config['REST']['MAX_TOTAL_SIZE_GB']) * 1024 * 1024 * 1024
 ALLOWED_EXTENSIONS = set(config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','))
 UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']
 
-files_bp = Blueprint('files', __name__)
-
+file_manager_bp = Blueprint('files', __name__)
 
 
 easy_ocr = MultiOcr()
