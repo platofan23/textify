@@ -67,6 +67,7 @@ webapp/
 │   │   │   ├── translation.py     # Endpoints for Translation
 │   │   │   ├── tts.py             # Endpoints for Text-to-Speech
 │   │   │   ├── stt.py             # Endpoints for Speech-to-Text
+│   │   │   ├── file_manager.py    # Endpoints for Speech-to-Text
 │   │   ├── services/
 │   │   │   ├── __init__.py        # Initialization of service modules
 │   │   │   ├── ocr_service.py     # Logic for OCR
