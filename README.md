@@ -10,11 +10,9 @@
   - [File Structure](#file_folder-file-structure)
   - [Build](#hammer-build)  
   - [Deployment](#rocket-deployment)  
-- [Community](#cherry_blossom-community)
-  - [Contribution](#fire-contribution)
+- [Contribution](#fire-contribution)
   - [Branches](#cactus-branches)
   - [Guideline](#exclamation-guideline)  
-- [FAQ](#question-faq)
 - [Resources](#page_facing_up-resources)
 - [Gallery](#camera-gallery)
 - [Credit/Acknowledgment](#star2-creditacknowledgment)
@@ -125,44 +123,27 @@ Write the build Instruction here.
 ### :rocket: Deployment
 Write the deployment instruction here.
 
-## :cherry_blossom: Community
-
-If it's open-source, talk about the community here, ask social media links and other links.
-
  ###  :fire: Contribution
 
- Your contributions are always welcome and appreciated. Following are the things you can do to contribute to this project.
-
- 1. **Report a bug** <br>
- If you think you have encountered a bug, and I should know about it, feel free to report it [here]() and I will take care of it.
-
- 2. **Request a feature** <br>
- You can also request for a feature [here](), and if it will viable, it will be picked for development.  
-
- 3. **Create a pull request** <br>
- It can't get better then this, your pull request will be appreciated by the community. You can get started by picking up any open issues from [here]() and make a pull request.
-
- > If you are new to open-source, make sure to check read more about it [here](https://www.digitalocean.com/community/tutorial_series/an-introduction-to-open-source) and learn more about creating a pull request [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-pull-request-on-github).
-
+ 1. **Create a pull request** <br>
+ It can't get better then this, your pull request will be appreciated by the community. You can get started by picking up any open issues from [here](https://www.notion.so/145ded0028a281848e1aea96339b7e7d?v=145ded0028a281059c53000cd49c37dd) and make a pull request.
 
  ### :cactus: Branches
-
- I use an agile continuous integration methodology, so the version is frequently updated and development is really fast.
-
-1. **`stage`** is the development branch.
+ 
+1. **`Test`** is the development branch.
 
 2. **`master`** is the production branch.
 
-3. No other permanent branches should be created in the main repository, you can create feature branches but they should get merged with the master.
+3. Other Branches shall be named after the feature being worked on
 
 **Steps to work with feature branch**
 
-1. To start working on a new feature, create a new branch prefixed with `feat` and followed by feature name. (ie. `feat-FEATURE-NAME`)
+1. To start working on a new feature, create a new branch prefixed with `feature/` and followed by feature name. (ie. `featute/-FEATURE-NAME`)
 2. Once you are done with your changes, you can raise PR.
 
 **Steps to create a pull request**
 
-1. Make a PR to `stage` branch.
+1. Make a PR to `test` branch.
 2. Comply with the best practices and guidelines e.g. where the PR concerns visual elements it should have an image showing the effect.
 3. It must pass all continuous integration checks and get positive reviews.
 
@@ -170,20 +151,28 @@ After this, changes will be merged.
 
 
 ### :exclamation: Guideline
-coding guidelines or other things you want people to follow should follow.
 
-
-## :question: FAQ
-You can optionally add a FAQ section about the project.
 
 ##  :page_facing_up: Resources
-Add important resources here
+- AI-Models: https://huggingface.co/
+- Discord Server: https://discord.gg/XzERCkFV
+- Docker: https://www.docker.com/
+- Google Codelabs for GPU: https://codelabs.developers.google.com/
+- Material UI: https://mui.com/material-ui/
+- Notion: https://www.notion.so/Textify-145ded0028a2802d8fcbf1e0cb52fd72?pvs=4
+- Python: https://www.python.org/
+- React JS: https://react.dev/
+- Vite: https://vite.dev/
 
 ##  :camera: Gallery
 Pictures of your project.
 
 ## :star2: Credit/Acknowledgment
-Credit the authors here.
+- https://github.com/Hein0002
+- https://github.com/Komiplex
+- https://github.com/StackTracer17
+- https://github.com/platofan23
+
 
 ##  :lock: License
 Add a license here, or a link to it.
