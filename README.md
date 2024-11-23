@@ -158,12 +158,14 @@ After this, changes will be merged.
 - AI-Models: https://huggingface.co/
 - Discord Server: https://discord.gg/XzERCkFV
 - Docker: https://www.docker.com/
+- EasyOCR: https://github.com/JaidedAI/EasyOCR
 - Google Codelabs for GPU: https://codelabs.developers.google.com/
 - Material UI: https://mui.com/material-ui/
 - Notion: https://www.notion.so/Textify-145ded0028a2802d8fcbf1e0cb52fd72?pvs=4
 - Python: https://www.python.org/
 - React JS: https://react.dev/
 - Vite: https://vite.dev/
+- YOLOv11: https://docs.ultralytics.com/de/models/yolo11/
 
 ##  :camera: Gallery
 Pictures of your project.
