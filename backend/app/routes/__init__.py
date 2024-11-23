@@ -1,5 +1,4 @@
 import configparser
-
 from flask import Flask
 from backend.app.routes.file_manager import file_manager_bp
 from backend.app.routes.ocr import ocr_bp
