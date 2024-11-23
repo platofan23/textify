@@ -1,6 +1,6 @@
 from flask import Flask
 import configparser
-from routes.routes_files import files_bp
+from routes.file_manager import files_bp
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
