@@ -1,20 +1,26 @@
 import easyocr
-from parso.python.tree import Class
+from typing import Literal
 
-class MultiOcr:
-    def __init__(self, model=easyocr, languages=None):
-        if languages is None:
-            languages = ['en']
 
-        if model is easyocr:
-            self.reader = easyocr.Reader(languages)
-        else:
-            raise ValueError('Model not supported')
+def multi_reader(image, model: Literal["easyocr"] = "easyocr", language=None):
+    if language is None:
+        language = 'en'
 
-    def read_text(self, image):
-        detections = self.reader.readtext(image)
-        # Extract the text from the detections
-        text = ""
-        for detection in detections:
-            text += detection[1] + " "
-        return text
+    if model == "easyocr":
+
+        return reader_easyocr(image, [language])
+    else:
+        raise ValueError('Model not supported')
+
+def reader_easyocr(image, language):
+    reader = easyocr.Reader(language)
+    detections = reader.readtext(image)
+
+
+    # Extract the text from the detections
+    text = ""
+    for detection in detections:
+        text += detection[1] + " "
+    return text
+
+

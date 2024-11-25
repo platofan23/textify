@@ -1,7 +1,7 @@
 import configparser
 from flask import Blueprint, request, jsonify, send_file
 import os
-from backend.app.services.multi_ocr import MultiOcr
+from backend.app.services.multi_ocr import multi_reader
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
@@ -10,7 +10,7 @@ UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']
 
 ocr_bp = Blueprint('services', __name__)
 
-easy_ocr = MultiOcr()
+
 
 @ocr_bp.route('/read_file', methods=['GET'])
 def read_file():
@@ -25,7 +25,8 @@ def read_file():
         user_folder_path = os.path.join(UPLOAD_FOLDER, user)
         title_folder_path = os.path.join(user_folder_path, title)
         file_path = os.path.join(title_folder_path, filename)
-        text = easy_ocr.read_text(file_path)
+
+        text = multi_reader(file_path)
         return jsonify(text)
 
     except Exception as e:
