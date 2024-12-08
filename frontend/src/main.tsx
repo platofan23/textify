@@ -1,27 +1,33 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import Menu from "./Menu.tsx";
-import React from "react";
-import { Typography } from "@mui/material";
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+
+import Menu from "./menu/Menu.tsx"
+import React from "react"
+import { Typography } from "@mui/material"
+import { Home } from "./components/Home.tsx"
+
+export interface User {
+    name: string
+}
+
+function MainWrap() {
+    const [user, setUser] = React.useState<User | null>(null)
+    return (
+        <>
+            <Menu setUser={setUser} user={user}>
+                {[
+                    <Home key="Home" />,
+                    <Typography key="TTS" sx={{ marginBottom: 2 }}>
+                        Text to speech
+                    </Typography>,
+                ]}
+            </Menu>
+        </>
+    )
+}
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Menu>
-      <Typography sx={{ marginBottom: 2 }}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus
-        non enim praesent elementum facilisis leo vel. Risus at ultrices mi
-        tempus imperdiet. Semper risus in hendrerit gravida rutrum quisque non
-        tellus. Convallis convallis tellus id interdum velit laoreet id donec
-        ultrices. Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl
-        suscipit adipiscing bibendum est ultricies integer quis. Cursus euismod
-        quis viverra nibh cras. Metus vulputate eu scelerisque felis imperdiet
-        proin fermentum leo. Mauris commodo quis imperdiet massa tincidunt. Cras
-        tincidunt lobortis feugiat vivamus at augue. At augue eget arcu dictum
-        varius duis at consectetur lorem. Velit sed ullamcorper morbi tincidunt.
-        Lorem donec massa sapien faucibus et molestie ac.
-      </Typography>
-    </Menu>
-  </StrictMode>
-);
+    <StrictMode>
+        <MainWrap />
+    </StrictMode>
+)

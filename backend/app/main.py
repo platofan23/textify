@@ -1,5 +1,5 @@
-from routes import create_app
+import routes
 
 
 if __name__ == '__main__':
-    create_app().run()
+    routes.create_app().run()

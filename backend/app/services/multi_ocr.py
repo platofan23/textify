@@ -6,16 +6,18 @@ from doctr.models import ocr_predictor
 
 DEVICE = torch.device("cuda:0")
 
+
 def multi_reader(image, model: Literal["easyocr", "doctr"] = "easyocr", language=None):
     if language is None:
-        language = 'en'
+        language = "en"
 
     if model == "easyocr":
         return reader_easyocr(image, [language])
     elif model == "doctr":
         return reader_doctr(image)
     else:
-        return 'Model not supported', 404
+        return "Model not supported", 404
+
 
 def reader_easyocr(image, language):
     reader = easyocr.Reader(language)
@@ -26,6 +28,7 @@ def reader_easyocr(image, language):
     for detection in detections:
         text += detection[1] + " "
     return text
+
 
 def reader_doctr(image):
     # Load the image
