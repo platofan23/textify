@@ -36,6 +36,7 @@
 | Integrate STT API | Connect the recording functionality to the Speech-to-Text API. | Text output based on audio input works correctly. | To Do | |
 | Add error handling for audio files | Develop robust error handling for invalid or missing audio inputs. | Clear error messages are displayed. | To Do | |
 | Integrate text-to-audio conversion | Create functionality to convert text to audio. | Input text is correctly converted into audio files and played back. | To Do | |
+| Implement audio player | Create an audio player with fuctions like changing playback speed. | Working audio player | To Do | |
 | Implement image upload functionality | Add functionality to allow image uploads. | Uploaded images are displayed and ready for analysis. | To Do | |
 | Integrate OCR API | Implement the connection to the OCR API. | Text is extracted from images and displayed in the UI. | To Do | |
 | Add OCR result review and editing | Provide an option to edit detected text. | Users can manually adjust detected text. | To Do | |
