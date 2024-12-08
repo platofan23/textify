@@ -46,7 +46,7 @@
 | Integrate Export OCR text | Develop functionality to export detected OCR text. | Detected text is exportable as a file. | To Do | |
 | Conduct usability tests | Test the UI’s usability with various users. | Feedback collected and analyzed. | To Do | |
 | Optimize performance | Improve loading times and responsiveness of the Web-UI. | All functions load within 1 second (if API responds). | To Do | |
-| Test cross-browser compatibility | Ensure the UI works across different browsers. | Works in Chrome, Firefox, Safari, and Edge. | To Do | |
+| Test cross-browser compatibility | Ensure the UI works across different browsers. | Works in Chrome, Firefox, and Edge. | To Do | |
 
 ### Epic 3: Text Translation
 
