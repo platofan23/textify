@@ -89,7 +89,7 @@
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
-| Research OCR Models | Compare OCR models based on text accuracy, font support, and processing speed. | A report of recommended models is completed. | In progress | |
+| Research OCR Models | Compare OCR models based on text accuracy, font support, and processing speed. | A report of recommended models is completed. | In progress | AS |
 | Select Optimal OCR Model | Choose the OCR model with the best performance for various image formats. | The selected model and rationale are documented. | To Do | |
 | Integrate OCR API | Connect the backend to the chosen OCR API for extracting text from images. | Uploaded images are successfully processed. | To Do | |
 | Add Preprocessing for Image Optimization | Implement preprocessing (e.g., de-skewing, noise reduction) to improve OCR accuracy. | Preprocessed images yield improved results. | To Do | |
