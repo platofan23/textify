@@ -5,10 +5,32 @@
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
 
+
 ### Epic 2: UI
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
+| Set up project structure | Establish the basic project structure for the Web-UI. | Folder structure created, build tools (e.g., Webpack/Vite) set up. | To Do | |
+| Select UI framework | Choose a framework (e.g., React, Vue, Angular) for the Web-UI. | Framework selected, sample components created. | To Do | |
+| Create design system | Develop a basic design system with components like buttons, modals, and forms. | Unified color palette, fonts, and basic components available. | To Do | |
+| Integrate Translation API | Implement the connection to the translation API. | API responses are displayed correctly in the frontend. | To Do | |
+| Develop text translation input form | Create a form for users to input text for translation. | Input and target languages selectable, translations displayed. | To Do | |
+| Conduct User Acceptance Testing (UAT) | Gather feedback from test users to verify the usability and reliability of the translation feature. | Feedback is reviewed and necessary adjustments are implemented. | To Do | |
+| Implement real-time translation feedback | Add a loading indicator for translations. | Progress indicator appears during API queries. | To Do | |
+| Implement audio recording functionality | Add functionality to allow audio recording in the browser. | Recordings are captured and played back correctly in the frontend. | To Do | |
+| Integrate STT API | Connect the recording functionality to the Speech-to-Text API. | Text output based on audio input works correctly. | To Do | |
+| Add error handling for audio files | Develop robust error handling for invalid or missing audio inputs. | Clear error messages are displayed. | To Do | |
+| Implement text-to-audio conversion | Create functionality to convert text to audio. | Input text is correctly converted into audio files and played back. | To Do | |
+| Add voice module selection | Provide an option to select different voices and languages. | Various voices selectable and played back correctly. | To Do | |
+| Implement image upload functionality | Add functionality to allow image uploads. | Uploaded images are displayed and ready for analysis. | To Do | |
+| Integrate OCR API | Implement the connection to the OCR API. | Text is extracted from images and displayed in the UI. | To Do | |
+| Add OCR result review and editing | Provide an option to edit detected text. | Users can manually adjust detected text. | To Do | |
+| Integrate Export translations | Develop functionality to download translations as files. | Translations are exportable as TXT or CSV. | To Do | |
+| Integrate Export audio | Add the ability to download generated audio files. | Audio files are exportable as MP3 or WAV. | To Do | |
+| Integrate Export OCR text | Develop functionality to export detected OCR text. | Detected text is exportable as a file. | To Do | |
+| Conduct usability tests | Test the UI’s usability with various users. | Feedback collected and analyzed. | To Do | |
+| Optimize performance | Improve loading times and responsiveness of the Web-UI. | All functions load within 1 second (if API responds). | To Do | |
+| Test cross-browser compatibility | Ensure the UI works across different browsers. | Works in Chrome, Firefox, Safari, and Edge. | To Do | |
 
 ### Epic 3: Text Translation
 
