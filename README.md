@@ -4,6 +4,23 @@
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
+| Select and configure web server for frontend | Choose and configure a web server for serving the frontend application. | Web server (e.g., Nginx, Apache) selected, configured, and tested for deployment. | To Do | |
+| Set up project structure | Establish the basic project structure for the REST API and backend. | Folder structure created, build tools (e.g., Node.js, Django, Flask) set up. | To Do | |
+| Design API endpoints | Define the structure and endpoints of the REST API. | API documentation created with endpoint specifications. | To Do | |
+| Implement user authentication | Develop authentication mechanisms (e.g., JWT, OAuth). | Users can log in, register, and manage sessions securely. | To Do | 
+| Integrate Translation API | Connect backend with the Translation API for processing requests. | API calls handled, results returned accurately. | To Do | |
+| Implement Speech-to-Text (STT) support | Integrate backend functionality with the STT API. | Audio files processed and transcriptions returned. | To Do | |
+| Add Text-to-Speech (TTS) support | Integrate TTS API for converting text to speech. | Text input converted to audio output. | To Do | |
+| Implement OCR support | Integrate OCR API for image text extraction. | Uploaded images processed and text extracted successfully. | To Do | |
+| Develop error handling | Implement global error handling for API failures and edge cases. | Errors logged, and descriptive error messages returned. | To Do | |
+| Add logging | Set up logging for the backend. | Logs available. | To Do | |
+| Set up automated testing | Implement unit and integration tests for backend components. | Tests written, executed, and passed successfully. | To Do | |
+| Implement rate limiting | Protect the API from abuse by implementing rate limiting. | API rate limits enforced, and violations logged. | To Do | |
+| Secure API | Implement security measures like HTTPS, input validation, and encryption. | Security tests passed, and vulnerabilities resolved. | To Do | |
+| Conduct performance testing | Test the backend for performance under various loads. | API responds within acceptable time limits under load. | To Do | |
+| Document API usage | Create comprehensive documentation for API consumers. | API documentation available and easy to understand. | To Do | |
+| Conduct API usability testing | Gather feedback from developers integrating the API. | Feedback collected and necessary improvements made. | To Do | |
+
 
 
 ### Epic 2: UI
@@ -20,8 +37,7 @@
 | Implement audio recording functionality | Add functionality to allow audio recording in the browser. | Recordings are captured and played back correctly in the frontend. | To Do | |
 | Integrate STT API | Connect the recording functionality to the Speech-to-Text API. | Text output based on audio input works correctly. | To Do | |
 | Add error handling for audio files | Develop robust error handling for invalid or missing audio inputs. | Clear error messages are displayed. | To Do | |
-| Implement text-to-audio conversion | Create functionality to convert text to audio. | Input text is correctly converted into audio files and played back. | To Do | |
-| Add voice module selection | Provide an option to select different voices and languages. | Various voices selectable and played back correctly. | To Do | |
+| Integrate Implement text-to-audio conversion | Create functionality to convert text to audio. | Input text is correctly converted into audio files and played back. | To Do | |
 | Implement image upload functionality | Add functionality to allow image uploads. | Uploaded images are displayed and ready for analysis. | To Do | |
 | Integrate OCR API | Implement the connection to the OCR API. | Text is extracted from images and displayed in the UI. | To Do | |
 | Add OCR result review and editing | Provide an option to edit detected text. | Users can manually adjust detected text. | To Do | |
