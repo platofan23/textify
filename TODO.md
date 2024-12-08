@@ -235,4 +235,13 @@
     - **Assigned to:**
 
 - [ ] **Epic 4: Optical Character Recognition (OCR)**
-  - **Subtask 9
+  - **Subtask 9: Write Unit Tests for OCR Features**
+    - **Description:** Create tests for image processing, OCR accuracy, and text extraction.
+    - **Acceptance Criteria:** Tests pass and ensure high accuracy.
+    - **Assigned to:**
+
+- [ ] **Epic 4: Optical Character Recognition (OCR)**
+  - **Subtask 10: Conduct User Acceptance Testing (UAT)**
+    - **Description:** Gather feedback on OCR performance and accuracy.
+    - **Acceptance Criteria:** Feedback is reviewed and used to make improvements.
+    - **Assigned to:**
