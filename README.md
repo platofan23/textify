@@ -51,8 +51,8 @@
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
-| Research Available Translation Models | Evaluate and compare multiple AI translation models based on accuracy, speed, and cost. | A report is created summarizing the strengths, weaknesses, and use cases of each model. | In progress | |
-| Select Optimal Translation Model | Choose the most suitable translation model for Textify based on the evaluation. | The selected model is documented with justification for its choice. | To Do | |
+| Research Available Translation Models | Evaluate and compare multiple AI translation models based on accuracy, speed, and cost. | A report is created summarizing the strengths, weaknesses, and use cases of each model. | In progress | JK |
+| Select Optimal Translation Model | Choose the most suitable translation model for Textify based on the evaluation. | The selected model is documented with justification for its choice. | In progress | JK |
 | Integrate Chosen Translation Model API | Connect the application backend to the selected translation model’s API. | Translation requests are sent and responses are received successfully. | To Do | |
 | Test and Validate Translation Accuracy | Conduct extensive testing of the integrated model to ensure translations are accurate and meet user requirements. | Accuracy is validated for multiple language pairs with real-world test cases. | To Do | |
 | Optimize API Performance | Implement caching, batching, or other optimization techniques to reduce API latency and improve throughput. | Translation responses are consistently delivered within 2 seconds for texts under 500 words. | To Do | |
