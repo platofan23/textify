@@ -7,14 +7,14 @@
 | Select and configure web server for frontend | Choose and configure a web server for serving the frontend application. | Web server (e.g., Nginx, Apache) selected, configured, and tested for deployment. | Done | CJ |
 | Set up project structure | Establish the basic project structure for the REST API and backend. | Folder structure created, build tools (e.g., Node.js, Django, Flask) set up. | In progress | ALL |
 | Design API endpoints | Define the structure and endpoints of the REST API. | API documentation created with endpoint specifications. | In progress | CJ |
-| Implement user authentication | Develop authentication mechanisms (e.g., JWT, OAuth). | Users can log in, register, and manage sessions securely. | To Do | |
-| Integrate Translation API | Connect backend with the Translation API for processing requests. | API calls handled, results returned accurately. | To Do | |
+| Implement user authentication | Develop authentication mechanisms (e.g., JWT, OAuth). | Users can log in, register, and manage sessions securely. | In Progress | CJ |
+| Integrate Translation API | Connect backend with the Translation API for processing requests. | API calls handled, results returned accurately. | In Progress | JK |
 | Implement Speech-to-Text (STT) support | Integrate backend functionality with the STT API. | Audio files processed and transcriptions returned. | To Do | |
 | Add Text-to-Speech (TTS) support | Integrate TTS API for converting text to speech. | Text input converted to audio output. | To Do | |
 | Implement OCR support | Integrate OCR API for image text extraction. | Uploaded images processed and text extracted successfully. | In progress | CJ |
 | Develop error handling | Implement global error handling for API failures and edge cases. | Errors logged, and descriptive error messages returned. | To Do | |
 | Add logging | Set up logging for the backend. | Logs available. | To Do | |
-| Set up automated testing | Implement unit and integration tests for backend components. | Tests written, executed, and passed successfully. | To Do | |
+| Set up automated testing | Implement unit and integration tests for backend components. | Tests written, executed, and passed successfully. | Progess | ALL |
 | Implement rate limiting | Protect the API from abuse by implementing rate limiting. | API rate limits enforced, and violations logged. | In progress | |
 | Secure API | Implement security measures like HTTPS, input validation, and encryption. | Security tests passed, and vulnerabilities resolved. | To Do | |
 | Conduct performance testing | Test the backend for performance under various loads. | API responds within acceptable time limits under load. | To Do | |
@@ -51,9 +51,9 @@
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
-| Research Available Translation Models | Evaluate and compare multiple AI translation models based on accuracy, speed, and cost. | A report is created summarizing the strengths, weaknesses, and use cases of each model. | In progress | JK |
-| Select Optimal Translation Model | Choose the most suitable translation model for Textify based on the evaluation. | The selected model is documented with justification for its choice. | In progress | JK |
-| Integrate Chosen Translation Model API | Connect the application backend to the selected translation model’s API. | Translation requests are sent and responses are received successfully. | To Do | |
+| Research Available Translation Models | Evaluate and compare multiple AI translation models based on accuracy, speed, and cost. | A report is created summarizing the strengths, weaknesses, and use cases of each model. | Done | JK |
+| Select Optimal Translation Model | Choose the most suitable translation model for Textify based on the evaluation. | The selected model is documented with justification for its choice. | Done | JK |
+| Integrate Chosen Translation Model API | Connect the application backend to the selected translation model’s API. | Translation requests are sent and responses are received successfully. | In Progress | |
 | Test and Validate Translation Accuracy | Conduct extensive testing of the integrated model to ensure translations are accurate and meet user requirements. | Accuracy is validated for multiple language pairs with real-world test cases. | To Do | |
 | Optimize API Performance | Implement caching, batching, or other optimization techniques to reduce API latency and improve throughput. | Translation responses are consistently delivered within 2 seconds for texts under 500 words. | To Do | |
 | Document the Integration Process | Create developer documentation explaining how the translation model is integrated, including API details and fallback handling. | Documentation is complete and accessible to team members. | To Do | |
@@ -76,7 +76,7 @@
 
 | Task | Description | Acceptance Criteria | Status | Assigned to |
 |------|-------------|---------------------|--------|-------------|
-| Research Available STT Models | Evaluate STT models based on accuracy, noise handling, and speed. | A detailed comparison of available models is documented. | To Do | |
+| Research Available STT Models | Evaluate STT models based on accuracy, noise handling, and speed. | A detailed comparison of available models is documented. | In Progress | JK |
 | Select Optimal STT Model | Choose the best STT model for Textify, focusing on accuracy in noisy environments. | The selected model is documented with rationale. | To Do | |
 | Integrate Chosen STT API | Connect the application to the chosen STT API for transcribing speech to text. | Audio inputs are successfully transcribed to text. | To Do | |
 | Implement Preprocessing for Noise Reduction | Add preprocessing steps to improve transcription accuracy in noisy environments. | Transcription accuracy meets the target of 90%. | To Do | |
