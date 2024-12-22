@@ -2,6 +2,8 @@ import configparser
 from flask import Flask
 from backend.app.routes.file_manager import file_manager_bp
 from backend.app.routes.ocr import ocr_bp
+from backend.app.routes.user_management import user_management_bp
+
 
 def create_app():
     # Load configuration from config.ini
@@ -14,5 +16,6 @@ def create_app():
     # Register Blueprints
     app.register_blueprint(file_manager_bp)
     app.register_blueprint(ocr_bp)
+    app.register_blueprint(user_management_bp)
 
     return app

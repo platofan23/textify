@@ -8,7 +8,7 @@ config = configparser.ConfigParser()
 config.read('../../config.ini')
 UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']
 
-ocr_bp = Blueprint('services', __name__)
+ocr_bp = Blueprint('ocr', __name__)
 
 
 
