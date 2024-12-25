@@ -58,60 +58,63 @@ Write about setting up the working environment for your project.
 ```
 .
 webapp/
-├── backend/                       # Flask Backend
+├── .idea/                                # Intellij/Pycharm Config-Files
+├── backend/                              # Flask Backend
 │   ├── app/
-│   │   ├── __init__.py            # Initialization of the Flask app
+│   │   ├── __init__.py                   # Initialization of the Flask app
 │   │   ├── routes/
-│   │   │   ├── __init__.py        # Initialization of route modules
-│   │   │   ├── ocr.py             # Endpoints for OCR
-│   │   │   ├── translation.py     # Endpoints for Translation
-│   │   │   ├── tts.py             # Endpoints for Text-to-Speech
-│   │   │   ├── stt.py             # Endpoints for Speech-to-Text
-│   │   │   ├── file_manager.py    # Endpoints for Speech-to-Text
+│   │   │   ├── __init__.py               # Initialization of route modules
+│   │   │   ├── route_file_manager.py     # Endpoints for File-Manager
+│   │   │   ├── route_ocr.py              # Endpoints for OCR
+│   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text
+│   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech
+│   │   │   ├── route_translation_file.py # Endpoints for File-Translation
+│   │   │   ├── route_translation_text.py # Endpoints for Text-Translation
 │   │   ├── services/
-│   │   │   ├── __init__.py        # Initialization of service modules
-│   │   │   ├── ocr_service.py     # Logic for OCR
-│   │   │   ├── translation_service.py # Logic for Translation
-│   │   │   ├── tts_service.py     # Logic for Text-to-Speech
-│   │   │   ├── stt_service.py     # Logic for Speech-to-Text
+│   │   │   ├── __init__.py               # Initialization of service modules
+│   │   │   ├── service_ocr.py            # Logic for OCR
+│   │   │   ├── service_stt_.py           # Logic for Speech-to-Text
+│   │   │   ├── service_translation.py    # Logic for Translation
+│   │   │   ├── service_tts.py            # Logic for Text-to-Speech
 │   │   ├── utils/
-│   │   │   ├── __init__.py        # Initialization of utility functions
-│   │   │   ├── file_utils.py      # Functions for file handling
-│   │   │   ├── audio_utils.py     # Audio processing
-│   │   ├── config.py              # Configuration settings
-│   │   ├── models.py              # Optional database models
-│   │   ├── main.py                # Entry point for the Flask app
-│   ├── ressources/                # Resource files for the backend
+│   │   │   ├── __init__.py               # Initialization of utility functions
+│   │   │   ├── utils_file.py             # Functions for file handling
+│   │   │   ├── utils_audio.py            # Audio processing
+│   │   ├── config.py                     # Configuration settings
+│   │   ├── models.py                     # Optional database models
+│   │   ├── main.py                       # Entry point for the Flask app
+│   ├── ressources/                       # Resource files for the backend
 │   ├── tests/
-│   │   ├── test_routes.py         # Tests for the endpoints
-│   │   ├── test_services.py       # Tests for the logic
-│   ├── requirements.txt           # Python dependencies
-│   └── wsgi.py                    # WSGI entry script
+│   │   ├── test_upload_files/            # Test Folder for uploades files
+│   │   ├── test_rest_api.py.py           # Tests for the endpoints
+│   │   ├── test_user_management.py       # Tests for the logic
+│   ├── requirements.txt                  # Python dependencies
+│   └── wsgi.py                           # WSGI entry script
 │
-├── frontend/                      # React Frontend
-│   ├── public/                    # Static files
-│   │   ├── index.html             # HTML entry point
-│   ├── ressources/                # Resource files for the frontend
+├── frontend/                             # React Frontend
+│   ├── public/                           # Static files
+│   │   ├── index.html                    # HTML entry point
+│   ├── ressources/                       # Resource files for the frontend
 │   ├── src/
-│   │   ├── components/            # Reusable UI components
-│   │   │   ├── Header.js          # Header component
-│   │   │   ├── Footer.js          # Footer component
-│   │   ├── pages/                 # Pages of the application
-│   │   │   ├── OCRPage.js         # OCR page
-│   │   │   ├── TranslationPage.js # Translation page
-│   │   │   ├── TTSPage.js         # Text-to-Speech page
-│   │   │   ├── STTPage.js         # Speech-to-Text page
-│   │   ├── services/              # API requests
-│   │   │   ├── api.js             # Functions for API requests
-│   │   ├── App.js                 # Main component
-│   │   ├── index.js               # Entry point for React
-│   ├── package.json               # JavaScript dependencies
-│   ├── webpack.config.js          # Webpack configuration (if needed)
+│   │   ├── components/                   # Reusable UI components
+│   │   │   ├── components_header.js      # Header component
+│   │   │   ├── components_footer.js      # Footer component
+│   │   ├── pages/                        # Pages of the application
+│   │   │   ├── page_ocr.js               # OCR page
+│   │   │   ├── page_translation.js       # Translation page
+│   │   │   ├── page_tts.js               # Text-to-Speech page
+│   │   │   ├── page_stt.js               # Speech-to-Text page
+│   │   ├── services/                     # API requests
+│   │   │   ├── services_api.js           # Functions for API requests
+│   │   ├── App.js                        # Main component
+│   │   ├── index.js                      # Entry point for React
+│   ├── package.json                      # JavaScript dependencies
+│   ├── webpack.config.js                 # Webpack configuration (if needed)
 │
-├── README.md                      # Project description
-├── .gitignore                     # Git ignore files
-├── docker-compose.yml             # Optional: Docker configuration
-└── Dockerfile                     # Optional: Dockerfile for backend
+├── README.md                             # Project description
+├── .gitignore                            # Git ignore files
+├── docker-compose.yml                    # Optional: Docker configuration
+└── Dockerfile                            # Optional: Dockerfile for backend
 ```
 
 | No | File Name | Details 
