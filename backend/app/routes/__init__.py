@@ -1,8 +1,8 @@
 import configparser
 from flask import Flask
-from backend.app.routes.file_manager import file_manager_bp
-from backend.app.routes.ocr import ocr_bp
-from backend.app.routes.user_management import user_management_bp
+from backend.app.routes.route_file_manager import file_manager_bp
+from backend.app.routes.route_ocr import ocr_bp
+from backend.app.routes.route_user_management import user_management_bp
 
 
 def create_app():

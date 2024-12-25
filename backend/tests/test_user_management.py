@@ -2,7 +2,7 @@ import hashlib
 import unittest
 from unittest.mock import patch, MagicMock
 from flask import Flask
-from backend.app.routes.user_management import user_management_bp
+from backend.app.routes.route_user_management import user_management_bp
 
 class UserManagementTestCase(unittest.TestCase):
     def setUp(self):

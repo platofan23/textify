@@ -1,7 +1,7 @@
 import configparser
 from flask import Blueprint, request, jsonify, send_file
 import os
-from backend.app.services.multi_ocr import multi_reader
+from backend.app.services.service_ocr import multi_reader
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
