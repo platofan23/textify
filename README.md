@@ -57,39 +57,32 @@ Write about setting up the working environment for your project.
 ###  :file_folder: File Structure
 ```
 .
-webapp/
-├── .idea/                                # Intellij/Pycharm Config-Files
+textify/                                  # Directory for the project
 ├── backend/                              # Flask Backend
-│   ├── app/
-│   │   ├── __init__.py                   # Initialization of the Flask app
-│   │   ├── routes/
-│   │   │   ├── __init__.py               # Initialization of route modules
+│   ├── app/                              # Directory App
+│   │   ├── routes/                       # Directory for the Endpoints
 │   │   │   ├── route_file_manager.py     # Endpoints for File-Manager
 │   │   │   ├── route_ocr.py              # Endpoints for OCR
 │   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text
 │   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech
 │   │   │   ├── route_translation_file.py # Endpoints for File-Translation
 │   │   │   ├── route_translation_text.py # Endpoints for Text-Translation
-│   │   ├── services/
-│   │   │   ├── __init__.py               # Initialization of service modules
+│   │   ├── services/                     # Directory for the services
 │   │   │   ├── service_ocr.py            # Logic for OCR
 │   │   │   ├── service_stt_.py           # Logic for Speech-to-Text
 │   │   │   ├── service_translation.py    # Logic for Translation
 │   │   │   ├── service_tts.py            # Logic for Text-to-Speech
-│   │   ├── utils/
-│   │   │   ├── __init__.py               # Initialization of utility functions
-│   │   │   ├── utils_file.py             # Functions for file handling
-│   │   │   ├── utils_audio.py            # Audio processing
-│   │   ├── config.py                     # Configuration settings
-│   │   ├── models.py                     # Optional database models
+│   │   ├── utils/                        # Directory for resuseable code
 │   │   ├── main.py                       # Entry point for the Flask app
+│   ├── config/                           # Config Directory for the backend
+│   │   ├── config.ini                    # Configs for the backend
 │   ├── ressources/                       # Resource files for the backend
-│   ├── tests/
+│   │   ├── resources.txt                 # File for easy install with pip
+│   │   ├── ressources_generate_txt.py    # Script to generate resources.txt
+│   ├── tests/                            # Directory Tests
 │   │   ├── test_upload_files/            # Test Folder for uploades files
 │   │   ├── test_rest_api.py.py           # Tests for the endpoints
 │   │   ├── test_user_management.py       # Tests for the logic
-│   ├── requirements.txt                  # Python dependencies
-│   └── wsgi.py                           # WSGI entry script
 │
 ├── frontend/                             # React Frontend
 │   ├── public/                           # Static files
