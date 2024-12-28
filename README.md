@@ -18,6 +18,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) ->5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -27,6 +28,7 @@
       <td>Web server (e.g., Nginx, Apache) selected, configured, and tested for deployment.</td>
       <td>Done</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Set up project structure</td>
