@@ -2,7 +2,7 @@ import requests
 
 
 # URL of the Flask route
-url = 'http://localhost:5000/login'
+url = 'http://localhost:5000/register'
 
 # Files to be uploaded
 files = [
@@ -12,7 +12,7 @@ files = [
 ]
 
 # Send POST request to upload files
-response = requests.post(url, files=files, headers={"username": "Chris", "password": "Apple Wiki_4"})
+response = requests.post(url, files=files, headers={"username": "Admin", "password": "123"})
 
 # Print the response from the server
-print(response.text)
+print(response)

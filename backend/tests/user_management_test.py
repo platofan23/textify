@@ -42,7 +42,7 @@ class UserManagementTestCase(unittest.TestCase):
 
     @patch('backend.app.routes.user_management.collection.find_one')
     def test_user_logged_in_successfully(self, mock_find):
-        mock_find.return_value = {'Username': 'testuser', 'Password': hashlib.sha256('testpass'.encode()).hexdigest()}
+        mock_find.return_value = {'Username': 'testuser', 'Password': hashlib.sha3_256('testpass'.encode()).hexdigest()}
         response = self.client.post('/login', headers={'Username': 'testuser', 'Password': 'testpass'})
         self.assertEqual(200, response.status_code)
         self.assertEqual('User logged in successfully', response.data.decode())

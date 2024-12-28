@@ -7,7 +7,7 @@ import { Typography } from "@mui/material"
 import { Home } from "./components/Home.tsx"
 
 export interface User {
-    name: string
+    Username: string
 }
 
 function MainWrap() {
@@ -17,7 +17,7 @@ function MainWrap() {
             <Menu setUser={setUser} user={user}>
                 {[
                     <Home key="Home" />,
-                    <Typography key="TTS" sx={{ marginBottom: 2 }}>
+                    <Typography key="OCR" sx={{ marginBottom: 2 }}>
                         Text to speech
                     </Typography>,
                 ]}

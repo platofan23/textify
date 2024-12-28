@@ -11,7 +11,6 @@ import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
 import SignIn from "./SignIn"
 import { User } from "../main"
-import { red } from "@mui/material/colors"
 
 const drawerWidth = 240
 
@@ -62,8 +61,8 @@ export default function Menu({
                         <Divider />
                         <ListItem>
                             <ListItemButton
-                                selected={buttonSelecter === "TTS"}
-                                onClick={() => setButtonSelecter("TTS")}
+                                selected={buttonSelecter === "OCR"}
+                                onClick={() => setButtonSelecter("OCR")}
                             >
                                 OCR
                             </ListItemButton>
