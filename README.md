@@ -21,7 +21,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr class="basic">
+    <tr>
       <td>Select and configure web server for frontend</td>
       <td>Choose and configure a web server for serving the frontend application.</td>
       <td>Web server (e.g., Nginx, Apache) selected, configured, and tested for deployment.</td>
@@ -624,12 +624,6 @@
     </tr>
   </tbody>
 </table>
-
-  <style>
-    .basic {
-      background-color: red;
-    }
-  </style>
 
 </body>
 </html>
