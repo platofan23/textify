@@ -18,7 +18,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
-      <th>Importance 1(very low) ->5(very hight)</th>
+      <th>Importance 1(very low)..5(very hight)</th>
     </tr>
   </thead>
   <tbody>
