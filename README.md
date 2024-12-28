@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Kanban Board</title>
+  <style>
+    .basic {
+      background-color: red;
+    }
+  </style>
 </head>
 <body>
 
@@ -20,7 +25,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="basic">
       <td>Select and configure web server for frontend</td>
       <td>Choose and configure a web server for serving the frontend application.</td>
       <td>Web server (e.g., Nginx, Apache) selected, configured, and tested for deployment.</td>
