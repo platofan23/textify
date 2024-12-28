@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Kanban Board</title>
-  <style>
-    .basic {
-      background-color: red;
-    }
-  </style>
+
 </head>
 <body>
 
@@ -628,6 +624,12 @@
     </tr>
   </tbody>
 </table>
+
+  <style>
+    .basic {
+      background-color: red;
+    }
+  </style>
 
 </body>
 </html>
