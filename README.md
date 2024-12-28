@@ -36,6 +36,7 @@
       <td>Folder structure created, build tools (e.g., Node.js, Django, Flask) set up.</td>
       <td>In progress</td>
       <td>ALL</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Design API endpoints</td>
@@ -43,6 +44,7 @@
       <td>API documentation created with endpoint specifications.</td>
       <td>In progress</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Implement user authentication</td>
@@ -50,6 +52,7 @@
       <td>Users can log in, register, and manage sessions securely.</td>
       <td>In Progress</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Integrate Translation API</td>
@@ -57,6 +60,7 @@
       <td>API calls handled, results returned accurately.</td>
       <td>In Progress</td>
       <td>JK</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Implement Speech-to-Text (STT) support</td>
@@ -64,6 +68,7 @@
       <td>Audio files processed and transcriptions returned.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Add Text-to-Speech (TTS) support</td>
@@ -71,6 +76,7 @@
       <td>Text input converted to audio output.</td>
       <td>To Do</td>
       <td></td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Implement OCR support</td>
@@ -78,27 +84,31 @@
       <td>Uploaded images processed and text extracted successfully.</td>
       <td>In progress</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Develop error handling</td>
       <td>Implement global error handling for API failures and edge cases.</td>
       <td>Errors logged, and descriptive error messages returned.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In progress</td>
+      <td>ALL</td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Add logging</td>
       <td>Set up logging for the backend.</td>
       <td>Logs available.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In progress</td>
+      <td>ALL</td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Set up automated testing</td>
       <td>Implement unit and integration tests for backend components.</td>
       <td>Tests written, executed, and passed successfully.</td>
-      <td>Progess</td>
+      <td>To Do</td>
       <td>ALL</td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Implement rate limiting</td>
@@ -106,6 +116,7 @@
       <td>API rate limits enforced, and violations logged.</td>
       <td>In progress</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Secure API</td>
@@ -113,6 +124,7 @@
       <td>Security tests passed, and vulnerabilities resolved.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Conduct performance testing</td>
@@ -120,6 +132,7 @@
       <td>API responds within acceptable time limits under load.</td>
       <td>To Do</td>
       <td></td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Document API usage</td>
@@ -127,6 +140,7 @@
       <td>API documentation available and easy to understand.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
   </tbody>
 </table>
@@ -140,6 +154,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -149,6 +164,7 @@
       <td>Folder structure created, build tools (e.g., Webpack/Vite) set up.</td>
       <td>In progress</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Select UI framework</td>
@@ -156,6 +172,7 @@
       <td>Framework selected, sample components created.</td>
       <td>Done</td>
       <td>CJ</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Create design system</td>
@@ -163,6 +180,7 @@
       <td>Unified color palette, fonts, and basic components available.</td>
       <td>In progress</td>
       <td>CJ</td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Integrate Translation API</td>
@@ -170,6 +188,7 @@
       <td>API responses are displayed correctly in the frontend.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Develop text translation input form</td>
@@ -177,6 +196,7 @@
       <td>Input and target languages selectable, translations displayed.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Implement real-time translation feedback</td>
@@ -184,6 +204,7 @@
       <td>Progress indicator appears during API queries.</td>
       <td>To Do</td>
       <td></td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Implement audio recording functionality</td>
@@ -191,6 +212,7 @@
       <td>Recordings are captured and played back correctly in the frontend.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Integrate STT API</td>
@@ -198,6 +220,7 @@
       <td>Text output based on audio input works correctly.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Add error handling for audio files</td>
@@ -205,6 +228,7 @@
       <td>Clear error messages are displayed.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Integrate text-to-audio conversion</td>
@@ -212,6 +236,7 @@
       <td>Input text is correctly converted into audio files and played back.</td>
       <td>To Do</td>
       <td></td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Implement audio player</td>
@@ -219,6 +244,7 @@
       <td>Working audio player</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Implement image upload functionality</td>
@@ -226,6 +252,7 @@
       <td>Uploaded images are displayed and ready for analysis.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Integrate OCR API</td>
@@ -233,6 +260,7 @@
       <td>Text is extracted from images and displayed in the UI.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Add OCR result review and editing</td>
@@ -240,6 +268,7 @@
       <td>Users can manually adjust detected text.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Integrate Export translations</td>
@@ -247,6 +276,7 @@
       <td>Translations are exportable as TXT or CSV.</td>
       <td>To Do</td>
       <td></td>
+      <td>4(PDF)/2(DOCX)</td>
     </tr>
     <tr>
       <td>Integrate Export audio</td>
@@ -254,13 +284,7 @@
       <td>Audio files are exportable as MP3 or WAV.</td>
       <td>To Do</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>Integrate Export OCR text</td>
-      <td>Develop functionality to export detected OCR text.</td>
-      <td>Detected text is exportable as a file.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>3</td>
     </tr>
     <tr>
       <td>Conduct usability tests</td>
@@ -268,6 +292,7 @@
       <td>Feedback collected and analyzed.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Optimize performance</td>
@@ -275,6 +300,7 @@
       <td>All functions load within 1 second (if API responds).</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Test cross-browser compatibility</td>
@@ -282,6 +308,7 @@
       <td>Works in Chrome, Firefox, and Edge.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
   </tbody>
 </table>
@@ -295,6 +322,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -304,6 +332,7 @@
       <td>A report is created summarizing the strengths, weaknesses, and use cases of each model.</td>
       <td>Done</td>
       <td>JK</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Select Optimal Translation Model</td>
@@ -311,6 +340,7 @@
       <td>The selected model is documented with justification for its choice.</td>
       <td>Done</td>
       <td>JK</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Integrate Chosen Translation Model API</td>
@@ -318,6 +348,7 @@
       <td>Translation requests are sent and responses are received successfully.</td>
       <td>In Progress</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Test and Validate Translation Accuracy</td>
@@ -325,6 +356,7 @@
       <td>Accuracy is validated for multiple language pairs with real-world test cases.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Optimize API Performance</td>
@@ -332,6 +364,7 @@
       <td>Translation responses are consistently delivered within 2 seconds for texts under 500 words.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Document the Integration Process</td>
@@ -339,13 +372,7 @@
       <td>Documentation is complete and accessible to team members.</td>
       <td>To Do</td>
       <td></td>
-    </tr>
-    <tr>
-      <td>Write Unit Tests for Translation Features</td>
-      <td>Develop tests for input validation, API calls, and UI components to ensure consistent behavior.</td>
-      <td>All tests pass for a variety of scenarios, including edge cases.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Conduct User Acceptance Testing (UAT)</td>
@@ -353,6 +380,7 @@
       <td>Feedback is reviewed and necessary adjustments are implemented.</td>
       <td>To Do</td>
       <td></td>
+      <td>3</td>
     </tr>
   </tbody>
 </table>
@@ -366,6 +394,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -375,6 +404,7 @@
       <td>A comparison report highlighting the best models for implementation is created.</td>
       <td>In progress</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Select Optimal TTS Model</td>
@@ -382,6 +412,7 @@
       <td>Documentation of the selected model and justification for its use.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Integrate Chosen TTS API</td>
@@ -389,6 +420,7 @@
       <td>Text inputs are successfully converted into audio.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Optimize TTS Performance</td>
@@ -396,6 +428,7 @@
       <td>Performance benchmarks are achieved.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Enable Audio File Download</td>
@@ -403,6 +436,7 @@
       <td>Files are correctly downloaded in the chosen format.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Write Unit Tests for TTS Features</td>
@@ -410,6 +444,7 @@
       <td>All tests pass with no failures.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Conduct User Acceptance Testing (UAT)</td>
@@ -417,6 +452,7 @@
       <td>Issues identified during testing are resolved.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
   </tbody>
 </table>
@@ -430,6 +466,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -439,6 +476,7 @@
       <td>A detailed comparison of available models is documented.</td>
       <td>In Progress</td>
       <td>JK</td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Select Optimal STT Model</td>
@@ -446,6 +484,7 @@
       <td>The selected model is documented with rationale.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Integrate Chosen STT API</td>
@@ -453,6 +492,7 @@
       <td>Audio inputs are successfully transcribed to text.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Implement Preprocessing for Noise Reduction</td>
@@ -460,6 +500,7 @@
       <td>Transcription accuracy meets the target of 90%.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Create Audio Upload Feature</td>
@@ -467,6 +508,7 @@
       <td>Files in MP3, WAV, and other standard formats are accepted.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Add Error Messaging for Invalid Audio</td>
@@ -474,6 +516,7 @@
       <td>Clear error messages are displayed when needed.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Write Unit Tests for STT Features</td>
@@ -481,6 +524,7 @@
       <td>All tests pass and meet accuracy targets.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
     <tr>
       <td>Conduct User Acceptance Testing (UAT)</td>
@@ -488,6 +532,7 @@
       <td>Feedback is reviewed and used to make improvements.</td>
       <td>To Do</td>
       <td></td>
+      <td>1</td>
     </tr>
   </tbody>
 </table>
@@ -501,6 +546,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -510,6 +556,7 @@
       <td>A report of recommended models is completed.</td>
       <td>In progress</td>
       <td>AS</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Select Optimal OCR Model</td>
@@ -517,6 +564,7 @@
       <td>The selected model and rationale are documented.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Integrate OCR API</td>
@@ -524,6 +572,7 @@
       <td>Uploaded images are successfully processed.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Add Preprocessing for Image Optimization</td>
@@ -531,6 +580,7 @@
       <td>Preprocessed images yield improved results.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Create Image Upload Feature</td>
@@ -538,6 +588,7 @@
       <td>Images in PNG, JPEG, and other common formats are accepted.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Write Unit Tests for OCR Features</td>
@@ -545,6 +596,7 @@
       <td>Tests pass and ensure high accuracy.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Conduct User Acceptance Testing (UAT)</td>
@@ -552,6 +604,7 @@
       <td>Feedback is reviewed and used to make improvements.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
   </tbody>
 </table>
@@ -565,6 +618,7 @@
       <th>Acceptance Criteria</th>
       <th>Status</th>
       <th>Assigned to</th>
+      <th>Importance 1(very low) .. 5(very hight)</th>
     </tr>
   </thead>
   <tbody>
@@ -574,6 +628,7 @@
       <td>A report on the most suitable formats for export is created.</td>
       <td>Done</td>
       <td>ALL</td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Implement Export to PDF</td>
@@ -581,6 +636,7 @@
       <td>Users can export translations into PDF successfully.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Implement Export to Word</td>
@@ -588,6 +644,7 @@
       <td>Users can export translations into Word documents.</td>
       <td>To Do</td>
       <td></td>
+      <td>2</td>
     </tr>
     <tr>
       <td>Implement Export to TXT</td>
@@ -595,6 +652,7 @@
       <td>Users can export translations as TXT files.</td>
       <td>To Do</td>
       <td></td>
+      <td>5</td>
     </tr>
     <tr>
       <td>Test Export Functionality</td>
@@ -602,6 +660,7 @@
       <td>All export formats work correctly and meet quality standards.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Add Error Handling for Export Failures</td>
@@ -609,6 +668,7 @@
       <td>Users receive clear error messages if an export fails.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Write Unit Tests for Export Features</td>
@@ -616,6 +676,7 @@
       <td>All tests pass for export functionality.</td>
       <td>To Do</td>
       <td></td>
+      <td>4</td>
     </tr>
     <tr>
       <td>Conduct User Acceptance Testing (UAT)</td>
@@ -623,6 +684,7 @@
       <td>Adjustments are made based on feedback from UAT.</td>
       <td>To Do</td>
       <td></td>
+      <td>54</td>
     </tr>
   </tbody>
 </table>
