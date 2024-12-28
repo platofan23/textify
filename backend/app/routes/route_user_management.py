@@ -1,60 +1,69 @@
-import configparser
-from flask import Blueprint, request, jsonify, send_file
-from pymongo import MongoClient
 import hashlib
+import configparser
+from pymongo import MongoClient
+from flask_restful import Resource, reqparse
 
-from backend.app.services.service_ocr import multi_reader
-
-# Load configuration from config.ini
+# Konfiguration laden
 config = configparser.ConfigParser()
-config.read('../../config.ini')
+config.read('../config/config.ini')
 
-
-user_management_bp = Blueprint('user_management', __name__)
-
-#Connect to MongoDB
+# Verbindung zur MongoDB
 client = MongoClient(config['MONGO_DB']['CONNECTION_STRING'])
 db = client[config['MONGO_DB']['MONGO_DATABASE']]
 collection = db[config['MONGO_DB']['MONGO_USERS_COLLECTION']]
 
-# User Management Route
-@user_management_bp.route('/register', methods=['POST'])
-def user_register():
-    username = request.headers.get('Username')
-    password = request.headers.get('Password')
-    if not username or not password:
-        return 'Username or password not found', 400
 
-    try:
-        user = {
-            'Username': username,
-            'Password': hashlib.sha256(password.encode()).hexdigest()
-        }
+# Ressource für Benutzerregistrierung
+class RegisterUser(Resource):
+    def post(self):
+        # Argumente aus den Headern parsen
+        parser = reqparse.RequestParser()
+        parser.add_argument('Username', location='headers', required=True, help="Username is required")
+        parser.add_argument('Password', location='headers', required=True, help="Password is required")
+        args = parser.parse_args()
 
-        if collection.find_one({'Username': username}):
-            return 'Username already exists', 401
+        username = args['Username']
+        password = args['Password']
+
+        try:
+            # Benutzer prüfen, ob existiert
+            if collection.find_one({'Username': username}):
+                return {'error': 'Username already exists'}, 409
+
+            # Benutzer erstellen
+            user = {
+                'Username': username,
+                'Password': hashlib.sha256(password.encode()).hexdigest()
+            }
+            collection.insert_one(user)
+            return {'message': 'User registered successfully'}, 201
+
+        except Exception as e:
+            return {'error': f'Error occurred: {str(e)}'}, 500
 
 
-        collection.insert_one(user)
-        return 'User registered successfully', 200
+# Ressource für Benutzeranmeldung
+class LoginUser(Resource):
+    def post(self):
+        # Argumente parsen
+        parser = reqparse.RequestParser()
+        parser.add_argument('Username', location='headers', required=True, help="Username is required")
+        parser.add_argument('Password', location='headers', required=True, help="Password is required")
+        args = parser.parse_args()
 
+        username = args['Username']
+        password = args['Password']
 
-    except Exception as e:
-        return f'Error occurred: {str(e)}', 500
+        try:
+            # Benutzer und Passwort prüfen
+            user = collection.find_one({
+                'Username': username,
+                'Password': hashlib.sha256(password.encode()).hexdigest()
+            })
 
-# User Login Route
-@user_management_bp.route('/login', methods=['POST'])
-def user_login():
-    username = request.headers.get('Username')
-    password = request.headers.get('Password')
-    if not username or not password:
-        return 'Invalid username or password', 400
+            if user:
+                return {'message': 'User logged in successfully'}, 200
+            return {'error': 'Invalid username or password'}, 401
 
-    try:
-        user = collection.find_one({'Username': username, 'Password': hashlib.sha256(password.encode()).hexdigest()})
-        if user:
-            return 'User logged in successfully', 200
-        return 'Username or password not found', 401
-
-    except Exception as e:
-        return f'Error occurred: {str(e)}', 500
+        except Exception as e:
+            return {'error': f'Error occurred: {str(e)}'}, 500
