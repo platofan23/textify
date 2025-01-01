@@ -5,11 +5,7 @@ from flask_cors import CORS
 from flask_restful import Api
 
 # Import routes
-from backend.app.routes.route_file_manager import DownloadFile, UploadFile
-from backend.app.routes.route_ocr import ReadFile
-from backend.app.routes.route_translation_file import TranslateFile
-from backend.app.routes.route_translation_text import TranslateText
-from backend.app.routes.route_user_management import RegisterUser, LoginUser
+from routes import *
 
 # Config
 config = configparser.ConfigParser()

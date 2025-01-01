@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography"
 import Divider from "@mui/material/Divider"
 import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
-import SignIn from "./menu_sign_in"
+import SignIn from "./menu_sign_In"
 import { User } from "../main"
 
 const drawerWidth = 240
@@ -65,6 +65,14 @@ export default function Menu({
                                 onClick={() => setButtonSelecter("OCR")}
                             >
                                 OCR
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem>
+                            <ListItemButton
+                                selected={buttonSelecter === "Translate"}
+                                onClick={() => setButtonSelecter("Translate")}
+                            >
+                                Translate
                             </ListItemButton>
                         </ListItem>
                     </List>

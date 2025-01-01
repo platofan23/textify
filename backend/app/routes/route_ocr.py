@@ -2,7 +2,7 @@ import os
 import configparser
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from backend.app.services.service_ocr import multi_reader
+from backend.app.services import multi_reader
 
 # Konfiguration laden
 config = configparser.ConfigParser()
