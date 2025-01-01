@@ -1,10 +1,10 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
-import Menu from "./menu/Menu.tsx"
+import Menu from "./menu/menu_base.tsx"
 import React from "react"
 import { Typography } from "@mui/material"
-import { Home } from "./components/Home.tsx"
+import { Home } from "./components/component_home.tsx"
 
 export interface User {
     Username: string

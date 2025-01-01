@@ -1,6 +1,6 @@
 import { Box } from "@mui/material"
 import * as React from "react"
-import bg from "../assets/Menu_background.webp"
+import bg from "../assets/asset_menu_background.webp"
 
 export function Home() {
     return (

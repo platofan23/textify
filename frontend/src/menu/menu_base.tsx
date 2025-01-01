@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography"
 import Divider from "@mui/material/Divider"
 import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
-import SignIn from "./SignIn"
+import SignIn from "./menu_sign_in"
 import { User } from "../main"
 
 const drawerWidth = 240
