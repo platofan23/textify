@@ -1,7 +1,14 @@
 import hashlib
 import configparser
+import secrets
+from random import random
+from threading import Thread
+
 from pymongo import MongoClient
 from flask_restful import Resource, reqparse
+from argon2 import PasswordHasher
+from datetime import datetime, timedelta
+from flask import make_response
 
 # Konfiguration laden
 config = configparser.ConfigParser()
@@ -11,6 +18,9 @@ config.read('../config/config.ini')
 client = MongoClient(config['MONGO_DB']['CONNECTION_STRING'])
 db = client[config['MONGO_DB']['MONGO_DATABASE']]
 collection = db[config['MONGO_DB']['MONGO_USERS_COLLECTION']]
+
+# Initialize Argon2 Password Hasher
+ph = PasswordHasher()
 
 
 # Ressource für Benutzerregistrierung
@@ -31,12 +41,16 @@ class RegisterUser(Resource):
                 return {'error': 'Username already exists'}, 409
 
             # Benutzer erstellen
+            hashed_password = ph.hash(password)
             user = {
                 'Username': username,
-                'Password': hashlib.sha256(password.encode()).hexdigest()
+                'Password': hashed_password
             }
             collection.insert_one(user)
-            return {'message': 'User registered successfully'}, 201
+            response = {'Message': 'User registered successfully', 'Username': username,
+                        'AuthorizationKey': add_key(username)}
+
+            return make_response(response, 200)
 
         except Exception as e:
             return {'error': f'Error occurred: {str(e)}'}, 500
@@ -55,15 +69,37 @@ class LoginUser(Resource):
         password = args['Password']
 
         try:
-            # Benutzer und Passwort prüfen
-            user = collection.find_one({
-                'Username': username,
-                'Password': hashlib.sha256(password.encode()).hexdigest()
-            })
+            user = collection.find_one({'Username': username})
+            if user and ph.verify(user['Password'], password):
 
-            if user:
-                return {'message': 'User logged in successfully'}, 200
-            return {'error': 'Invalid username or password'}, 401
+                # Delete expired keys with 10% probability
+                if random() <= 0.1:
+                    Thread(target=delete_expired_keys).start()
+
+                response = {'Message': 'User logged in successfully', 'Username': username,
+                            'AuthorizationKey': add_key(username)}
+
+                return make_response(response, 200)
+            return 'Username or password not found', 401
 
         except Exception as e:
             return {'error': f'Error occurred: {str(e)}'}, 500
+
+
+def add_key(username):
+    expiration_date = datetime.now() + timedelta(days=7)  # Set expiration date to 7 days from now
+    key = secrets.token_hex(32)
+    collection.update_one(
+        {'Username': username},
+        {'$push': {'AuthorizationKeys': {'Key': key, 'ExpiresAt': expiration_date}}}
+    )
+    return key
+
+# Delete expired keys
+def delete_expired_keys():
+    current_time = datetime.now()
+    print('Deleting expired keys')
+    collection.update_many(
+        {},
+        {'$pull': {'AuthorizationKeys': {'ExpiresAt': {'$lt': current_time}}}}
+    )
