@@ -1,4 +1,6 @@
 import base64
+
+import configparser
 import fitz
 import json
 import requests
@@ -7,6 +9,9 @@ from transformers import MarianMTModel, MarianTokenizer
 import torch
 import re
 
+# Load Config
+config = configparser.ConfigParser()
+config.read('../config/config.ini')
 
 # Translate PDF file
 def translate_file(file, model, sourcelanguage, targetlanguage):
@@ -63,7 +68,7 @@ def translate_text(model, sourcelanguage, targetlanguage, text):
     Returns:
         list: List of translated sentences.
     """
-    if model == Model.OpusEngDe.value:
+    if model == Model.Opus.value:
         return translate_opusmt(model, sourcelanguage, targetlanguage, text)
     elif model == Model.Libre.value:
         return translate_libre(sourcelanguage, targetlanguage, text)
@@ -85,10 +90,10 @@ def translate_opusmt(model, sourcelanguage, targetlanguage, text):
     Returns:
         list: List of translated sentences.
     """
-    model_name = Model.OpusEngDe.value + "-" + sourcelanguage + "-" + targetlanguage
+    model_name = Model.Opus.value + "-" + sourcelanguage + "-" + targetlanguage
 
     # Use GPU if available, otherwise fallback to CPU
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(config['TRANSLATE']['TORCH_GPU_DEVICE'] if torch.cuda.is_available() else config['TRANSLATE']['TORCH_CPU_DEVICE'])
 
     # Load tokenizer and model
     tokenizer = MarianTokenizer.from_pretrained(model_name)
@@ -118,8 +123,8 @@ def translate_libre(sourcelanguage, targetlanguage, text):
     Returns:
         list: List of translated sentences.
     """
-    url = "http://localhost:55000/translate"
-    headers = {"Content-Type": "application/json"}
+    url = config['TRANSLATE']['URL_LIBRE_TRANSLATE']
+    headers = json.loads(config['TRANSLATE']['HEADER_LIBRE_TRANSLATE'])
     payload = {
         "q": text,
         "source": sourcelanguage,
@@ -128,7 +133,7 @@ def translate_libre(sourcelanguage, targetlanguage, text):
     }
 
     # Send translation request to LibreTranslate API
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    response = requests.post(url, headers=headers, json=payload)
     result = response.json()
 
     # Split the translated text into sentences
@@ -140,5 +145,5 @@ def translate_libre(sourcelanguage, targetlanguage, text):
 
 # Enum for model selection
 class Model(Enum):
-    OpusEngDe = "Helsinki-NLP/opus-mt"
-    Libre = "LibreTranslate"
+    Opus = config['TRANSLATE']['MODEL_OPUS_MT']
+    Libre = config['TRANSLATE']['MODEL_LIBRE_Translate']

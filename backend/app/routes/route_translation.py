@@ -1,8 +1,8 @@
 from flask import request
+from flask import request
 from flask_restful import Resource
 
 from backend.app.services.service_translation import translate_file, translate_text
-
 
 # Translate PDF file endpoint
 class TranslateFile(Resource):
