@@ -11,6 +11,7 @@ import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
 import SignIn from "./menu_sign_In"
 import { User } from "../main"
+import { useNavigate, useLocation } from "react-router-dom"
 
 const drawerWidth = 240
 
@@ -23,7 +24,9 @@ export default function Menu({
     user: User | null
     children: React.ReactNode[]
 }) {
-    const [buttonSelecter, setButtonSelecter] = React.useState("Home")
+    const navigate = useNavigate()
+    const location = useLocation()
+    const path = location.pathname.slice(1)
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -52,8 +55,10 @@ export default function Menu({
                     <List>
                         <ListItem>
                             <ListItemButton
-                                selected={buttonSelecter === "Home"}
-                                onClick={() => setButtonSelecter("Home")}
+                                selected={path === "Home"}
+                                onClick={() => {
+                                    navigate("Home")
+                                }}
                             >
                                 Home
                             </ListItemButton>
@@ -61,16 +66,20 @@ export default function Menu({
                         <Divider />
                         <ListItem>
                             <ListItemButton
-                                selected={buttonSelecter === "OCR"}
-                                onClick={() => setButtonSelecter("OCR")}
+                                selected={path === "OCR"}
+                                onClick={() => {
+                                    navigate("OCR")
+                                }}
                             >
                                 OCR
                             </ListItemButton>
                         </ListItem>
                         <ListItem>
                             <ListItemButton
-                                selected={buttonSelecter === "Translate"}
-                                onClick={() => setButtonSelecter("Translate")}
+                                selected={path === "Translate"}
+                                onClick={() => {
+                                    navigate("Translate")
+                                }}
                             >
                                 Translate
                             </ListItemButton>
@@ -92,7 +101,7 @@ export default function Menu({
             >
                 <Toolbar />
                 {children.map((child) => {
-                    if (React.isValidElement(child) && child.key === buttonSelecter) {
+                    if (React.isValidElement(child) && child.key === path) {
                         return child
                     }
                 })}

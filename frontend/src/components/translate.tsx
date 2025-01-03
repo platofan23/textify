@@ -17,14 +17,7 @@ const Translate = () => {
             <Editor
                 ref={quillRef}
                 readOnly={readOnly}
-                defaultValue={new Delta()
-                    .insert("Hello")
-                    .insert("\n", { header: 1 })
-                    .insert("Some ")
-                    .insert("initial", { bold: true })
-                    .insert(" ")
-                    .insert("content", { underline: true })
-                    .insert("\n")}
+                defaultValue={new Delta().insert("Hello World!", { bold: true, size: "16pt" })}
                 onSelectionChange={setRange}
                 onTextChange={setLastChange}
             />
