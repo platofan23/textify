@@ -7,8 +7,7 @@ from flask_restful import Api
 # Import routes
 from backend.app.routes.route_file_manager import DownloadFile, UploadFile
 from backend.app.routes.route_ocr import ReadFile
-from backend.app.routes.route_translation_file import TranslateFile
-from backend.app.routes.route_translation_text import TranslateText
+from backend.app.routes.route_translation import TranslateFile, TranslateText
 from backend.app.routes.route_user_management import RegisterUser, LoginUser
 
 # Config
@@ -28,7 +27,7 @@ api.add_resource(UploadFile, '/upload_files')
 api.add_resource(ReadFile, '/read_file')
 
 # Endpoints translation
-api.add_resource(TranslateFile, '/translation_file')
+api.add_resource(TranslateFile, '/translate_file')
 api.add_resource(TranslateText, '/translate_text')
 
 # Endpoints user
