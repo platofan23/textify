@@ -1,6 +1,6 @@
+import torch
 import easyocr
 from typing import Literal
-import torch
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 
