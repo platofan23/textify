@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor<<include>> LightBlue
+    BackgroundColor<<extend>> LightGreen
+}
+
+actor User
+
+package "Core Functionalities" {
+    (Translate Text) as TT
+    (Extract Text from Image) as ET
+    (Export Text) as EX
+}
+
+package "User Management" {
+    (View History) as VH
+    (Manage Preferences) as MP
+}
+
+package "Error Handling" {
+    (Handle Errors) as HE
+}
+
+package "Future Features" {
+    (Text-to-Speech) as TTS
+    (Speech-to-Text) as STT
+}
+
+TT --> HE : <<extend>>
+ET --> HE : <<extend>>
+EX --> HE : <<extend>>
+VH --> HE : <<extend>>
+MP --> HE : <<extend>>
+
+TT --> (Load Translation Model) : <<include>>
+ET --> (Preprocess Image) : <<include>>
+EX --> (Format Export) : <<include>>
+MP --> (Save Preferences) : <<include>>
+
+TT .> TTS : <<extend>>
+ET .> STT : <<extend>>
+
+User --> TT
+User --> ET
+User --> EX
+User --> VH
+User --> MP
+@enduml
+
+https://www.plantuml.com/plantuml/uml/
