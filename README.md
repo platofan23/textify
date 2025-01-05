@@ -164,12 +164,13 @@ After this, changes will be merged.
 - Discord Server: https://discord.gg/XzERCkFV
 - Docker: https://www.docker.com/
 - EasyOCR: https://github.com/JaidedAI/EasyOCR
-- https://de.libretranslate.com/
-- https://marian-nmt.github.io/
+- LibreTranslate: https://de.libretranslate.com/
+- MarianMT: https://marian-nmt.github.io/
 - Material UI: https://mui.com/material-ui/
-- https://github.com/Helsinki-NLP/Opus-MT
+- MongoDB: https://www.mongodb.com/de-de
+- OPUS-MT: https://github.com/Helsinki-NLP/Opus-MT
 - Python: https://www.python.org/
-- https://quilljs.com/
+- QuillJS: https://quilljs.com/
 - React JS: https://react.dev/
 - Vite: https://vite.dev/
 - YOLOv11: https://docs.ultralytics.com/de/models/yolo11/
