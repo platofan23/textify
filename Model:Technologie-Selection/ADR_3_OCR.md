@@ -1,4 +1,4 @@
-# ADR 002: Selection of OCR Model
+# ADR 003: Selection of OCR Model
 
 ## Status
 On Hold
