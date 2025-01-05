@@ -1,4 +1,4 @@
-# ADR003: Decision to Use EasyOCR and docTR for OCR Functionality
+# ADR 003: Decision to Use EasyOCR and docTR for OCR Functionality
 
 ## Context
 We need to implement Optical Character Recognition (OCR) functionality in our project to extract text from images. The OCR functionality should support multiple languages and be efficient in terms of performance and accuracy.
