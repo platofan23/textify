@@ -61,13 +61,14 @@ textify/                                  # Directory for the project
 ├── backend/                              # Flask Backend
 │   ├── app/                              # Directory App
 │   │   ├── routes/                       # Directory for the Endpoints
+│   │   │   ├── __init__.py               # Init File for Importing whole directory
 │   │   │   ├── route_file_manager.py     # Endpoints for File-Manager
 │   │   │   ├── route_ocr.py              # Endpoints for OCR
 │   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text
 │   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech
-│   │   │   ├── route_translation_file.py # Endpoints for File-Translation
-│   │   │   ├── route_translation_text.py # Endpoints for Text-Translation
+│   │   │   ├── route_translation.py      # Endpoints for Translation
 │   │   ├── services/                     # Directory for the services
+│   │   │   ├── __inti__.py               # Init File for Importing whole directory
 │   │   │   ├── service_ocr.py            # Logic for OCR
 │   │   │   ├── service_stt_.py           # Logic for Speech-to-Text
 │   │   │   ├── service_translation.py    # Logic for Translation
