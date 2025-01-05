@@ -346,7 +346,7 @@
       <td>Integrate Chosen Translation Model API</td>
       <td>Connect the application backend to the selected translation model’s API.</td>
       <td>Translation requests are sent and responses are received successfully.</td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td></td>
       <td>5</td>
     </tr>
@@ -354,7 +354,7 @@
       <td>Test and Validate Translation Accuracy</td>
       <td>Conduct extensive testing of the integrated model to ensure translations are accurate and meet user requirements.</td>
       <td>Accuracy is validated for multiple language pairs with real-world test cases.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td></td>
       <td>4</td>
     </tr>
@@ -362,7 +362,7 @@
       <td>Optimize API Performance</td>
       <td>Implement caching, batching, or other optimization techniques to reduce API latency and improve throughput.</td>
       <td>Translation responses are consistently delivered within 2 seconds for texts under 500 words.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td></td>
       <td>5</td>
     </tr>
@@ -370,7 +370,7 @@
       <td>Document the Integration Process</td>
       <td>Create developer documentation explaining how the translation model is integrated, including API details and fallback handling.</td>
       <td>Documentation is complete and accessible to team members.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td></td>
       <td>5</td>
     </tr>
