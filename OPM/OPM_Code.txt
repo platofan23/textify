@@ -1,0 +1,77 @@
+Code for mermaid.live to generate and work with OPM
+
+flowchart TB
+
+    %% =========
+    %% STYLES (optional, for better distinction)
+    classDef process fill:#E7F1FA,stroke:#1E5EFF,stroke-width:1px,rx:5px,ry:5px
+    classDef object fill:#FDF5E6,stroke:#000,stroke-width:1px,rx:3px,ry:3px
+    classDef external fill:#FFF3CD,stroke:#000,stroke-width:1px,rx:3px,ry:3px
+    classDef userNode fill:#D5F5E3,stroke:#000,stroke-width:1px,rx:3px,ry:3px
+    linkStyle default stroke:#800080,stroke-width:2px,fill:none
+
+    %% =========
+    %% Define Nodes
+    U[User<br>Upload Image/Audio/Text/File]:::userNode
+
+    %% Processes
+    P_OCR(OCR):::process
+    P_STT(STT):::process
+    P_Trans(Translation):::process
+    P_Export(Export):::process  
+    P_TTS(TTS):::process
+    P_ExportAudio(Export Audio):::process  
+
+    %% Objects/Intermediate Results
+    RText[Recognized Text<br>through OCR/STT]
+    TText[Translated Text]
+    EFile[Exported File<br>Text]
+    EAudio[Exported File<br>Audio]
+    AFile[Audio TTS]
+
+    %% Entry: User decides between OCR, STT, or direct Translation/File
+    subgraph INPUT [User Input Selection]
+      direction TB
+      U -->|"1 Image -> OCR"| P_OCR:::external
+      U -->|"2 Audio -> STT"| P_STT:::external
+      U -->|"3 Text/File -> Translation"| P_Trans:::external
+      U -->|"3 Text/File -> TTS"| P_TTS:::external
+    end
+
+    %% OCR/STT Processing
+    subgraph PROCESSING [Processing Paths]
+      direction TB
+      P_OCR --> RText:::object
+      P_STT --> RText:::object
+    end
+
+    %% Paths from Recognized Text
+    subgraph TEXT_HANDLING [Text Handling]
+      direction TB
+      RText -->|"Translate Text?"| P_Trans:::process
+      RText -->|"Continue directly?"| P_Export:::process
+    end
+
+    %% After Translation
+    subgraph TRANSLATION [Translation Handling]
+      direction TB
+      P_Trans --> TText:::object
+      TText -->|"Export (Text)"| P_Export:::process
+      TText -->|"TTS"| P_TTS:::process
+    end
+
+    %% Export and TTS
+    subgraph EXPORTING [Export and Audio Handling]
+      direction TB
+      P_Export --> EFile:::object
+      P_TTS --> AFile:::object
+      AFile -->|"Export Audio"| P_ExportAudio:::process
+      P_ExportAudio --> EAudio:::object
+    end
+
+    %% Error Handling
+    subgraph ERROR [Error Handling]
+      direction TB
+      RText -->|"Error detected?"| ERR_HANDLER:::external
+      ERR_HANDLER[Error Handling<br>Retry or Abort] --> U
+    end
