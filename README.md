@@ -164,10 +164,12 @@ After this, changes will be merged.
 - Discord Server: https://discord.gg/XzERCkFV
 - Docker: https://www.docker.com/
 - EasyOCR: https://github.com/JaidedAI/EasyOCR
-- Google Codelabs for GPU: https://codelabs.developers.google.com/
+- https://de.libretranslate.com/
+- https://marian-nmt.github.io/
 - Material UI: https://mui.com/material-ui/
-- Notion: https://www.notion.so/Textify-145ded0028a2802d8fcbf1e0cb52fd72?pvs=4
+- https://github.com/Helsinki-NLP/Opus-MT
 - Python: https://www.python.org/
+- https://quilljs.com/
 - React JS: https://react.dev/
 - Vite: https://vite.dev/
 - YOLOv11: https://docs.ultralytics.com/de/models/yolo11/
@@ -178,7 +180,6 @@ Pictures of your project.
 ## :star2: Credit/Acknowledgment
 - https://github.com/Hein0002
 - https://github.com/Komiplex
-- https://github.com/StackTracer17
 - https://github.com/platofan23
 
 
