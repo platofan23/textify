@@ -87,26 +87,34 @@ textify/                                  # Directory for the project
 │
 ├── frontend/                             # React Frontend
 │   ├── public/                           # Static files
+│   │   ├── vite.svg                      # Static SVG asset
 │   │   ├── index.html                    # HTML entry point
-│   ├── ressources/                       # Resource files for the frontend
 │   ├── src/
+│   │   ├── assets/                       # Resource files for the frontend
+│   │   │   ├── asset_menu_background.webp# Menu background image
+│   │   │   ├── asset_react_logo.svg      # React logo
 │   │   ├── components/                   # Reusable UI components
-│   │   │   ├── components_header.js      # Header component
-│   │   │   ├── components_footer.js      # Footer component
-│   │   ├── pages/                        # Pages of the application
-│   │   │   ├── page_ocr.js               # OCR page
-│   │   │   ├── page_translation.js       # Translation page
-│   │   │   ├── page_tts.js               # Text-to-Speech page
-│   │   │   ├── page_stt.js               # Speech-to-Text page
-│   │   ├── services/                     # API requests
-│   │   │   ├── services_api.js           # Functions for API requests
-│   │   ├── App.js                        # Main component
-│   │   ├── index.js                      # Entry point for React
+│   │   │   ├── component_home.tsx        # Home component
+│   │   │   ├── Editor.tsx                # Editor component
+│   │   │   ├── Editor_style.css          # CSS for the editor
+│   │   │   ├── translate.tsx             # Translation component
+│   │   ├── menu/                         # Menu components
+│   │   │   ├── menu_base.tsx             # Base menu
+│   │   │   ├── menu_sign_in.tsx          # Sign-in menu
+│   │   ├── main.tsx                      # Main application entry
+│   │   ├── vite-env.d.ts                 # Vite environment types
+│   ├── node_modules/                     # Node dependencies
 │   ├── package.json                      # JavaScript dependencies
-│   ├── webpack.config.js                 # Webpack configuration (if needed)
+│   ├── package-lock.json                 # Lock file for npm dependencies
+│   ├── eslint.config.js                  # ESLint configuration
+│   ├── tsconfig.json                     # TypeScript configuration
+│   ├── tsconfig.app.json                 # App-specific TypeScript config
+│   ├── tsconfig.node.json                # Node-specific TypeScript config
+│   ├── vite.config.ts                    # Vite configuration
 │
-├── README.md                             # Project description
+├── uploads/                              # Upload folder
 ├── .gitignore                            # Git ignore files
+├── README.md                             # Project description
 ├── docker-compose.yml                    # Optional: Docker configuration
 └── Dockerfile                            # Optional: Dockerfile for backend
 ```
