@@ -24,7 +24,7 @@ api.add_resource(UploadFile, '/upload_files')
 api.add_resource(ReadFile, '/read_file')
 
 # Endpoints translation
-api.add_resource(TranslateFile, '/translation_file')
+api.add_resource(TranslateFile, '/translate_file')
 api.add_resource(TranslateText, '/translate_text')
 
 # Endpoints user
@@ -33,7 +33,7 @@ api.add_resource(LoginUser, '/login')
 
 # Start flask-app
 if __name__ == '__main__':
-    port = int(config['REST'].get('PORT', '5000'))
+    port = int(config['REST'].get('PORT', '5555'))
     host = config['REST'].get('HOST', '127.0.0.1')
     app.run(host=host,port=port,debug=True)
 

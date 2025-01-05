@@ -69,15 +69,15 @@ def translate_text(model, sourcelanguage, targetlanguage, text):
         list: List of translated sentences.
     """
     if model == Model.Opus.value:
-        return translate_opusmt(model, sourcelanguage, targetlanguage, text)
+        return translate_opusmt(sourcelanguage,targetlanguage,text)
     elif model == Model.Libre.value:
-        return translate_libre(sourcelanguage, targetlanguage, text)
+        return translate_libre(sourcelanguage,targetlanguage,text)
     else:
         return None
 
 
 # Translate using OpusMT with GPU support
-def translate_opusmt(model, sourcelanguage, targetlanguage, text):
+def translate_opusmt(sourcelanguage, targetlanguage, text):
     """
     Translates text using OpusMT and GPU support if available.
 
@@ -138,12 +138,12 @@ def translate_libre(sourcelanguage, targetlanguage, text):
 
     # Split the translated text into sentences
     translated_text = result.get("translatedText", text)
-    sentences = re.split(r'(?<=[.!?]) +', translated_text)
-
+    #sentences = re.split(r'(?<=[.!?]) +', translated_text)
+    sentences = translated_text
     return sentences
 
 
 # Enum for model selection
 class Model(Enum):
     Opus = config['TRANSLATE']['MODEL_OPUS_MT']
-    Libre = config['TRANSLATE']['MODEL_LIBRE_Translate']
+    Libre = config['TRANSLATE']['MODEL_LIBRE_TRANSLATE']
