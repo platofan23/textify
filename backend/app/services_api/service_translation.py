@@ -139,8 +139,7 @@ def translate_libre(sourcelanguage, targetlanguage, text):
 
     # Split the translated text into sentences
     translated_text = result.get("translatedText", text)
-    #sentences = re.split(r'(?<=[.!?]) +', translated_text)
-    sentences = translated_text
+    sentences = re.split(r'(?<=[.!?]) +', translated_text)
     return sentences
 
 
