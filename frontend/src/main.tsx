@@ -6,7 +6,8 @@ import React from "react"
 import { Typography } from "@mui/material"
 import { Home } from "./components/component_home.tsx"
 import Translate from "./components/translate.tsx"
-import { BrowserRouter as Router } from "react-router-dom"
+import { BrowserRouter as Router, useNavigate } from "react-router-dom"
+import Library from "./pages/libary.tsx"
 
 export interface User {
     Username: string
@@ -14,17 +15,12 @@ export interface User {
 
 function MainWrap() {
     const [user, setUser] = React.useState<User | null>(null)
+
     return (
         <>
             <Router>
                 <Menu setUser={setUser} user={user}>
-                    {[
-                        <Home key="Home" />,
-                        <Typography key="OCR" sx={{ marginBottom: 2 }}>
-                            Text to speech
-                        </Typography>,
-                        <Translate key="Translate" />,
-                    ]}
+                    {[<Home key="Home" />, <Library key="Library" />, <Translate key="Translate" />]}
                 </Menu>
             </Router>
         </>

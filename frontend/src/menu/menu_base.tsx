@@ -28,13 +28,18 @@ export default function Menu({
     const location = useLocation()
     const path = location.pathname.slice(1)
 
+    // Redirect to home page on first load
+    React.useEffect(() => {
+        if (path === "") navigate("Home")
+    }, [])
+
     return (
         <Box sx={{ display: "flex" }}>
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
                     <Typography variant="h6" noWrap component="div">
-                        Clipped drawer
+                        Textify
                     </Typography>
                     <SignIn setUser={setUser} user={user} />
                 </Toolbar>
@@ -66,12 +71,12 @@ export default function Menu({
                         <Divider />
                         <ListItem>
                             <ListItemButton
-                                selected={path === "OCR"}
+                                selected={path === "Libary"}
                                 onClick={() => {
-                                    navigate("OCR")
+                                    navigate("Libary")
                                 }}
                             >
-                                OCR
+                                Libary
                             </ListItemButton>
                         </ListItem>
                         <ListItem>
