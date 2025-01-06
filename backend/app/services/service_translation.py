@@ -69,7 +69,7 @@ def translate_text(model, sourcelanguage, targetlanguage, text):
         list: List of translated sentences.
     """
     if model == Model.Opus.value:
-        return translate_opusmt(sourcelanguage,targetlanguage,text)
+        return translate_opusmt(sourcelanguage,targetlanguage,text, False)
     elif model == Model.Libre.value:
         return translate_libre(sourcelanguage,targetlanguage,text)
     else:
@@ -77,7 +77,7 @@ def translate_text(model, sourcelanguage, targetlanguage, text):
 
 
 # Translate using OpusMT with GPU support
-def translate_opusmt(sourcelanguage, targetlanguage, text):
+def translate_opusmt(sourcelanguage, targetlanguage, text, isFile):
     """
     Translates text using OpusMT and GPU support if available.
 
@@ -103,9 +103,10 @@ def translate_opusmt(sourcelanguage, targetlanguage, text):
     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(device)
     translated = model.generate(**inputs)
     outputs = tokenizer.batch_decode(translated, skip_special_tokens=True)
-
+    sentences = outputs
     # Split the translated text into sentences
-    sentences = re.split(r'(?<=[.!?]) +', outputs[0])
+    if isFile:
+        sentences = re.split(r'(?<=[.!?]) +', outputs[0])
 
     return sentences
 
