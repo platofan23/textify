@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import Editor from "./Editor"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
 import streamText from "./text_stream"
+import { Button } from "@mui/material"
 
 const Delta = Quill.import("delta")
 
@@ -46,7 +47,7 @@ const Translate = () => {
                 onTextChange={setLastChange}
             />
 
-            <button onClick={translateText}>Translate</button>
+            <Button onClick={translateText}>Translate</Button>
         </div>
     )
 }
