@@ -4,6 +4,8 @@ import configparser
 import fitz
 import json
 import requests
+from functools import lru_cache
+from cachetools import LRUCache
 from enum import Enum
 from transformers import MarianMTModel, MarianTokenizer
 import torch
@@ -76,38 +78,47 @@ def translate_text(model, sourcelanguage, targetlanguage, text):
         return None
 
 
-# Translate using OpusMT with GPU support
-def translate_opusmt(sourcelanguage, targetlanguage, text, isFile):
-    """
-    Translates text using OpusMT and GPU support if available.
+# Cache for translated sentences
+translation_cache = LRUCache(maxsize=1000)
 
-    Args:
-        model (str): Translation model.
-        sourcelanguage (str): Source language code.
-        targetlanguage (str): Target language code.
-        text (str): Text to translate.
 
-    Returns:
-        list: List of translated sentences.
-    """
-    model_name = Model.Opus.value + "-" + sourcelanguage + "-" + targetlanguage
-
-    # Use GPU if available, otherwise fallback to CPU
-    device = torch.device(config['TRANSLATE']['TORCH_GPU_DEVICE'] if torch.cuda.is_available() else config['TRANSLATE']['TORCH_CPU_DEVICE'])
-
-    # Load tokenizer and model
+# Caching model and tokenizer loading
+@lru_cache(maxsize=3)
+def load_model_and_tokenizer(model_name):
     tokenizer = MarianTokenizer.from_pretrained(model_name)
-    model = MarianMTModel.from_pretrained(model_name).to(device)
+    model = MarianMTModel.from_pretrained(model_name)
+    return tokenizer, model
 
-    # Translate the entire text
+
+# Translation function
+def translate_opusmt(sourcelanguage, targetlanguage, text, isFile=False):
+    cache_key = f"{sourcelanguage}-{targetlanguage}-{text}"
+    if cache_key in translation_cache:
+        return translation_cache[cache_key]
+
+    model_name = f"Helsinki-NLP/opus-mt-{sourcelanguage}-{targetlanguage}"
+    device = torch.device(config['TRANSLATE']['TORCH_GPU_DEVICE'] if torch.cuda.is_available() else config['TRANSLATE'][
+        'TORCH_CPU_DEVICE'])
+
+    tokenizer, model = load_model_and_tokenizer(model_name)
+    model.to(device)
+
+    # Prepare input text
     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(device)
-    translated = model.generate(**inputs)
+
+    # Mixed precision for faster inference
+    with torch.amp.autocast(config['TRANSLATE']['TORCH_GPU_DEVICE']):
+        translated = model.generate(**inputs)
+
     outputs = tokenizer.batch_decode(translated, skip_special_tokens=True)
-    sentences = outputs
-    # Split the translated text into sentences
+
+    # If translating a file, split sentences
     if isFile:
         sentences = re.split(r'(?<=[.!?]) +', outputs[0])
+    else:
+        sentences = outputs
 
+    translation_cache[cache_key] = sentences
     return sentences
 
 
