@@ -71,9 +71,9 @@ export default function Menu({
                         <Divider />
                         <ListItem>
                             <ListItemButton
-                                selected={path === "Libary"}
+                                selected={path === "Library"}
                                 onClick={() => {
-                                    navigate("Libary")
+                                    navigate("Library")
                                 }}
                             >
                                 Libary

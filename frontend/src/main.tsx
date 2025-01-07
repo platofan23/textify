@@ -7,7 +7,7 @@ import { Typography } from "@mui/material"
 import { Home } from "./components/component_home.tsx"
 import Translate from "./components/translate.tsx"
 import { BrowserRouter as Router, useNavigate } from "react-router-dom"
-import Library from "./pages/libary.tsx"
+import { Library } from "./pages/library.tsx"
 
 export interface User {
     Username: string
