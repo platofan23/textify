@@ -2,6 +2,8 @@ from flask import request
 from flask_restful import Resource
 
 from services import *
+from setuptools.command.upload import upload
+
 
 # Translate PDF file endpoint
 class TranslateFile(Resource):
@@ -67,6 +69,7 @@ class TranslateText(Resource):
         model = data.get('model')
         sourcelanguage = data.get('sourcelanguage')
         targetlanguage = data.get('targetlanguage')
+        upload_id = data.get('upload_id')
         text = data.get('text')
 
         # Validate required parameters
@@ -79,6 +82,8 @@ class TranslateText(Resource):
 
             # Return translation result if successful
             if result:
+                if upload_id:
+                    return {"translation": result, "upload_id": upload_id}, 200
                 return {"translation": result}, 200
             else:
                 return {"error": "Translation failed"}, 500
@@ -89,3 +94,5 @@ class TranslateText(Resource):
         except Exception as e:
             # Handle any internal server error
             return {"error": f"Internal Server Error: {str(e)}"}, 500
+
+
