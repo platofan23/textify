@@ -66,14 +66,24 @@ textify/                                  # Directory for the project
 │   │   │   ├── route_ocr.py              # Endpoints for OCR
 │   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text
 │   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech
-│   │   │   ├── route_translation.py      # Endpoints for Translation
+│   │   │   ├── route_translation_file.py # Endpoints for Translation File
+│   │   │   ├── route_translation_file.py # Endpoints for Translation Text
 │   │   ├── services/                     # Directory for the services
-│   │   │   ├── __inti__.py               # Init File for Importing whole directory
+│   │   │   ├── __init__.py               # Init File for Importing whole directory
 │   │   │   ├── service_ocr.py            # Logic for OCR
 │   │   │   ├── service_stt_.py           # Logic for Speech-to-Text
 │   │   │   ├── service_translation.py    # Logic for Translation
 │   │   │   ├── service_tts.py            # Logic for Text-to-Speech
-│   │   ├── utils/                        # Directory for resuseable code
+│   │   ├── translators/                  # Directory for translators
+│   │   │   ├── __init__.py               # Initializes translators package
+│   │   │   ├── translator_opus.py        # Implements OpusMT translation logic
+│   │   │   └── translator_libre.py       # Implements LibreTranslate API interaction
+│   │   ├── utils/                        # Directory for utils
+│   │   │   ├── __init__.py               # Initializes utils package
+│   │   │   ├── util_config_manager.py    # Manages application configurations and validation
+│   │   │   ├── util_cache_manager.py     # Handles caching using LRU for translations
+│   │   │   ├── util_pdf_processor.py     # Extracts text from PDF files using PyMuPDF
+│   │   │   └── util_text_processing.py   # Utility functions for preprocessing and chunking text
 │   │   ├── main.py                       # Entry point for the Flask app
 │   ├── config/                           # Config Directory for the backend
 │   │   ├── config.ini                    # Configs for the backend
