@@ -55,7 +55,7 @@
       <td>Optimize API Performance</td>
       <td>Implement caching, batching, or other optimization techniques to reduce API latency and improve throughput.</td>
       <td>Translation responses are consistently delivered within 2 seconds for texts under 500 words.</td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td></td>
       <td>5</td>
     </tr>
