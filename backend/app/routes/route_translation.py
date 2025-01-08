@@ -2,8 +2,6 @@ from flask import request
 from flask_restful import Resource
 
 from services import *
-from setuptools.command.upload import upload
-
 
 # Translate PDF file endpoint
 class TranslateFile(Resource):
