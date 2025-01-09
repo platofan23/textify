@@ -47,7 +47,7 @@
       <td>Test and Validate Translation Accuracy</td>
       <td>Conduct extensive testing of the integrated model to ensure translations are accurate and meet user requirements.</td>
       <td>Accuracy is validated for multiple language pairs with real-world test cases.</td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td>JK</td>
       <td>4</td>
     </tr>
