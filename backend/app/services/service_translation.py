@@ -1,9 +1,9 @@
 import base64
 import hashlib
 
-from translators import *
-from utils import *
-
+from backend.app.translators import OpusMTTranslator, LibreTranslateTranslator
+from backend.app.utils import TranslationModel, PDFProcessor, preprocess_text, split_text_into_chunks, \
+    join_and_split_translations
 
 
 class TranslationService:
@@ -13,7 +13,7 @@ class TranslationService:
     This service handles translation requests by utilizing the OpusMT or LibreTranslate models,
     supports caching to avoid redundant translations, and processes PDF files page by page.
     """
-
+    _instance = None  # Singleton instance
     def __init__(self, config_manager, cache_manager):
         """
         Initializes TranslationService with instances of ConfigManager and CacheManager.
@@ -115,10 +115,11 @@ class TranslationService:
 
         # Load tokenizer and split text into chunks for translation
         tokenizer = OpusMTTranslator.load_tokenizer(sourcelanguage, targetlanguage)
-        chunks = split_text_into_chunks(tokenizer, text, max_tokens=100)
+        chunks = split_text_into_chunks(tokenizer, text, max_tokens=150)
 
         translated_chunks = []
         for chunk in chunks:
+            print(chunk)
             translated_chunk = self._translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
             translated_chunks.append(translated_chunk)
 
@@ -159,8 +160,8 @@ class TranslationService:
                 sourcelanguage,
                 targetlanguage,
                 self.cache_manager,
-                self.config_manager.get_libre_translate_url(),
-                self.config_manager.get_libre_translate_headers()
+                self.config_manager.get_config_value('TRANSLATE', 'URL_LIBRE_TRANSLATE', str, default='http://localhost:55000/translate'),
+                self.config_manager.get_config_value('TRANSLATE', 'HEADER_LIBRE_TRANSLATE', dict, default='{"Content-Type": "application/json"}')
             )
         else:
             raise ValueError(f"Unsupported translation model: {model_enum.value}")
