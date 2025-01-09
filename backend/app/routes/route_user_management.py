@@ -34,6 +34,7 @@ class RegisterUser(Resource):
 
         username = args['Username']
         password = args['Password']
+        
 
         try:
             # Benutzer prüfen, ob existiert
@@ -67,6 +68,7 @@ class LoginUser(Resource):
 
         username = args['Username']
         password = args['Password']
+
 
         try:
             user = collection.find_one({'Username': username})
