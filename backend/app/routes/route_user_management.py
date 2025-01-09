@@ -56,7 +56,7 @@ class RegisterUser(Resource):
             return {'error': f'Error occurred: {str(e)}'}, 500
 
 
-# Ressource für Benutzeranmeldung
+
 class LoginUser(Resource):
     def post(self):
         # Argumente parsen

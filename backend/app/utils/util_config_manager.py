@@ -111,6 +111,7 @@ class ConfigManager:
         """
         gpu_device = self.config['TRANSLATE']['TORCH_GPU_DEVICE']
         cpu_device = self.config['TRANSLATE']['TORCH_CPU_DEVICE']
+
         return gpu_device if torch.cuda.is_available() else cpu_device
 
     def get_opus_models_to_preload(self) -> list:

@@ -7,7 +7,7 @@ async function streamText(appendText: (text: string) => void, texts: [string]) {
         if (text === "") {
             continue
         }
-        await fetch("http://localhost:5555/translate_text", {
+        await fetch("http://localhost:5555/translate/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
