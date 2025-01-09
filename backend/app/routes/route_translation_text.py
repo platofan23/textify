@@ -55,7 +55,7 @@ class TranslateText(Resource):
 
         # Attempt to perform text translation and handle potential errors
         try:
-            result = self.translation_service.translate_text(model, sourcelanguage, targetlanguage, text)
+            result = self.translation_service.translate_and_chunk_text(model, sourcelanguage, targetlanguage, text)
             response = {"translation": result}
 
             # Include optional upload_id if provided

@@ -20,7 +20,7 @@ def test_unsupported_translation_model(mock_config_manager, mock_cache_manager):
     service = TranslationService(mock_config_manager, mock_cache_manager)
 
     with pytest.raises(ValueError, match="Unsupported translation model"):
-        service.translate_text("InvalidModel", "en", "de", "Hello")
+        service.translate_and_chunk_text("InvalidModel", "en", "de", "Hello")
 
 
 def test_translation_model_mapping(mock_config_manager, mock_cache_manager):
@@ -48,5 +48,5 @@ def test_translate_text_cache_hit(mock_config_manager, mock_cache_manager):
     service = TranslationService(mock_config_manager, mock_cache_manager)
     mock_cache_manager.set("Opus-Hello", ["Hallo"])
 
-    result = service.translate_text( "Helsinki-NLP/opus-mt", "en", "de", "Hello")
+    result = service.translate_and_chunk_text( "Helsinki-NLP/opus-mt", "en", "de", "Hello")
     assert result == ["Guten Tag."]

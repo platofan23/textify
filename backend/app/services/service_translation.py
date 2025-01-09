@@ -71,7 +71,7 @@ class TranslationService:
 
         # Translate each extracted page
         for i, page in enumerate(extracted_text):
-            translated_text = self._translate_text(model, sourcelanguage, targetlanguage, page)
+            translated_text = self.translate_and_chunk_text(model, sourcelanguage, targetlanguage, page)
             translated_pages.append(translated_text)
 
         # Store translated PDF in cache
@@ -80,7 +80,7 @@ class TranslationService:
 
         return translated_pages
 
-    def translate_text(self, model, sourcelanguage, targetlanguage, text):
+    def translate_and_chunk_text(self, model, sourcelanguage, targetlanguage, text):
         """
         Translates plain text using the specified translation model.
 
@@ -122,7 +122,7 @@ class TranslationService:
         translated_chunks = []
         for chunk in chunks:
             print(chunk)
-            translated_chunk = self._translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
+            translated_chunk = self.translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
             translated_chunks.append(translated_chunk)
 
         # Combine translated chunks into final result
@@ -134,7 +134,7 @@ class TranslationService:
 
         return translated_text
 
-    def _translate_text(self, model_enum, sourcelanguage, targetlanguage, text):
+    def translate_text(self, model_enum, sourcelanguage, targetlanguage, text):
         """
         Helper method to perform actual text translation using the specified model.
 

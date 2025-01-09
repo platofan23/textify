@@ -1,5 +1,3 @@
-import hashlib
-
 from transformers import MarianMTModel, MarianTokenizer
 import torch
 
