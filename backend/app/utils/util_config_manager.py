@@ -5,8 +5,8 @@ import torch
 
 from enum import Enum
 
-
 class TranslationModel(Enum):
+    _instance = None  # Singleton instance
     """
     TranslationModel defines the available translation models.
 
@@ -20,15 +20,16 @@ class TranslationModel(Enum):
     OPUS_MT = "Helsinki-NLP/opus-mt"
     LIBRE = "LibreTranslate"
 
-
 class ConfigManager:
     """
     ConfigManager handles the loading, validation, and retrieval of configuration
     values from a configuration file.
 
-    This class abstracts configuration logic, ensuring that necessary parameters
-    are correctly loaded and accessible throughout the application.
+    This class ensures that only the necessary configuration parameters
+    from the provided config.ini are loaded and accessed.
     """
+
+    _instance = None  # Singleton instance
 
     DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../config/config.ini')
 
@@ -41,7 +42,6 @@ class ConfigManager:
             config_path (str, optional): Path to the configuration file. Defaults to None.
 
         Raises:
-            ValueError: If the required configuration sections or keys are missing.
             FileNotFoundError: If the configuration file does not exist.
         """
         self.config = configparser.ConfigParser()
@@ -68,15 +68,39 @@ class ConfigManager:
         Raises:
             ValueError: If the required configuration section or key is missing.
         """
-        if 'TRANSLATE' not in self.config:
-            raise ValueError("Missing 'TRANSLATE' section in config file.")
+        required_sections = ['MONGO_DB', 'REST', 'TRANSLATE']
+        for section in required_sections:
+            if section not in self.config:
+                raise ValueError(f"Missing '{section}' section in config file.")
 
-        required_keys = ['TORCH_GPU_DEVICE', 'TORCH_CPU_DEVICE',
-                         'URL_LIBRE_TRANSLATE', 'HEADER_LIBRE_TRANSLATE']
-
-        for key in required_keys:
+        translate_required_keys = [
+            'HEADER_LIBRE_TRANSLATE',
+            'MODEL_LIBRE_TRANSLATE',
+            'MODEL_OPUS_MT',
+            'TORCH_CPU_DEVICE',
+            'TORCH_GPU_DEVICE',
+            'URL_LIBRE_TRANSLATE',
+            'OPUS_MODELS_TO_PRELOAD'
+        ]
+        for key in translate_required_keys:
             if key not in self.config['TRANSLATE']:
                 raise ValueError(f"Missing required key '{key}' in 'TRANSLATE' section.")
+
+        rest_required_keys = [
+            'ALLOWED_EXTENSIONS',
+            'HOST',
+            'MAX_CONTENT_LENGTH_MB',
+            'PORT',
+            'UPLOAD_FOLDER'
+        ]
+        for key in rest_required_keys:
+            if key not in self.config['REST']:
+                raise ValueError(f"Missing required key '{key}' in 'REST' section.")
+
+        mongo_required_keys = ['CONNECTION_STRING', 'MONGO_DATABASE', 'MONGO_USERS_COLLECTION']
+        for key in mongo_required_keys:
+            if key not in self.config['MONGO_DB']:
+                raise ValueError(f"Missing required key '{key}' in 'MONGO_DB' section.")
 
     def get_torch_device(self) -> str:
         """
@@ -89,28 +113,88 @@ class ConfigManager:
         cpu_device = self.config['TRANSLATE']['TORCH_CPU_DEVICE']
         return gpu_device if torch.cuda.is_available() else cpu_device
 
-    def get_libre_translate_url(self) -> str:
+    def get_opus_models_to_preload(self) -> list:
         """
-        Retrieves the LibreTranslate API URL from the configuration.
+        Retrieves the list of OpusMT models to preload.
 
         Returns:
-            str: The API URL for LibreTranslate.
+            list: A list of model pairs (e.g., ['en-de', 'en-fr']).
         """
-        return self.config['TRANSLATE']['URL_LIBRE_TRANSLATE']
+        models = self.config['TRANSLATE']['OPUS_MODELS_TO_PRELOAD']
+        return [model.strip() for model in models.split(',') if model.strip()]
 
-    def get_libre_translate_headers(self) -> dict:
+    def get_mongo_config(self) -> dict:
         """
-        Retrieves the headers required for LibreTranslate API requests.
+        Retrieves MongoDB-related configuration.
 
         Returns:
-            dict: Headers required for LibreTranslate requests.
+            dict: A dictionary containing MongoDB settings.
+        """
+        return {
+            'connection_string': self.config['MONGO_DB']['CONNECTION_STRING'],
+            'database': self.config['MONGO_DB']['MONGO_DATABASE'],
+            'users_collection': self.config['MONGO_DB']['MONGO_USERS_COLLECTION']
+        }
 
-        Raises:
-            json.JSONDecodeError: If the headers are not in valid JSON format.
-            ValueError: If header parsing fails.
+    def get_rest_config(self) -> dict:
+        """
+        Retrieves REST API configuration.
+
+        Returns:
+            dict: A dictionary containing REST settings.
+        """
+        return {
+            'host': self.config['REST']['HOST'],
+            'port': int(self.config['REST']['PORT']),
+            'max_content_length_mb': int(self.config['REST']['MAX_CONTENT_LENGTH_MB']),
+            'allowed_extensions': self.config['REST']['ALLOWED_EXTENSIONS'].split(','),
+            'upload_folder': self.config['REST']['UPLOAD_FOLDER']
+        }
+
+    def get_libre_translate_config(self) -> dict:
+        """
+        Retrieves LibreTranslate API configuration.
+
+        Returns:
+            dict: A dictionary containing LibreTranslate API settings.
+        """
+        headers = self.config['TRANSLATE']['HEADER_LIBRE_TRANSLATE']
+        return {
+            'url': self.config['TRANSLATE']['URL_LIBRE_TRANSLATE'],
+            'headers': json.loads(headers)
+        }
+
+    def get_model_names(self) -> dict:
+        """
+        Retrieves translation model names.
+
+        Returns:
+            dict: A dictionary containing model names for OpusMT and LibreTranslate.
+        """
+        return {
+            'opus_mt': self.config['TRANSLATE']['MODEL_OPUS_MT'],
+            'libre_translate': self.config['TRANSLATE']['MODEL_LIBRE_TRANSLATE']
+        }
+
+    def get_config_value(self, section: str, key: str, value_type: type, default=None):
+        """
+        Retrieves a configuration value from a specific section.
+
+        Args:
+            section (str): The section in the config file.
+            key (str): The key to retrieve.
+            value_type (type): The expected type of the value (e.g., int, str).
+            default: The default value to return if the key does not exist.
+
+        Returns:
+            The value from the configuration file, cast to the specified type, or the default value.
         """
         try:
-            headers = self.config['TRANSLATE']['HEADER_LIBRE_TRANSLATE']
-            return json.loads(headers)
-        except json.JSONDecodeError:
-            raise ValueError("Invalid JSON format in 'HEADER_LIBRE_TRANSLATE' configuration.")
+            raw_value = self.config.get(section, key, fallback=default)
+            if raw_value is None:
+                return default
+            if value_type == dict:
+                return json.loads(raw_value)
+            return value_type(raw_value)
+        except ValueError as e:
+            raise ValueError(f"Error retrieving config value for {section}.{key}: {str(e)}")

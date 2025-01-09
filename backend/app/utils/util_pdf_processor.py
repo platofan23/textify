@@ -15,6 +15,8 @@ class PDFProcessor:
     - Handles potential errors gracefully during PDF processing.
     """
 
+    _instance = None  # Singleton instance
+
     @staticmethod
     def extract_text_from_pdf(file_content: bytes) -> List[str]:
         """
