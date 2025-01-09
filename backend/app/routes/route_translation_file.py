@@ -13,6 +13,8 @@ class TranslateFile(Resource):
     This class interfaces with the TranslationService to perform the actual translation.
     """
 
+    _instance = None  # Singleton instance
+
     def __init__(self, config_manager, cache_manager):
         """
         Initializes TranslateFile with instances of ConfigManager and CacheManager.

@@ -12,6 +12,7 @@ class TranslateText(Resource):
 
     This class interacts with the TranslationService to process and return translated text.
     """
+    _instance = None  # Singleton instance
 
     def __init__(self, config_manager, cache_manager):
         """
