@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import Editor from "./Editor"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
 import streamText from "./text_stream"
-import { Button } from "@mui/material"
+import { Alert, Box, Button, MenuItem, Modal, Select, Typography } from "@mui/material"
 
 const Delta = Quill.import("delta")
 
@@ -16,8 +16,30 @@ const Translate = () => {
     const quillRefOutput = useRef<Quill | null>(null)
 
     const [text, setText] = useState<string>("")
+    const [LanguageError, setLanguageError] = useState<boolean>(false)
+    const [sourcelanguage, setSourcelanguage] = useState<string>("de")
+    const [targetlanguage, setTargetlanguage] = useState<string>("en")
+    const Language = [
+        { value: "de", label: "German" },
+        { value: "en", label: "English" },
+        { value: "es", label: "Spanish" },
+        { value: "fr", label: "French" },
+        { value: "it", label: "Italian" },
+        { value: "jap", label: "Japanese" },
+        { value: "ko", label: "Korean" },
+        { value: "nl", label: "Dutch" },
+        { value: "pl", label: "Polish" },
+        { value: "pt", label: "Portuguese" },
+        { value: "ru", label: "Russian" },
+        { value: "zh", label: "Chinese" },
+    ]
 
-    const appendText = (newText: string) => {
+    const appendText = (newText: string | undefined) => {
+        if (newText === undefined) {
+            setLanguageError(true)
+
+            return
+        }
         setText((prevText) => prevText + newText)
     }
 
@@ -27,11 +49,36 @@ const Translate = () => {
 
     async function translateText() {
         setText("")
-        streamText(appendText, quillRefInput.current?.getText().split("\n"))
+        streamText(appendText, quillRefInput.current?.getText().split("\n"), sourcelanguage, targetlanguage)
     }
 
     return (
         <div>
+            <Select
+                id="input-language"
+                value={sourcelanguage}
+                label="Input language"
+                onChange={(e) => setSourcelanguage(e.target.value)}
+            >
+                {Language.map((lang) => (
+                    <MenuItem value={lang.value}>{lang.label}</MenuItem>
+                ))}
+            </Select>
+            <Select
+                id="output-language"
+                value={targetlanguage}
+                label="Output language"
+                onChange={(e) => setTargetlanguage(e.target.value)}
+            >
+                {Language.map((lang) => (
+                    <MenuItem value={lang.value}>{lang.label}</MenuItem>
+                ))}
+            </Select>
+            {LanguageError && (
+                <Alert severity="error" onClose={() => setLanguageError(false)}>
+                    Error: Translating text from {sourcelanguage} to {targetlanguage} is not supported.
+                </Alert>
+            )}
             <Editor
                 ref={quillRefInput}
                 readOnly={readOnly}
