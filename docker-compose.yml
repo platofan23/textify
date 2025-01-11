@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.runCommand('ping').ok" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      textify:
+        ipv4_address: 172.142.0.2
+
+  libretranslate:
+    container_name: libretranslate
+    image: libretranslate/libretranslate:latest
+    restart: unless-stopped
+    environment:
+      - LT_API_KEYS=True
+      - LT_API_KEYS_DB_PATH=/app/db/api_keys.db
+      - LT_REQUIRE_API_KEY_ORIGIN=true
+      - LT_UPDATE_MODELS=True
+      - LT_LOAD_ONLY=en,fr,de
+      - LT_SSL=False
+      - LT_REQ_LIMIT=100
+      - LT_BATCH_LIMIT=100
+      - LT_CHAR_LIMIT=10000
+      - LT_PORT=55000
+      - LT_DEBUG=True
+    ports:
+      - "55000:55000"
+    volumes:
+      - libretranslate_api_keys:/app/db
+      - libretranslate_models:/home/libretranslate/.local:rw
+    healthcheck:
+      test: [ 'CMD-SHELL', './venv/bin/python scripts/healthcheck.py' ]
+    networks:
+      textify:
+        ipv4_address: 172.142.0.3
+
+  flask:
+    container_name: flask-api
+    build:
+      context: ./Backend       # Directory where Dockerfile is located
+      dockerfile: Dockerfile_Backend_arm64_or_CPU
+    restart: unless-stopped
+    environment:
+      - IsDocker=True
+    ports:
+      - "5555:5555"
+    #healthcheck:
+      #test: [ "CMD-SHELL", "curl -f http://localhost:5555/health || exit 1" ]
+      #interval: 30s
+      #timeout: 30s
+      #retries: 3
+    networks:
+      textify:
+        ipv4_address: 172.142.0.4
+
+  vite:
+    container_name: vite
+    build:
+      context: ./Frontend       # Directory where Dockerfile is located
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    #healthcheck:
+    #  test: [ "CMD-SHELL", "curl -f http://localhost:5173/health || exit 1" ]
+    #  interval: 30s
+    #  timeout: 30s
+    #  retries: 3
+    networks:
+      textify:
+        ipv4_address: 172.142.0.5
+
+volumes:
+  mongo-data:
+  libretranslate_api_keys:
+  libretranslate_models:
+
+networks:
+  textify:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.0.0/24

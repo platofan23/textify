@@ -1,0 +1,29 @@
+# Verwende ein schlankes NVIDIA CUDA-Basis-Image
+FROM python:3.11-slim
+
+# Setze Umgebungsvariablen für Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/
+
+# Installiere Python und andere notwendige Pakete
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Arbeitsverzeichnis im Container
+WORKDIR /backend
+
+# Kopiere die restlichen Projektdateien
+COPY ./ /backend
+
+# Installiere die CUDA-fähige Version von PyTorch explizit
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip \
+    && python3.11 -m pip install --no-cache-dir -r /backend/resources/resources.txt
+
+# Expose-Port für die Anwendung
+EXPOSE 5555
+
+# Anwendung starten
+CMD ["hypercorn", "-b", "0.0.0.0:5555", "backend.app.main:app"]
