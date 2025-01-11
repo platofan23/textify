@@ -1,11 +1,11 @@
 import torch
 import easyocr
+
 from typing import Literal
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 
 DEVICE = torch.device("cuda:0")
-
 
 def multi_reader(image, model: Literal["easyocr", "doctr"] = "easyocr", language=None):
     if language is None:

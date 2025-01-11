@@ -1,9 +1,9 @@
-import hashlib
+import os
 import configparser
 import secrets
+
 from random import random
 from threading import Thread
-
 from pymongo import MongoClient
 from flask_restful import Resource, reqparse
 from argon2 import PasswordHasher
@@ -12,7 +12,9 @@ from flask import make_response
 
 # Konfiguration laden
 config = configparser.ConfigParser()
-config.read('../config/config.ini')
+config.read('./config/config.ini')
+if os.getenv("IsDocker"):
+    config.read('./config/docker.ini')
 
 # Verbindung zur MongoDB
 client = MongoClient(config['MONGO_DB']['CONNECTION_STRING'])

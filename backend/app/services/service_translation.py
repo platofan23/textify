@@ -1,12 +1,8 @@
 import base64
 import hashlib
 
-import torch
-
 from backend.app.translators import OpusMTTranslator, LibreTranslateTranslator
-from backend.app.utils import TranslationModel, PDFProcessor, preprocess_text, split_text_into_chunks, \
-    join_and_split_translations
-
+from backend.app.utils import TranslationModel, PDFProcessor, preprocess_text, split_text_into_chunks, join_and_split_translations
 
 class TranslationService:
     """

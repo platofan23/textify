@@ -1,9 +1,7 @@
 from flask import request
 from flask_restful import Resource
 
-from services import *
-from utils import *
-
+from backend.app.services import TranslationService
 
 class TranslateFile(Resource):
     """
