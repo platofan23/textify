@@ -1,5 +1,4 @@
-from routes import *
-
+from backend.app.routes import UploadFile, DownloadFile, ReadFile, TranslateText, TranslateFile, RegisterUser, LoginUser
 
 def register_routes(api, config_manager, cache_manager):
     """

@@ -1,10 +1,11 @@
+import os
+
 from flask import Flask
 from flask_cors import CORS
 
-from utils import *
+from backend.app.utils import ConfigManager, CacheManager
 
-
-def create_app(config_path='../config/config.ini'):
+def create_app(config_path='./config/config.ini'):
     """
     Creates and configures the Flask app.
 
@@ -16,6 +17,12 @@ def create_app(config_path='../config/config.ini'):
         ConfigManager: ConfigManager instance.
         CacheManager: CacheManager instance.
     """
+
+    if os.getenv("IsDocker"):
+        config_path='./config/docker.ini'
+
+    print("Environment is in Docker:", os.getenv("IsDocker"))
+
     app = Flask(__name__)
     config_manager = ConfigManager(config_path)
     cache_manager = CacheManager(maxsize=10000, clear_cache_on_start=True)
