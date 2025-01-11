@@ -31,7 +31,7 @@ class ConfigManager:
 
     _instance = None  # Singleton instance
 
-    DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../config/config.ini')
+    DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), './config/config.ini')
 
     def __init__(self, config_path: str = None):
         """

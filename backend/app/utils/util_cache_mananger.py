@@ -3,7 +3,6 @@ import pickle
 
 from cachetools import LRUCache
 
-
 class CacheManager:
     """
     CacheManager handles in-memory caching with persistent storage.

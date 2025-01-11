@@ -1,6 +1,6 @@
-import fitz  # PyMuPDF
-from typing import List
+import fitz
 
+from typing import List
 
 class PDFProcessor:
     """

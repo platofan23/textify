@@ -1,7 +1,5 @@
-import re
 from typing import Union, List
 from itertools import chain
-
 
 def preprocess_text(text: Union[str, List[str]]) -> str:
     """
