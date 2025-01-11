@@ -1,6 +1,6 @@
 ### tests/test_utils/test_util_pdf_processor.py ###
 from unittest.mock import patch, MagicMock
-from backend.app.utils.util_pdf_processor import PDFProcessor
+from backend.app.utils import PDFProcessor
 
 def test_pdf_extraction():
     mock_pdf_bytes = b'%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF'

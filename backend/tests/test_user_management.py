@@ -55,3 +55,6 @@ class UserManagementTestCase(unittest.TestCase):
         response = self.client.post('/login', headers={'Username': 'testuser', 'Password': 'testpass'})
         self.assertEqual(500, response.status_code)
         self.assertIn('Error occurred: Database error', response.data.decode())
+
+if __name__ == '__main__':
+    unittest.main()

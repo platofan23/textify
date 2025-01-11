@@ -1,6 +1,6 @@
 ### tests/test_services/test_service_translation.py ###
 import pytest
-from backend.app.services.service_translation import TranslationService
+from backend.app.services import TranslationService
 from backend.app.utils import CacheManager
 
 
