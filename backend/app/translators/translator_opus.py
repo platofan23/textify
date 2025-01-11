@@ -1,6 +1,6 @@
-from transformers import MarianMTModel, MarianTokenizer
 import torch
 
+from transformers import MarianMTModel, MarianTokenizer
 
 class OpusMTTranslator:
     """
