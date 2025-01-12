@@ -16,7 +16,7 @@ class LibreTranslateTranslator:
         headers (dict): HTTP headers to include with API requests.
     """
 
-    def __init__(self, source_lang, target_lang, cache_manager, url, headers):
+    def __init__(self, source_lang, target_lang, api_key, cache_manager, url, headers):
         """
         Initializes LibreTranslateTranslator with the necessary translation parameters and configurations.
 
@@ -29,6 +29,7 @@ class LibreTranslateTranslator:
         """
         self.source_lang = source_lang
         self.target_lang = target_lang
+        self.api_key = api_key
         self.cache_manager = cache_manager
         self.url = url
         self.headers = headers
@@ -58,7 +59,8 @@ class LibreTranslateTranslator:
             "q": text,
             "source": self.source_lang,
             "target": self.target_lang,
-            "format": "text"
+            "format": "text",
+            "api_key": self.api_key
         }
 
         # Make a POST request to LibreTranslate

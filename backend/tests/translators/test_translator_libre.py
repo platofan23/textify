@@ -25,7 +25,7 @@ def test_translate_text_libre(mock_config_manager, mock_cache_manager):
         mock_response.json.return_value = {"translatedText": "Hola"}
         mock_post.return_value = mock_response
 
-        translator = LibreTranslateTranslator('en', 'es', mock_cache_manager,
+        translator = LibreTranslateTranslator('en', 'es', "", mock_cache_manager,
                                              mock_config_manager.get_libre_translate_url(),
                                              mock_config_manager.get_libre_translate_headers())
 

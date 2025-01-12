@@ -113,11 +113,10 @@ class TranslationService:
 
         # Load tokenizer and split text into chunks for translation
         tokenizer = OpusMTTranslator.load_tokenizer(sourcelanguage, targetlanguage)
-        chunks = split_text_into_chunks(tokenizer, text, max_tokens=150)
+        chunks = split_text_into_chunks(tokenizer, text, self.config_manager.get_config_value('TEXT', 'MAX_TOKEN', int))
 
         translated_chunks = []
         for chunk in chunks:
-            print(chunk)
             translated_chunk = self.translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
             translated_chunks.append(translated_chunk)
 
@@ -157,6 +156,7 @@ class TranslationService:
             translator = LibreTranslateTranslator(
                 sourcelanguage,
                 targetlanguage,
+                self.config_manager.get_libre_api_key(),
                 self.cache_manager,
                 self.config_manager.get_config_value('TRANSLATE', 'URL_LIBRE_TRANSLATE', str, default='http://localhost:55000/translate'),
                 self.config_manager.get_config_value('TRANSLATE', 'HEADER_LIBRE_TRANSLATE', dict, default='{"Content-Type": "application/json"}')
