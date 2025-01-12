@@ -1,96 +1,136 @@
 version: "3.8"
 
 services:
-  mongo:
-    image: mongo:latest
-    restart: always
+  flask:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile_Backend_arm64_or_CPU
+    container_name: flask-api
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    healthcheck:
-      test: [ "CMD", "mongo", "--eval", "db.runCommand('ping').ok" ]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      - IsDocker=True
     networks:
-      textify:
-        ipv4_address: 172.142.0.2
+      backend:
+        ipv4_address: 172.142.1.4
+      db_flask:
+        ipv4_address: 172.142.5.2
+      frontend:
+        ipv4_address: 172.142.3.4
+    ports:
+      - "5555:5555"
+    restart: unless-stopped
 
   libretranslate:
     container_name: libretranslate
-    image: libretranslate/libretranslate:latest
-    restart: unless-stopped
     environment:
       - LT_API_KEYS=True
       - LT_API_KEYS_DB_PATH=/app/db/api_keys.db
       - LT_REQUIRE_API_KEY_ORIGIN=true
       - LT_UPDATE_MODELS=True
       - LT_LOAD_ONLY=en,fr,de
-      - LT_SSL=False
+      - LT_SSL=True
       - LT_REQ_LIMIT=100
       - LT_BATCH_LIMIT=100
       - LT_CHAR_LIMIT=10000
-      - LT_PORT=55000
+      - LT_PORT=5000
       - LT_DEBUG=True
-    ports:
-      - "55000:55000"
+    healthcheck:
+      test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    image: libretranslate/libretranslate:latest
+    networks:
+      proxy:
+        ipv4_address: 172.142.4.2
+    restart: unless-stopped
     volumes:
       - libretranslate_api_keys:/app/db
       - libretranslate_models:/home/libretranslate/.local:rw
-    healthcheck:
-      test: [ 'CMD-SHELL', './venv/bin/python scripts/healthcheck.py' ]
-    networks:
-      textify:
-        ipv4_address: 172.142.0.3
 
-  flask:
-    container_name: flask-api
-    build:
-      context: ./Backend       # Directory where Dockerfile is located
-      dockerfile: Dockerfile_Backend_arm64_or_CPU
-    restart: unless-stopped
+  mongo:
+    command: >
+      mongod --auth
+             --tlsMode preferTLS
+             --tlsCertificateKeyFile /etc/ssl/mongo.pem
+             --tlsCAFile /etc/ssl/mongo.pem
     environment:
-      - IsDocker=True
-    ports:
-      - "5555:5555"
-    #healthcheck:
-      #test: [ "CMD-SHELL", "curl -f http://localhost:5555/health || exit 1" ]
-      #interval: 30s
-      #timeout: 30s
-      #retries: 3
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh "mongodb://root:example@172.142.5.3:27017/?tls=true&tlsCAFile=/etc/ssl/mongo.pem&tlsCertificateKeyFile=/etc/ssl/mongo.pem" --quiet
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    image: mongo:latest
     networks:
-      textify:
-        ipv4_address: 172.142.0.4
+      db_flask:
+        ipv4_address: 172.142.5.3
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+      - ./Backend/resources/certs:/etc/ssl:ro
+
+  nginx:
+    container_name: nginx-proxy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://172.142.1.6 || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    image: nginx:latest
+    networks:
+      backend:
+        ipv4_address: 172.142.1.6
+      proxy:
+        ipv4_address: 172.142.4.3
+    ports:
+      - "55000:443"
+    restart: always
+    volumes:
+      - ./backend/resources/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/resources/certs:/etc/nginx/certs:ro
 
   vite:
-    container_name: vite
     build:
-      context: ./Frontend       # Directory where Dockerfile is located
+      context: ./Frontend
       dockerfile: Dockerfile
-    restart: unless-stopped
+    container_name: vite
+    networks:
+      frontend:
+        ipv4_address: 172.142.3.5
     ports:
       - "5173:5173"
-    #healthcheck:
-    #  test: [ "CMD-SHELL", "curl -f http://localhost:5173/health || exit 1" ]
-    #  interval: 30s
-    #  timeout: 30s
-    #  retries: 3
-    networks:
-      textify:
-        ipv4_address: 172.142.0.5
+    restart: unless-stopped
 
 volumes:
-  mongo-data:
   libretranslate_api_keys:
   libretranslate_models:
+  mongo-data:
 
 networks:
-  textify:
+  backend:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.142.0.0/24
+        - subnet: 172.142.1.0/24
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.3.0/24
+  proxy:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.4.0/24
+  db_flask:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.5.0/24

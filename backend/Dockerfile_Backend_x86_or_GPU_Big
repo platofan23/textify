@@ -35,4 +35,4 @@ RUN python3.11 -m pip install --no-cache-dir --upgrade pip \
 EXPOSE 5555
 
 # Anwendung starten
-CMD ["hypercorn", "-b", "0.0.0.0:5555", "backend.app.main:app"]
+CMD ["hypercorn", "-b", "0.0.0.0:5555", "--certfile", "./resources/certs/server.crt", "--keyfile", "./resources/certs/server.key", "backend.app.main:app"]
