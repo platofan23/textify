@@ -67,33 +67,33 @@ textify/                                  # Root directory of the project
 │   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text functionality
 │   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech functionality
 │   │   │   ├── route_translation_file.py # Endpoints for file translation
-│   │   │   ├── route_translation_text.py # Endpoints for text translation
+│   │   │   └── route_translation_text.py # Endpoints for text translation
 │   │   ├── services/                     # Service logic and core functionality
 │   │   │   ├── __init__.py               # Initializes the services module
 │   │   │   ├── service_ocr.py            # OCR processing logic
 │   │   │   ├── service_stt.py            # Speech-to-Text processing logic
 │   │   │   ├── service_translation.py    # Translation processing logic
-│   │   │   ├── service_tts.py            # Text-to-Speech processing logic
+│   │   │   └── service_tts.py            # Text-to-Speech processing logic
 │   │   ├── start/                        # Application startup processes
 │   │   │   ├── __init__.py               # Initializes the startup module
 │   │   │   ├── start_configure.py        # Configures application settings
 │   │   │   ├── start_execute_unit_test.py# Executes unit tests during startup
 │   │   │   ├── start_preload.py          # Preloads models like translation models
-│   │   │   ├── start_register_routes.py  # Registers API routes with Flask
+│   │   │   └── start_register_routes.py  # Registers API routes with Flask
 │   │   ├── translators/                  # Translation logic and API integrations
 │   │   │   ├── __init__.py               # Initializes the translators module
 │   │   │   ├── translator_opus.py        # Translation logic using OpusMT
-│   │   │   ├── translator_libre.py       # Translation logic using LibreTranslate API
+│   │   │   └── translator_libre.py       # Translation logic using LibreTranslate API
 │   │   ├── utils/                        # Utility functions and helpers
 │   │   │   ├── __init__.py               # Initializes the utils module
 │   │   │   ├── util_config_manager.py    # Manages and validates configuration settings
 │   │   │   ├── util_cache_manager.py     # Caching for translations and API responses
 │   │   │   ├── util_pdf_processor.py     # Extracts and processes text from PDF files
-│   │   │   ├── util_text_processing.py   # Text preprocessing and chunking utilities
+│   │   │   └── util_text_processing.py   # Text preprocessing and chunking utilities
 │   │   ├── main.py                       # Entry point for the Flask application
 │   ├── config/                           # Configuration files for the backend
 │   │   ├── config.ini                    # Main configuration file
-│   │   ├── docker.ini                    # Docker-specific configuration
+│   │   └── docker.ini                    # Docker-specific configuration
 │   ├── ressources/                       # Static resources and certificates
 │   │   ├── cert/                         # SSL/TLS certificates
 │   │   │   ├── Generate Certs.txt        # Instructions for generating certificates
@@ -106,38 +106,38 @@ textify/                                  # Root directory of the project
 │   │   ├── nginx/                        # NGINX configuration files
 │   │   │   ├── nginx.conf                # Configuration for NGINX in Docker
 │   │   ├── resources.txt                 # Python dependencies for the backend
-│   │   ├── ressources_generate_txt.py    # Script to generate `resources.txt`
+│   │   └── ressources_generate_txt.py    # Script to generate `resources.txt`
 │   ├── tests/                            # Unit and integration tests
 │   │   ├── test_upload_files/            # Folder for uploaded files during tests
 │   │   ├── test_rest_api.py              # Tests for REST API endpoints
-│   │   ├── test_user_management.py       # Tests for user management logic
+│   │   └── test_user_management.py       # Tests for user management logic
 │   ├── __ini__.py                        # Initializes the backend module
 │   ├── Dockerfile_Backend_arm_or_CPU     # Dockerfile for backend ARM64 or CPU only 
 │   ├── Dockerfile_Backend_x86_or_GPU_Big # Dockerfile for backend x86 or GPU big Version
-│   ├── Dockerfile_Backend_x86_or_GPU_Smal# Dockerfile for backend x86 or GPU small Version
+│   └── Dockerfile_Backend_x86_or_GPU_Smal# Dockerfile for backend x86 or GPU small Version
 │
 ├── frontend/                             # ReactJS frontend application
 │   ├── public/                           # Publicly accessible files
 │   │   ├── vite.svg                      # Static SVG asset
-│   │   ├── index.html                    # Main HTML file
+│   │   └── index.html                    # Main HTML file
 │   ├── ressources/                       # Static resources and certificates
 │   │   ├── cert/                         # SSL/TLS certificates
 │   │   │   ├── server.crt                # Certificate file for HTTPS (Vitein Docker)
-│   │   │   ├── server.key                # Key file for HTTPS (Vite in Docker)
+│   │   │   └── server.key                # Key file for HTTPS (Vite in Docker)
 │   ├── src/                              # Source files for the frontend
 │   │   ├── assets/                       # Static assets like images and fonts
 │   │   │   ├── asset_menu_background.webp# Background image for the menu
-│   │   │   ├── asset_react_logo.svg      # React logo asset
+│   │   │   └── asset_react_logo.svg      # React logo asset
 │   │   ├── components/                   # Reusable React components
 │   │   │   ├── component_home.tsx        # Component for the home page
 │   │   │   ├── Editor.tsx                # Editor component for text editing
 │   │   │   ├── Editor_style.css          # CSS styles for the editor
-│   │   │   ├── translate.tsx             # Component for translations
+│   │   │   └── translate.tsx             # Component for translations
 │   │   ├── menu/                         # Components for menus
 │   │   │   ├── menu_base.tsx             # Base menu component
-│   │   │   ├── menu_sign_in.tsx          # Sign-in menu component
+│   │   │   └── menu_sign_in.tsx          # Sign-in menu component
 │   │   ├── main.tsx                      # Main entry point for the frontend
-│   │   ├── vite-env.d.ts                 # TypeScript type definitions for Vite
+│   │   └── vite-env.d.ts                 # TypeScript type definitions for Vite
 │   ├── node_modules/                     # Installed Node.js dependencies
 │   ├── Dockerfile                        # Dockerfile for frontend
 │   ├── package.json                      # JavaScript dependencies and scripts
@@ -146,7 +146,7 @@ textify/                                  # Root directory of the project
 │   ├── tsconfig.json                     # Global TypeScript configuration
 │   ├── tsconfig.app.json                 # TypeScript configuration for the app
 │   ├── tsconfig.node.json                # TypeScript configuration for Node.js
-│   ├── vite.config.ts                    # Vite build and development configuration
+│   └── vite.config.ts                    # Vite build and development configuration
 │
 ├── uploads/                              # Directory for uploaded files
 ├── .gitignore                            # Files and directories to be ignored by Git
