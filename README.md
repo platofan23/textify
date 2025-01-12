@@ -57,76 +57,101 @@ Write about setting up the working environment for your project.
 ###  :file_folder: File Structure
 ```
 .
-textify/                                  # Directory for the project
-├── backend/                              # Flask Backend
-│   ├── app/                              # Directory App
-│   │   ├── routes/                       # Directory for the Endpoints
-│   │   │   ├── __init__.py               # Init File for Importing whole directory
-│   │   │   ├── route_file_manager.py     # Endpoints for File-Manager
-│   │   │   ├── route_ocr.py              # Endpoints for OCR
-│   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text
-│   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech
-│   │   │   ├── route_translation_file.py # Endpoints for Translation File
-│   │   │   ├── route_translation_file.py # Endpoints for Translation Text
-│   │   ├── services/                     # Directory for the services
-│   │   │   ├── __init__.py               # Init File for Importing whole directory
-│   │   │   ├── service_ocr.py            # Logic for OCR
-│   │   │   ├── service_stt_.py           # Logic for Speech-to-Text
-│   │   │   ├── service_translation.py    # Logic for Translation
-│   │   │   ├── service_tts.py            # Logic for Text-to-Speech
-│   │   ├── translators/                  # Directory for translators
-│   │   │   ├── __init__.py               # Initializes translators package
-│   │   │   ├── translator_opus.py        # Implements OpusMT translation logic
-│   │   │   └── translator_libre.py       # Implements LibreTranslate API interaction
-│   │   ├── utils/                        # Directory for utils
-│   │   │   ├── __init__.py               # Initializes utils package
-│   │   │   ├── util_config_manager.py    # Manages application configurations and validation
-│   │   │   ├── util_cache_manager.py     # Handles caching using LRU for translations
-│   │   │   ├── util_pdf_processor.py     # Extracts text from PDF files using PyMuPDF
-│   │   │   └── util_text_processing.py   # Utility functions for preprocessing and chunking text
-│   │   ├── main.py                       # Entry point for the Flask app
-│   ├── config/                           # Config Directory for the backend
-│   │   ├── config.ini                    # Configs for the backend
-│   ├── ressources/                       # Resource files for the backend
-│   │   ├── resources.txt                 # File for easy install with pip
-│   │   ├── ressources_generate_txt.py    # Script to generate resources.txt
-│   ├── tests/                            # Directory Tests
-│   │   ├── test_upload_files/            # Test Folder for uploades files
-│   │   ├── test_rest_api.py.py           # Tests for the endpoints
-│   │   ├── test_user_management.py       # Tests for the logic
+textify/                                  # Root directory of the project
+├── backend/                              # Backend folder for the Flask application
+│   ├── app/                              # Core backend application
+│   │   ├── routes/                       # API endpoint definitions
+│   │   │   ├── __init__.py               # Initializes the routes module
+│   │   │   ├── route_file_manager.py     # Endpoints for file management
+│   │   │   ├── route_ocr.py              # Endpoints for Optical Character Recognition (OCR)
+│   │   │   ├── route_stt.py              # Endpoints for Speech-to-Text functionality
+│   │   │   ├── route_tts.py              # Endpoints for Text-to-Speech functionality
+│   │   │   ├── route_translation_file.py # Endpoints for file translation
+│   │   │   ├── route_translation_text.py # Endpoints for text translation
+│   │   ├── services/                     # Service logic and core functionality
+│   │   │   ├── __init__.py               # Initializes the services module
+│   │   │   ├── service_ocr.py            # OCR processing logic
+│   │   │   ├── service_stt.py            # Speech-to-Text processing logic
+│   │   │   ├── service_translation.py    # Translation processing logic
+│   │   │   ├── service_tts.py            # Text-to-Speech processing logic
+│   │   ├── start/                        # Application startup processes
+│   │   │   ├── __init__.py               # Initializes the startup module
+│   │   │   ├── start_configure.py        # Configures application settings
+│   │   │   ├── start_execute_unit_test.py# Executes unit tests during startup
+│   │   │   ├── start_preload.py          # Preloads models like translation models
+│   │   │   ├── start_register_routes.py  # Registers API routes with Flask
+│   │   ├── translators/                  # Translation logic and API integrations
+│   │   │   ├── __init__.py               # Initializes the translators module
+│   │   │   ├── translator_opus.py        # Translation logic using OpusMT
+│   │   │   ├── translator_libre.py       # Translation logic using LibreTranslate API
+│   │   ├── utils/                        # Utility functions and helpers
+│   │   │   ├── __init__.py               # Initializes the utils module
+│   │   │   ├── util_config_manager.py    # Manages and validates configuration settings
+│   │   │   ├── util_cache_manager.py     # Caching for translations and API responses
+│   │   │   ├── util_pdf_processor.py     # Extracts and processes text from PDF files
+│   │   │   ├── util_text_processing.py   # Text preprocessing and chunking utilities
+│   │   ├── main.py                       # Entry point for the Flask application
+│   ├── config/                           # Configuration files for the backend
+│   │   ├── config.ini                    # Main configuration file
+│   │   ├── docker.ini                    # Docker-specific configuration
+│   ├── ressources/                       # Static resources and certificates
+│   │   ├── cert/                         # SSL/TLS certificates
+│   │   │   ├── Generate Certs.txt        # Instructions for generating certificates
+│   │   │   ├── mongo.pem                 # Combined certificate and key for MongoDB
+│   │   │   ├── mongo-cert.pem            # Certificate file for MongoDB
+│   │   │   ├── mongo-key.pem             # Key file for MongoDB
+│   │   │   ├── san.conf                  # OpenSSL config for generating SAN certificates
+│   │   │   ├── server.crt                # Certificate file for HTTPS (Flask in Docker)
+│   │   │   ├── server.key                # Key file for HTTPS (Flask in Docker)
+│   │   ├── nginx/                        # NGINX configuration files
+│   │   │   ├── nginx.conf                # Configuration for NGINX in Docker
+│   │   ├── resources.txt                 # Python dependencies for the backend
+│   │   ├── ressources_generate_txt.py    # Script to generate `resources.txt`
+│   ├── tests/                            # Unit and integration tests
+│   │   ├── test_upload_files/            # Folder for uploaded files during tests
+│   │   ├── test_rest_api.py              # Tests for REST API endpoints
+│   │   ├── test_user_management.py       # Tests for user management logic
+│   ├── __ini__.py                        # Initializes the backend module
+│   ├── Dockerfile_Backend_arm_or_CPU     # Dockerfile for backend ARM64 or CPU only 
+│   ├── Dockerfile_Backend_x86_or_GPU_Big # Dockerfile for backend x86 or GPU big Version
+│   ├── Dockerfile_Backend_x86_or_GPU_Smal# Dockerfile for backend x86 or GPU small Version
 │
-├── frontend/                             # React Frontend
-│   ├── public/                           # Static files
+├── frontend/                             # ReactJS frontend application
+│   ├── public/                           # Publicly accessible files
 │   │   ├── vite.svg                      # Static SVG asset
-│   │   ├── index.html                    # HTML entry point
-│   ├── src/
-│   │   ├── assets/                       # Resource files for the frontend
-│   │   │   ├── asset_menu_background.webp# Menu background image
-│   │   │   ├── asset_react_logo.svg      # React logo
-│   │   ├── components/                   # Reusable UI components
-│   │   │   ├── component_home.tsx        # Home component
-│   │   │   ├── Editor.tsx                # Editor component
-│   │   │   ├── Editor_style.css          # CSS for the editor
-│   │   │   ├── translate.tsx             # Translation component
-│   │   ├── menu/                         # Menu components
-│   │   │   ├── menu_base.tsx             # Base menu
-│   │   │   ├── menu_sign_in.tsx          # Sign-in menu
-│   │   ├── main.tsx                      # Main application entry
-│   │   ├── vite-env.d.ts                 # Vite environment types
-│   ├── node_modules/                     # Node dependencies
-│   ├── package.json                      # JavaScript dependencies
+│   │   ├── index.html                    # Main HTML file
+│   ├── ressources/                       # Static resources and certificates
+│   │   ├── cert/                         # SSL/TLS certificates
+│   │   │   ├── server.crt                # Certificate file for HTTPS (Vitein Docker)
+│   │   │   ├── server.key                # Key file for HTTPS (Vite in Docker)
+│   ├── src/                              # Source files for the frontend
+│   │   ├── assets/                       # Static assets like images and fonts
+│   │   │   ├── asset_menu_background.webp# Background image for the menu
+│   │   │   ├── asset_react_logo.svg      # React logo asset
+│   │   ├── components/                   # Reusable React components
+│   │   │   ├── component_home.tsx        # Component for the home page
+│   │   │   ├── Editor.tsx                # Editor component for text editing
+│   │   │   ├── Editor_style.css          # CSS styles for the editor
+│   │   │   ├── translate.tsx             # Component for translations
+│   │   ├── menu/                         # Components for menus
+│   │   │   ├── menu_base.tsx             # Base menu component
+│   │   │   ├── menu_sign_in.tsx          # Sign-in menu component
+│   │   ├── main.tsx                      # Main entry point for the frontend
+│   │   ├── vite-env.d.ts                 # TypeScript type definitions for Vite
+│   ├── node_modules/                     # Installed Node.js dependencies
+│   ├── Dockerfile                        # Dockerfile for frontend
+│   ├── package.json                      # JavaScript dependencies and scripts
 │   ├── package-lock.json                 # Lock file for npm dependencies
-│   ├── eslint.config.js                  # ESLint configuration
-│   ├── tsconfig.json                     # TypeScript configuration
-│   ├── tsconfig.app.json                 # App-specific TypeScript config
-│   ├── tsconfig.node.json                # Node-specific TypeScript config
-│   ├── vite.config.ts                    # Vite configuration
+│   ├── eslint.config.js                  # ESLint configuration for code linting
+│   ├── tsconfig.json                     # Global TypeScript configuration
+│   ├── tsconfig.app.json                 # TypeScript configuration for the app
+│   ├── tsconfig.node.json                # TypeScript configuration for Node.js
+│   ├── vite.config.ts                    # Vite build and development configuration
 │
-├── uploads/                              # Upload folder
-├── .gitignore                            # Git ignore files
-├── README.md                             # Project description
-├── docker-compose.yml                    # Optional: Docker configuration
-└── Dockerfile                            # Optional: Dockerfile for backend
+├── uploads/                              # Directory for uploaded files
+├── .gitignore                            # Files and directories to be ignored by Git
+├── README.md                             # Project description and documentation
+└── docker-compose.yml                    # Docker Compose configuration
 ```
 
 | No | File Name | Details 
