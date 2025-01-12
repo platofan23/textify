@@ -11,6 +11,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini')
 if os.getenv("IsDocker"):
     config.read('./config/docker.ini')
+
 MAX_TOTAL_SIZE = int(config['REST']['MAX_TOTAL_SIZE_GB']) * 1024 * 1024 * 1024
 ALLOWED_EXTENSIONS = set(config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','))
 UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']

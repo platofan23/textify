@@ -29,7 +29,10 @@ class OpusMTTranslator:
         else:
             model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
             print(f"🔄 Loading model and tokenizer for '{source_lang}-{target_lang}'...")
-            self.tokenizer = MarianTokenizer.from_pretrained(model_name)
+            try:
+                self.tokenizer = MarianTokenizer.from_pretrained(model_name)
+            except Exception as e:
+                raise ValueError(f"Unsupported language pair: {source_lang}-{target_lang}")
             self.model = MarianMTModel.from_pretrained(model_name)
             cache_manager.set(model_key, self.model)
             cache_manager.set(tokenizer_key, self.tokenizer)

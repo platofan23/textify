@@ -15,7 +15,7 @@ async function streamText(
             continue
         }
 
-        await fetch("https://localhost:5555/translate/text", {
+        await fetch("http://localhost:5555/translate/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -32,7 +32,7 @@ async function streamText(
         })
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
+                    throw new Error(`HTTP error! status: ${response.text}`)
                 }
                 return response.json()
             })
@@ -43,10 +43,6 @@ async function streamText(
                 }
 
                 appendText(data.translation)
-            })
-            .catch((error) => {
-                console.error("Error:", error)
-                appendText(undefined)
             })
     }
 }
