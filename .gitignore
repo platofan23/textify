@@ -187,3 +187,5 @@ dist-ssr
 *.sw?
 *.sw?
 .run/
+backend/cache.pkl
+backend/config/config.ini
