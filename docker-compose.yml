@@ -6,6 +6,13 @@ services:
       context: ./Backend
       dockerfile: Dockerfile_Backend_x86_or_GPU_Big
     container_name: flask-api
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
     environment:
       - IsDocker=True
     networks:
