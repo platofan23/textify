@@ -47,8 +47,8 @@
       <td>Implement Export to TXT</td>
       <td>Develop functionality to export translated text to plain text (TXT) format.</td>
       <td>Users can export translations as TXT files.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
