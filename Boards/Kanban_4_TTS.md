@@ -23,16 +23,16 @@
       <td>Research Available TTS Models</td>
       <td>Evaluate TTS models based on voice naturalness, speed, and language support.</td>
       <td>A comparison report highlighting the best models for implementation is created.</td>
-      <td>In progress</td>
-      <td></td>
+      <td>Done</td>
+      <td>JK</td>
       <td>2</td>
     </tr>
     <tr>
       <td>Select Optimal TTS Model</td>
       <td>Choose the most suitable TTS model for Textify.</td>
       <td>Documentation of the selected model and justification for its use.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>Done</td>
+      <td>JK</td>
       <td>2</td>
     </tr>
     <tr>
