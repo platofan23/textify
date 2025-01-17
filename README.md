@@ -14,7 +14,7 @@ This branch is dedicated to maintaining all project-related documentation for th
 ## Structure
 The documentation is organized into the following directories:
 - `ARD's/` - Architecture Decision Records
-- - `Documentation/` - Code and Technical Documentation 
+- `Documentation/` - Code and Technical Documentation 
 - `First_Overview/` - Initial Project Overviews
 - `Lecture/` - Lecture Materials and Presentations
 - `OPM/` - Operational Process Manuals
