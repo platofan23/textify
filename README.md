@@ -35,7 +35,7 @@ Each board corresponds to different phases or components of the project, allowin
     ```
 
 2. **Select a Board:**
-    - Each board is named `Board 1` through `Board 7`. Choose the appropriate board based on the project phase or component you are working on.
+    - Each board is named `Board 1` through `Board 8`. Choose the appropriate board based on the project phase or component you are working on.
 
 3. **Update Task Status:**
     - **To Do**: Add new tasks that need to be addressed.
