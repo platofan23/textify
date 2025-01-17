@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react"
 import Quill from "quill"
-import "quill/dist/quill.snow.css" // Import Quill styles
+import "quill/dist/quill.bubble.css" // Import Quill styles
 import { Sick } from "@mui/icons-material"
 
 // Editor is an uncontrolled React component
@@ -48,7 +48,7 @@ const Editor = forwardRef(({ readOnly, defaultValue, onTextChange, onSelectionCh
         const toolbarOptions = [[{ font: [] }], [{ size: fontSizeArr }], ["bold", "italic", "underline", "strike"]]
 
         const quill = new Quill(editorContainer, {
-            theme: "snow",
+            theme: "bubble",
             modules: {
                 toolbar: toolbarOptions,
             },
@@ -62,6 +62,7 @@ const Editor = forwardRef(({ readOnly, defaultValue, onTextChange, onSelectionCh
 
         quill.on(Quill.events.TEXT_CHANGE, (...args) => {
             onTextChangeRef.current?.(...args)
+            console.log(quill.getContents())
         })
 
         quill.on(Quill.events.SELECTION_CHANGE, (...args) => {

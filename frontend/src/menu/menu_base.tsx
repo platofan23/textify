@@ -12,6 +12,8 @@ import ListItemButton from "@mui/material/ListItemButton"
 import SignIn from "./menu_sign_In"
 import { User } from "../main"
 import { useNavigate, useLocation } from "react-router-dom"
+import { Accordion, AccordionSummary } from "@mui/material"
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
 
 const drawerWidth = 240
 
@@ -27,6 +29,24 @@ export default function Menu({
     const navigate = useNavigate()
     const location = useLocation()
     const path = location.pathname.slice(1)
+    const NEED_LOGIN = ["Library"]
+    let show = "none"
+
+    // Redirect to home page on first load
+    React.useEffect(() => {
+        if (path === "") navigate("Home")
+    }, [])
+
+    // Redirect to login page if user is not logged in
+    React.useEffect(() => {
+        if (NEED_LOGIN.includes(path) && user == null) {
+            navigate("Home")
+        }
+    }, [user])
+
+    if (user != null) {
+        show = "1"
+    }
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -34,7 +54,7 @@ export default function Menu({
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
                     <Typography variant="h6" noWrap component="div">
-                        Clipped drawer
+                        Textify
                     </Typography>
                     <SignIn setUser={setUser} user={user} />
                 </Toolbar>
@@ -64,25 +84,63 @@ export default function Menu({
                             </ListItemButton>
                         </ListItem>
                         <Divider />
+                        {user == null && (
+                            <>
+                                <ListItem>
+                                    <ListItemButton
+                                        sx={{
+                                            backgroundColor: "orange",
+                                            color: "white",
+
+                                            ":hover": {
+                                                backgroundColor: "orange",
+                                            },
+                                        }}
+                                    >
+                                        Login for more
+                                    </ListItemButton>
+                                </ListItem>
+                                <Divider />
+                            </>
+                        )}
+
                         <ListItem>
-                            <ListItemButton
-                                selected={path === "OCR"}
-                                onClick={() => {
-                                    navigate("OCR")
-                                }}
-                            >
-                                OCR
-                            </ListItemButton>
+                            <Accordion sx={{ width: "100%", display: show }}>
+                                <AccordionSummary
+                                    expandIcon={<ArrowDropDownIcon />}
+                                    aria-controls="panel1-content"
+                                    id="panel1-header"
+                                >
+                                    <Typography component="span">Book Library</Typography>
+                                </AccordionSummary>
+                                <ListItemButton
+                                    selected={path === "Library"}
+                                    onClick={() => {
+                                        navigate("Library")
+                                    }}
+                                >
+                                    Library
+                                </ListItemButton>
+                            </Accordion>
                         </ListItem>
                         <ListItem>
-                            <ListItemButton
-                                selected={path === "Translate"}
-                                onClick={() => {
-                                    navigate("Translate")
-                                }}
-                            >
-                                Translate
-                            </ListItemButton>
+                            <Accordion sx={{ width: "100%" }}>
+                                <AccordionSummary
+                                    expandIcon={<ArrowDropDownIcon />}
+                                    aria-controls="panel2-content"
+                                    id="panel2-header"
+                                >
+                                    <Typography component="span">Translate</Typography>
+                                </AccordionSummary>
+                                <ListItemButton
+                                    selected={path === "Translate"}
+                                    onClick={() => {
+                                        navigate("Translate")
+                                    }}
+                                >
+                                    Translate
+                                </ListItemButton>
+                            </Accordion>
                         </ListItem>
                     </List>
 

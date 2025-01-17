@@ -53,7 +53,7 @@ function SignIn({ setUser, user }: SignInProps) {
                     setTimeout(() => {
                         setLoginError(false)
                     }, 5000)
-                    throw new Error("Login failed")
+                    throw new Error("Login failed" + response)
                 }
             })
             .then((data) => {
