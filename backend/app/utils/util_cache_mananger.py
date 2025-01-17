@@ -2,6 +2,7 @@ import os
 import pickle
 
 from cachetools import LRUCache
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 class CacheManager:
     """
@@ -48,6 +49,7 @@ class CacheManager:
 
         if clear_cache_on_start and os.path.exists(self.cache_file):
             os.remove(self.cache_file)
+            Logger.info(f"Cache file {self.cache_file} cleared on start.")
         else:
             self._load_cache()
 
@@ -61,7 +63,12 @@ class CacheManager:
         Returns:
             Any: The cached value, or None if the key is not found.
         """
-        return self.cache.get(key)
+        value = self.cache.get(key)
+        if value:
+            Logger.debug(f"Cache hit for key: {key}")
+        else:
+            Logger.debug(f"Cache miss for key: {key}")
+        return value
 
     def set(self, key, value):
         """
@@ -73,13 +80,14 @@ class CacheManager:
         """
         self.cache[key] = value
         self._save_cache()
+        Logger.info(f"Cache set for key: {key}")
 
     def clear_cache(self):
         """
         Clears all entries from the in-memory cache.
         """
         self.cache.clear()
-        print("[CACHE CLEARED] In-memory cache cleared.")
+        Logger.info("[CACHE CLEARED] In-memory cache cleared.")
 
     def _load_cache(self):
         """
@@ -92,9 +100,9 @@ class CacheManager:
             try:
                 with open(self.cache_file, "rb") as f:
                     self.cache = pickle.load(f)
-                print(f"[CACHE LOADED] Cache loaded from {self.cache_file}")
+                Logger.info(f"[CACHE LOADED] Cache loaded from {self.cache_file}")
             except Exception as e:
-                print(f"[CACHE ERROR] Failed to load cache: {e}")
+                Logger.error(f"[CACHE ERROR] Failed to load cache: {e}")
 
     def _save_cache(self):
         """
@@ -106,6 +114,6 @@ class CacheManager:
         try:
             with open(self.cache_file, "wb") as f:
                 pickle.dump(self.cache, f)
-            print(f"[CACHE SAVED] Cache saved to {self.cache_file}")
+            Logger.info(f"[CACHE SAVED] Cache saved to {self.cache_file}")
         except Exception as e:
-            print(f"[CACHE ERROR] Failed to save cache: {e}")
+            Logger.error(f"[CACHE ERROR] Failed to save cache: {e}")

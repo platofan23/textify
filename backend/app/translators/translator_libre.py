@@ -1,4 +1,5 @@
 import requests
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 class LibreTranslateTranslator:
     """
@@ -33,6 +34,7 @@ class LibreTranslateTranslator:
         self.cache_manager = cache_manager
         self.url = url
         self.headers = headers
+        Logger.info(f"Initialized LibreTranslateTranslator for {source_lang} -> {target_lang}.")
 
     def translate(self, text):
         """
@@ -53,6 +55,7 @@ class LibreTranslateTranslator:
         # Generate cache key based on text
         cache_key = f"Libre-{text}"
         if self.cache_manager.get(cache_key):
+            Logger.info(f"Cache hit for translation: {cache_key}")
             return self.cache_manager.get(cache_key)
 
         payload = {
@@ -63,13 +66,19 @@ class LibreTranslateTranslator:
             "api_key": self.api_key
         }
 
-        # Make a POST request to LibreTranslate
-        response = requests.post(self.url, headers=self.headers, json=payload)
+        try:
+            response = requests.post(self.url, headers=self.headers, json=payload)
 
-        if response.status_code == 200:
-            result = response.json().get("translatedText", text)
-            self.cache_manager.set(cache_key, result)  # Cache the translation
-            return [result]
+            if response.status_code == 200:
+                result = response.json().get("translatedText", text)
+                self.cache_manager.set(cache_key, result)  # Cache the translation
+                Logger.info(f"Translation successful for text: {text[:50]}...")
+                return [result]
+
+            Logger.error(f"Translation failed with status code {response.status_code}: {response.text}")
+        except Exception as e:
+            Logger.error(f"Error during translation request: {str(e)}")
 
         # Return original text if translation fails
+        Logger.warning(f"Returning original text due to translation failure: {text[:50]}...")
         return [text]

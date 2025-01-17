@@ -1,6 +1,6 @@
 import torch
-
 from transformers import MarianMTModel, MarianTokenizer
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 def preload_models(config_manager, cache_manager):
     """
@@ -10,7 +10,7 @@ def preload_models(config_manager, cache_manager):
         config_manager (ConfigManager): Configuration manager for loading settings.
         cache_manager (CacheManager): Cache manager for storing preloaded models and tokenizers.
     """
-    print("🔄 Preloading OpusMT models...")
+    Logger.info("🔄 Preloading OpusMT models...")
     models_to_preload = config_manager.get_config_value('TRANSLATE', 'OPUS_MODELS_TO_PRELOAD', str, default="").split(',')
 
     device = config_manager.get_torch_device()
@@ -24,6 +24,6 @@ def preload_models(config_manager, cache_manager):
 
             cache_manager.set(f"model-{model_pair.strip()}", model)
             cache_manager.set(f"tokenizer-{model_pair.strip()}", tokenizer)
-            print(f"✅ {model_name} successfully preloaded and cached.")
+            Logger.info(f"✅ {model_name} successfully preloaded and cached.")
         except Exception as e:
-            print(f"❌ Failed to preload model {model_name}: {str(e)}")
+            Logger.error(f"❌ Failed to preload model {model_name}: {str(e)}")

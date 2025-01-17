@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 
 from backend.app.services import TranslationService
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 class TranslateText(Resource):
     """
@@ -22,6 +23,7 @@ class TranslateText(Resource):
         """
         self.translation_service = TranslationService(config_manager, cache_manager)
         self.config_manager = config_manager
+        Logger.info("TranslateText instance initialized.")
 
     def post(self):
         """
@@ -33,10 +35,13 @@ class TranslateText(Resource):
         Returns:
             tuple: JSON response with translated text or error message, along with the HTTP status code.
         """
+        Logger.info("POST request received for TranslateText.")
+
         json_data = request.get_json()
 
         # Validate if the incoming request contains the expected 'data' object
         if not json_data or 'data' not in json_data:
+            Logger.warning("Missing 'data' object in request.")
             return {"error": "Missing data object"}, 400
 
         # Extract translation parameters from request data
@@ -49,11 +54,14 @@ class TranslateText(Resource):
 
         # Validate required parameters
         if not model or not sourcelanguage or not targetlanguage or not text:
+            Logger.warning("Missing required parameters in the request.")
             return {"error": "Missing required parameters"}, 400
 
         # Attempt to perform text translation and handle potential errors
         try:
+            Logger.info(f"Starting text translation with model={model}, sourcelanguage={sourcelanguage}, targetlanguage={targetlanguage}.")
             result = self.translation_service.translate_and_chunk_text(model, sourcelanguage, targetlanguage, text)
+            Logger.info("Text translation completed successfully.")
             response = {"translation": result}
 
             # Include optional upload_id if provided
@@ -62,8 +70,10 @@ class TranslateText(Resource):
 
             return response, 200
         except ValueError as e:
-            # Return a 422 error for invalid input data
+            # Log the error and return a 422 error for invalid input data
+            Logger.error(f"Invalid input: {str(e)}")
             return {"error": f"Invalid input: {str(e)}"}, 422
         except Exception as e:
-            # Handle unexpected errors and return 500 response
+            # Handle unexpected errors and log them
+            Logger.error(f"Internal Server Error: {str(e)}")
             return {"error": f"Internal Server Error: {str(e)}"}, 500

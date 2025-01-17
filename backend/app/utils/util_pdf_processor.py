@@ -1,6 +1,6 @@
 import fitz
-
 from typing import List
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 class PDFProcessor:
     """
@@ -30,14 +30,17 @@ class PDFProcessor:
                       extracted from a single PDF page.
 
         Raises:
-            fitz.FileDataError: If the file is not a valid PDF.
-            fitz.FileNotFoundError: If the PDF file cannot be opened.
-            RuntimeError: If text extraction fails for an unknown reason.
+            RuntimeError: If text extraction fails for any reason.
         """
         try:
+            Logger.info("Starting text extraction from PDF.")
             with fitz.open("pdf", file_content) as pdf_document:
-                return [page.get_text() for page in pdf_document]
+                extracted_text = [page.get_text() for page in pdf_document]
+                Logger.info(f"Successfully extracted text from {len(extracted_text)} pages.")
+                return extracted_text
         except fitz.FileDataError as e:
+            Logger.error(f"Failed to process PDF due to invalid data: {str(e)}")
             raise RuntimeError(f"Failed to process PDF: {str(e)}")
         except Exception as e:
+            Logger.error(f"Unexpected error during PDF extraction: {str(e)}")
             raise RuntimeError(f"Unexpected error during PDF extraction: {str(e)}")

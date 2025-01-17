@@ -1,4 +1,5 @@
 import pytest
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 def run_tests():
     """
@@ -6,7 +7,8 @@ def run_tests():
 
     Ensures all tests are run and results are fully displayed, even if some tests fail.
     """
-    print("Running unit tests before application start...")
+    Logger.info("Running unit tests before application start...")
+
     # Run pytest without stopping on failures
     exit_code = pytest.main([
         "--tb=short",  # Short traceback for concise output
@@ -16,6 +18,6 @@ def run_tests():
     ])
 
     if exit_code != 0:
-        print(f"❌ Some tests failed (exit code: {exit_code}). Review the results above.")
+        Logger.error(f"❌ Some tests failed (exit code: {exit_code}). Review the results above.")
     else:
-        print("✅ All tests passed. Starting application...")
+        Logger.info("✅ All tests passed. Starting application...")

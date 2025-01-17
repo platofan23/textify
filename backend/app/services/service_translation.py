@@ -3,6 +3,7 @@ import hashlib
 
 from backend.app.translators import OpusMTTranslator, LibreTranslateTranslator
 from backend.app.utils import TranslationModel, PDFProcessor, preprocess_text, split_text_into_chunks, join_and_split_translations
+from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 class TranslationService:
     """
@@ -12,6 +13,7 @@ class TranslationService:
     supports caching to avoid redundant translations, and processes PDF files page by page.
     """
     _instance = None  # Singleton instance
+
     def __init__(self, config_manager, cache_manager):
         """
         Initializes TranslationService with instances of ConfigManager and CacheManager.
@@ -22,6 +24,7 @@ class TranslationService:
         """
         self.config_manager = config_manager
         self.cache_manager = cache_manager
+        Logger.info("TranslationService initialized.")
 
     def translate_file(self, file, model, sourcelanguage, targetlanguage):
         """
@@ -42,37 +45,35 @@ class TranslationService:
         try:
             model_enum = TranslationModel(model)
         except ValueError:
+            Logger.error(f"Unsupported translation model: {model}")
             raise ValueError(f"Unsupported translation model: {model}")
 
-        # Generate cache key based on file hash and translation parameters
         file_hash = hashlib.md5(file.encode()).hexdigest()
         cache_key = f"{model_enum.value}-{sourcelanguage}-{targetlanguage}-{file_hash}"
 
-        # Check if file translation exists in cache
         cached_translation = self.cache_manager.get(cache_key)
         if cached_translation:
-            print(f"[CACHE HIT] Returning cached PDF: {cache_key}")
+            Logger.info(f"[CACHE HIT] Returning cached PDF: {cache_key}")
             return cached_translation
         else:
-            print(f"[CACHE MISS] No cache entry for: {cache_key}")
+            Logger.info(f"[CACHE MISS] No cache entry for: {cache_key}")
 
-        # Decode PDF and extract text
         file_content = base64.b64decode(file)
         extracted_text = PDFProcessor.extract_text_from_pdf(file_content)
 
         if not extracted_text:
+            Logger.warning("Failed to extract text from PDF.")
             return {"error": "Failed to extract text from PDF."}, 400
 
         translated_pages = []
 
-        # Translate each extracted page
         for i, page in enumerate(extracted_text):
+            Logger.debug(f"Translating page {i + 1}.")
             translated_text = self.translate_and_chunk_text(model, sourcelanguage, targetlanguage, page)
             translated_pages.append(translated_text)
 
-        # Store translated PDF in cache
         self.cache_manager.set(cache_key, translated_pages)
-        print(f"[CACHE SET] Storing PDF in cache: {cache_key}")
+        Logger.info(f"[CACHE SET] Storing PDF in cache: {cache_key}")
 
         return translated_pages
 
@@ -95,37 +96,34 @@ class TranslationService:
         try:
             model_enum = TranslationModel(model)
         except ValueError:
+            Logger.error(f"Unsupported translation model: {model}")
             raise ValueError(f"Unsupported translation model: {model}")
 
         text = preprocess_text(text)
 
-        # Generate cache key for text translation
         text_hash = hashlib.md5(text.encode()).hexdigest()
         cache_key = f"{model_enum.value}-{sourcelanguage}-{targetlanguage}-{text_hash}"
 
-        # Check if text translation exists in cache
         cached_translation = self.cache_manager.get(cache_key)
         if cached_translation:
-            print(f"[CACHE HIT] Returning cached text: {cache_key}")
+            Logger.info(f"[CACHE HIT] Returning cached text: {cache_key}")
             return cached_translation
         else:
-            print(f"[CACHE MISS] No cache entry for: {cache_key}")
+            Logger.info(f"[CACHE MISS] No cache entry for: {cache_key}")
 
-        # Load tokenizer and split text into chunks for translation
         tokenizer = OpusMTTranslator.load_tokenizer(sourcelanguage, targetlanguage)
         chunks = split_text_into_chunks(tokenizer, text, self.config_manager.get_config_value('TEXT', 'MAX_TOKEN', int))
 
         translated_chunks = []
         for chunk in chunks:
+            Logger.debug(f"Translating chunk: {chunk[:50]}...")
             translated_chunk = self.translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
             translated_chunks.append(translated_chunk)
 
-        # Combine translated chunks into final result
         translated_text = join_and_split_translations(translated_chunks)
 
-        # Store translated text in cache
         self.cache_manager.set(cache_key, translated_text)
-        print(f"[CACHE SET] Storing text translation in cache: {cache_key}")
+        Logger.info(f"[CACHE SET] Storing text translation in cache: {cache_key}")
 
         return translated_text
 
@@ -162,6 +160,7 @@ class TranslationService:
                 self.config_manager.get_config_value('TRANSLATE', 'HEADER_LIBRE_TRANSLATE', dict, default='{"Content-Type": "application/json"}')
             )
         else:
+            Logger.error(f"Unsupported translation model: {model_enum.value}")
             raise ValueError(f"Unsupported translation model: {model_enum.value}")
 
         return translator.translate(text)
