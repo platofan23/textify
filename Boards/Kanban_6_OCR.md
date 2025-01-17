@@ -23,7 +23,7 @@
       <td>Research OCR Models</td>
       <td>Compare OCR models based on text accuracy, font support, and processing speed.</td>
       <td>A report of recommended models is completed.</td>
-      <td>In progress</td>
+      <td>Done</td>
       <td>AS</td>
       <td>5</td>
     </tr>
@@ -31,16 +31,16 @@
       <td>Select Optimal OCR Model</td>
       <td>Choose the OCR model with the best performance for various image formats.</td>
       <td>The selected model and rationale are documented.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>Done</td>
+      <td>AS</td>
       <td>5</td>
     </tr>
     <tr>
       <td>Integrate OCR API</td>
       <td>Connect the backend to the chosen OCR API for extracting text from images.</td>
       <td>Uploaded images are successfully processed.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>AS,CJ</td>
       <td>5</td>
     </tr>
     <tr>
@@ -55,7 +55,7 @@
       <td>Create Image Upload Feature</td>
       <td>Allow users to upload images for text recognition.</td>
       <td>Images in PNG, JPEG, and other common formats are accepted.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td></td>
       <td>5</td>
     </tr>
