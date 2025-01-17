@@ -47,23 +47,23 @@
       <td>Integrate Translation API</td>
       <td>Implement the connection to the translation API.</td>
       <td>API responses are displayed correctly in the frontend.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
       <td>Develop text translation input form</td>
       <td>Create a form for users to input text for translation.</td>
       <td>Input and target languages selectable, translations displayed.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>CJ</td>
       <td>4</td>
     </tr>
     <tr>
       <td>Implement real-time translation feedback</td>
       <td>Add a loading indicator for translations.</td>
       <td>Progress indicator appears during API queries.</td>
-      <td>To Do</td>
+      <td>Done</td>
       <td></td>
       <td>3</td>
     </tr>
@@ -111,8 +111,8 @@
       <td>Implement image upload functionality</td>
       <td>Add functionality to allow image uploads.</td>
       <td>Uploaded images are displayed and ready for analysis.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
@@ -151,24 +151,24 @@
       <td>Conduct usability tests</td>
       <td>Test the UI’s usability with various users.</td>
       <td>Feedback collected and analyzed.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>ALL</td>
       <td>4</td>
     </tr>
     <tr>
       <td>Optimize performance</td>
       <td>Improve loading times and responsiveness of the Web-UI.</td>
       <td>All functions load within 1 second (if API responds).</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
       <td>Test cross-browser compatibility</td>
       <td>Ensure the UI works across different browsers.</td>
       <td>Works in Chrome, Firefox, and Edge.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>Done</td>
+      <td>CJ</td>
       <td>2</td>
     </tr>
   </tbody>
