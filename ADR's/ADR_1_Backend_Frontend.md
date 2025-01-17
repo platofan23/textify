@@ -17,7 +17,7 @@ Textify requires a robust, scalable, and efficient technology stack for both fro
 - **Ethical and Legal Considerations**
 
 ## Decision
-Textify will adopt **Vite with ReactJS** for the frontend and **Python** for the backend.
+Textify will adopt **Vite with ReactJS** for the frontend, **Python** for the backend, and **Hypercorn** as the application server for deploying the Flask backend.
 
 ## Rationale
 
@@ -36,6 +36,14 @@ Textify will adopt **Vite with ReactJS** for the frontend and **Python** for the
 - **Community and Resources**: Python has a large and active community, providing ample libraries, frameworks, and support for troubleshooting and development.
 - **Scalability**: Python frameworks can handle scalable backend services when appropriately structured, ensuring the system can grow with user demands.
 - **Cost-Effectiveness**: Python is open-source and has a wealth of free resources and libraries, reducing development costs and dependencies on proprietary software.
+
+### **Hypercorn**
+- **SSL Support**: Hypercorn provides native support for SSL/TLS, enabling secure communication with HTTPS out-of-the-box, which is critical for data protection and user trust.
+- **ASGI Server Compatibility**: It seamlessly supports ASGI applications, ensuring compatibility with modern Python frameworks and asynchronous capabilities.
+- **Performance**: Hypercorn is lightweight and highly efficient, suitable for production environments with minimal overhead.
+- **Flexibility**: Offers multi-worker support, hot-reloading during development, and compatibility with HTTP/2, WebSocket, and other advanced protocols.
+- **Ease of Integration**: Hypercorn integrates well with Flask and does not require significant modifications to the existing backend codebase.
+- **Community and Documentation**: A growing community and well-documented features make Hypercorn a reliable choice for production deployment.
 
 ## Alternatives
 
@@ -65,18 +73,22 @@ Textify will adopt **Vite with ReactJS** for the frontend and **Python** for the
    - **Pros**: High performance, strong typing, mature frameworks like Spring, excellent scalability.
    - **Cons**: Verbose syntax, longer development times, steeper learning curve.
 
+4. **Gunicorn** (alternative to Hypercorn):
+   - **Pros**: A reliable WSGI server for production deployments of Flask applications.
+   - **Cons**: No native support for SSL/TLS or modern protocols like WebSockets; requires additional tools like Nginx for secure deployments.
+
 ## Consequences
 
 ### **Positive**
-- **Performance and Developer Efficiency**: Vite with ReactJS ensures fast development cycles and responsive user interfaces. Python provides a streamlined backend development process.
+- **Performance and Developer Efficiency**: Vite with ReactJS ensures fast development cycles and responsive user interfaces. Python provides a streamlined backend development process, and Hypercorn adds efficient deployment capabilities.
 - **Scalability and Maintainability**: Component-based frontend and robust backend frameworks support scalable and maintainable codebases.
-- **Integration**: Seamless integration with existing tools and potential AI/ML functionalities.
+- **Secure Deployment**: Hypercorn’s native SSL/TLS support ensures secure communication between the frontend and backend.
 - **Community and Support**: Access to extensive resources, libraries, and community support enhances problem-solving and feature development.
 
 ### **Negative**
-- **Resource Demands**: ReactJS and Python may require specific configurations and optimizations to handle large-scale operations efficiently.
-- **Integration Complexity**: Managing the integration between ReactJS frontend and Python backend may require additional tooling and coordination.
-- **Learning Curve**: Team members unfamiliar with Python or ReactJS may require training, impacting initial development speed.
+- **Resource Demands**: ReactJS, Python, and Hypercorn may require specific configurations and optimizations to handle large-scale operations efficiently.
+- **Integration Complexity**: Managing the integration between ReactJS frontend, Python backend, and Hypercorn deployment may require additional tooling and coordination.
+- **Learning Curve**: Team members unfamiliar with Python, ReactJS, or Hypercorn may require training, impacting initial development speed.
 
 ## Implementation
 - **Frontend**:
@@ -85,13 +97,18 @@ Textify will adopt **Vite with ReactJS** for the frontend and **Python** for the
   - Develop core frontend components using ReactJS's component-based architecture.
   
 - **Backend**:
-  - Choose a Python web framework (e.g., Django or Flask).
-  - Set up the backend project structure.
+  - Set up the backend using Flask.
+  - Configure Hypercorn as the ASGI server with SSL/TLS.
   - Implement RESTful APIs to interact with the frontend.
   - Integrate translation models and other backend functionalities.
 
+- **Hypercorn Integration**:
+  - Install Hypercorn in the Python environment.
+  - Configure Hypercorn to use SSL/TLS with a certificate and key file.
+  - Deploy the backend through Hypercorn, ensuring secure communication over HTTPS.
+
 - **Integration**:
-  - Establish communication between frontend and backend using APIs.
+  - Establish communication between frontend and backend using secure APIs.
   - Implement authentication and authorization mechanisms if needed.
   - Ensure seamless data flow and state management across the application.
 
