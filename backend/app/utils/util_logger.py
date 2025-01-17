@@ -64,7 +64,7 @@ class Logger:
     @staticmethod
     def _log(message, prefix="LOG", caller_frame=None):
         caller_frame = inspect.stack()[2]
-        caller_info = f"File \"{caller_frame.filename.replace('\\', '/')}\", line {caller_frame.lineno}"
+        caller_info = f"File \"{caller_frame.filename.replace(r'\\', '/')}\", line {caller_frame.lineno}"
         return f"{prefix}: {message} \t(called from {caller_info})"
 
     @staticmethod
