@@ -2,17 +2,12 @@
 
 - [About](#beginner-about)
 - [Usage](#zap-usage)
-  - [Installation](#electric_plug-installation)
   - [Commands](#package-commands)
 - [Development](#wrench-development)
   - [Pre-Requisites](#notebook-pre-requisites)
-  - [Developmen Environment](#nut_and_bolt-development-environment)
   - [File Structure](#file_folder-file-structure)
-  - [Build](#hammer-build)  
-  - [Deployment](#rocket-deployment)  
 - [Contribution](#fire-contribution)
   - [Branches](#cactus-branches)
-  - [Guideline](#exclamation-guideline)  
 - [Resources](#page_facing_up-resources)
 - [Gallery](#camera-gallery)
 - [Credit/Acknowledgment](#star2-creditacknowledgment)
@@ -29,30 +24,71 @@ The project has following use-cases:
 - TTS
 - STT
 - Export in human-readable or machine-readable file-format
-###  :electric_plug: Installation
-- Steps on how to install this project, to use it.
-- Be very detailed here, For example, if you have tools which run on different operating systems, write installation steps for all of them.
 
-```
-$ add installations steps if you have to.
-```
 
-###  :package: Commands
-- Commands to start the project.
+### :package: Commands
 
-##  :wrench: Development
-If you want other people to contribute to this project, this is the section, make sure you always add this.
+- Start the project:
+  ```
+  docker-compose up -d
+  ```
+
+- Stop the project:
+  ```
+  docker-compose down
+  ```
+  
+## :wrench: Development
 
 ### :notebook: Pre-Requisites
-List all the pre-requisites the system needs to develop this project.
-- A tool
-- B tool
+List of pre-requisites:
 
-###  :nut_and_bolt: Development Environment
-Write about setting up the working environment for your project.
-- How to download the project...
-- How to install dependencies...
+- **Docker** and **Docker Compose** installed on your system.
+- A code editor (e.g., **Visual Studio Code**, **PyCharm**).
+- For backend development: **Python 3.11** and a virtual environment.
+- For frontend development: **Node.js** and **npm** or **yarn**.
 
+### :nut_and_bolt: Development Environment
+
+#### Clone the repository:
+```
+git clone https://github.com/your-repository/textify.git
+cd textify
+```
+### Backend Development:
+
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
+2. Set up the virtual environment and install dependencies:
+   ```
+   python3.11 -m venv venv
+   source venv/bin/activate 
+   pip install -r ressources/resources.txt
+   ```
+3. Ensure the config.ini file is configured correctly in the config folder.
+4. Start the main.py in /back/app folder
+
+### Frontend Development:
+
+1. Navigate to the frontend directory:
+  ```
+  cd ../frontend
+  ```
+2. Install dependencies:
+  ```
+  npm install
+  ```
+3. Start the development server:
+  ```
+  npm run dev
+  ```
+### Run the Application Locally:
+
+1. Ensure both backend and frontend are running.
+2. Access the frontend at: http://localhost:5173.
+3. Access the backend API at: http://localhost:5555
 
 ###  :file_folder: File Structure
 ```
@@ -154,18 +190,8 @@ textify/                                  # Root directory of the project
 ├── .gitignore                            # Files and directories to be ignored by Git
 ├── README.md                             # Project description and documentation
 └── docker-compose.yml                    # Docker Compose configuration
+
 ```
-
-| No | File Name | Details 
-|----|------------|-------|
-| 1  | index | Entry point
-
-###  :hammer: Build
-Write the build Instruction here.
-
-### :rocket: Deployment
-Write the deployment instruction here.
-
  ###  :fire: Contribution
 
  1. **Create a pull request** <br>
@@ -191,9 +217,6 @@ Write the deployment instruction here.
 3. It must pass all continuous integration checks and get positive reviews.
 
 After this, changes will be merged.
-
-
-### :exclamation: Guideline
 
 
 ##  :page_facing_up: Resources
@@ -222,4 +245,28 @@ Pictures of your project.
 
 
 ##  :lock: License
-Add a license here, or a link to it.
+
+This project is licensed under the MIT License. You are free to use, modify, and distribute this software in compliance with the license terms.
+  ```
+  MIT License
+  
+  Copyright (c) [2025] [Team Textify]
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+  ```
