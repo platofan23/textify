@@ -87,7 +87,9 @@ textify/                                  # Root directory of the project
 │   │   ├── utils/                        # Utility functions and helpers
 │   │   │   ├── __init__.py               # Initializes the utils module
 │   │   │   ├── util_config_manager.py    # Manages and validates configuration settings
+│   │   │   ├── util_mongo_manager.py     # Database class
 │   │   │   ├── util_cache_manager.py     # Caching for translations and API responses
+│   │   │   ├── util_logger.py            # Logger class
 │   │   │   ├── util_pdf_processor.py     # Extracts and processes text from PDF files
 │   │   │   └── util_text_processing.py   # Text preprocessing and chunking utilities
 │   │   ├── main.py                       # Entry point for the Flask application
