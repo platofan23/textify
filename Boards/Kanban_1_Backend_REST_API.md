@@ -56,7 +56,7 @@
       <td>Integrate Translation API</td>
       <td>Connect backend with the Translation API for processing requests.</td>
       <td>API calls handled, results returned accurately.</td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td>JK</td>
       <td>5</td>
     </tr>
@@ -104,7 +104,7 @@
       <td>Set up automated testing</td>
       <td>Implement unit and integration tests for backend components.</td>
       <td>Tests written, executed, and passed successfully.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td>ALL</td>
       <td>4</td>
     </tr>
@@ -112,32 +112,32 @@
       <td>Implement rate limiting</td>
       <td>Protect the API from abuse by implementing rate limiting.</td>
       <td>API rate limits enforced, and violations logged.</td>
-      <td>In progress</td>
-      <td></td>
+      <td>Done</td>
+      <td>ALL</td>
       <td>5</td>
     </tr>
     <tr>
       <td>Secure API</td>
       <td>Implement security measures like HTTPS, input validation, and encryption.</td>
       <td>Security tests passed, and vulnerabilities resolved.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Progress</td>
+      <td>ALL</td>
       <td>5</td>
     </tr>
     <tr>
       <td>Conduct performance testing</td>
       <td>Test the backend for performance under various loads.</td>
       <td>API responds within acceptable time limits under load.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>In Proress</td>
+      <td>ALL</td>
       <td>3</td>
     </tr>
     <tr>
       <td>Document API usage</td>
       <td>Create comprehensive documentation for API consumers.</td>
       <td>API documentation available and easy to understand.</td>
-      <td>To Do</td>
-      <td></td>
+      <td>Progress</td>
+      <td>ALL</td>
       <td>4</td>
     </tr>
   </tbody>
