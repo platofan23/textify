@@ -43,15 +43,16 @@ class MongoDBManager:
         )
 
         if not self.database_name:
+            Logger.error("Database name is not set in the configuration.")
             raise ValueError("Database name is not set in the configuration.")
 
         try:
             self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
             self.db = self.client[self.database_name]
             self.client.admin.command("ping")  # Test connection
-            Logger().message("Connected to MongoDB successfully.")
+            Logger.info(f"Connected to MongoDB database '{self.database_name}' successfully.")
         except errors.ServerSelectionTimeoutError as e:
-            Logger().error(f"Could not connect to MongoDB: {e}")
+            Logger.error(f"Could not connect to MongoDB: {e}")
             raise
 
     def get_collection(self, collection_name: str):
@@ -68,8 +69,9 @@ class MongoDBManager:
             ValueError: If the collection does not exist.
         """
         if collection_name not in self.db.list_collection_names():
-            Logger().warning(f"Collection '{collection_name}' does not exist in the database.")
+            Logger.warning(f"Attempt to access non-existent collection '{collection_name}'.")
             raise ValueError(f"Collection '{collection_name}' does not exist in the database.")
+        Logger.info(f"Retrieved collection '{collection_name}'.")
         return self.db[collection_name]
 
     def insert_document(self, collection_name: str, document: dict):
@@ -85,7 +87,9 @@ class MongoDBManager:
         """
         collection = self.get_collection(collection_name)
         result = collection.insert_one(document)
-        Logger().message(f"Document inserted with ID: {result.inserted_id}")
+        Logger.info(
+            f"Inserted document into collection '{collection_name}' with ID: {result.inserted_id}."
+        )
         return result
 
     def find_documents(self, collection_name: str, query: dict):
@@ -101,7 +105,9 @@ class MongoDBManager:
         """
         collection = self.get_collection(collection_name)
         documents = list(collection.find(query))
-        Logger().message(f"Found {len(documents)} documents in collection '{collection_name}'.")
+        Logger.info(
+            f"Found {len(documents)} documents in collection '{collection_name}' matching query: {query}."
+        )
         return documents
 
     def delete_documents(self, collection_name: str, query: dict):
@@ -117,5 +123,7 @@ class MongoDBManager:
         """
         collection = self.get_collection(collection_name)
         result = collection.delete_many(query)
-        Logger().message(f"Deleted {result.deleted_count} documents from collection '{collection_name}'.")
+        Logger.info(
+            f"Deleted {result.deleted_count} documents from collection '{collection_name}' matching query: {query}."
+        )
         return result
