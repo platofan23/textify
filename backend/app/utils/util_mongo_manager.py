@@ -1,7 +1,9 @@
+from itertools import count
+
 from pymongo import MongoClient, errors
 from backend.app.utils.util_config_manager import ConfigManager
 from backend.app.utils.util_logger import Logger
-
+import gridfs
 
 class MongoDBManager:
     """
@@ -13,6 +15,9 @@ class MongoDBManager:
     Attributes:
         client (MongoClient): The MongoDB client instance.
         db (Database): The MongoDB database instance.
+        connection_string (str): The connection string for the MongoDB client.
+        database_name (str): The name of the MongoDB database.
+        config_manager (ConfigManager): The configuration manager instance.
     """
     _instance = None
 
@@ -74,54 +79,89 @@ class MongoDBManager:
         Logger.info(f"Retrieved collection '{collection_name}'.")
         return self.db[collection_name]
 
-    def insert_document(self, collection_name: str, document: dict):
+    def insert_document(self, collection_name: str, document: dict, use_GridFS: bool = False):
         """
         Inserts a document into a MongoDB collection.
 
         Args:
             collection_name (str): The name of the collection.
             document (dict): The document to insert.
+            use_GridFS (bool): Whether to use GridFS for large files.
 
         Returns:
             InsertOneResult: The result of the insert operation.
         """
         collection = self.get_collection(collection_name)
+
+        if use_GridFS:
+            fs = gridfs.GridFS(self.db, collection=collection_name)
+            file = document.pop("file")
+            file_id = fs.put(file, **document)
+            Logger.info(
+                f"Inserted file into GridFS collection '{collection_name}' with ID: {file_id}."
+            )
+            return file_id
+
         result = collection.insert_one(document)
         Logger.info(
             f"Inserted document into collection '{collection_name}' with ID: {result.inserted_id}."
         )
         return result
 
-    def find_documents(self, collection_name: str, query: dict):
+    def find_documents(self, collection_name: str, query: dict, use_GridFS: bool = False):
         """
         Finds documents in a MongoDB collection.
 
         Args:
             collection_name (str): The name of the collection.
             query (dict): The query to filter documents.
+            use_GridFS (bool): Whether to use GridFS for large files.
 
         Returns:
             list: A list of documents that match the query.
         """
         collection = self.get_collection(collection_name)
         documents = list(collection.find(query))
+
+        if use_GridFS:
+            fs = gridfs.GridFS(self.db, collection=collection_name)
+            documents = []
+            for file in fs.find(query):
+                documents.append(file)
+            Logger.info(
+                f"Found {len(documents)} files in GridFS collection '{collection_name}' matching query: {query}."
+            )
+            return documents
+
         Logger.info(
             f"Found {len(documents)} documents in collection '{collection_name}' matching query: {query}."
         )
         return documents
 
-    def delete_documents(self, collection_name: str, query: dict):
+    def delete_documents(self, collection_name: str, query: dict, use_GridFS: bool = False):
         """
         Deletes documents from a MongoDB collection.
 
         Args:
             collection_name (str): The name of the collection.
             query (dict): The query to match documents to delete.
+            use_GridFS (bool): Whether to use GridFS for large files.
 
         Returns:
             DeleteResult: The result of the delete operation.
         """
         collection = self.get_collection(collection_name)
+
+        if use_GridFS:
+            fs = gridfs.GridFS(self.db, collection=collection_name)
+            files = fs.find(query)
+            for file in files:
+                fs.delete(file._id)
+            Logger.info(
+                f"Deleted {len(list(files))} files from GridFS collection '{collection_name}' matching query: {query}."
+            )
+            return
+
         result = collection.delete_many(query)
         Logger.info(
             f"Deleted {result.deleted_count} documents from collection '{collection_name}' matching query: {query}."

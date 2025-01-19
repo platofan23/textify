@@ -1,12 +1,11 @@
 import os
-import shutil
 import configparser
-
 from flask import send_file
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
+from backend.app.utils import Logger, MongoDBManager
 
-# Konfiguration laden
+# Load configuration
 config = configparser.ConfigParser()
 config.read('./config/config.ini')
 if os.getenv("IsDocker"):
@@ -14,22 +13,23 @@ if os.getenv("IsDocker"):
 
 MAX_TOTAL_SIZE = int(config['REST']['MAX_TOTAL_SIZE_GB']) * 1024 * 1024 * 1024
 ALLOWED_EXTENSIONS = set(config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','))
-UPLOAD_FOLDER = config['REST']['UPLOAD_FOLDER']
 
+# MongoDB setup
+config_manager = ConfigManager(config)
+mongo_manager = MongoDBManager(config_manager)
 
-# Hilfsfunktion zur Dateityp-Überprüfung
+# Helper function to check allowed file types
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-# Ressource für Datei-Upload
+# Resource for file upload
 class UploadFile(Resource):
     def post(self):
-        # Parameter validieren
+        # Validate parameters
         parser = reqparse.RequestParser()
         parser.add_argument('User', location='headers', required=True, help="User header is required")
         parser.add_argument('Title', location='headers', required=True, help="Title header is required")
-        parser.add_argument('files', type=FileStorage, location='files', action='append', required=True)
+        parser.add_argument('files', type=FileStorage, location='headers', action='append', required=True)
         args = parser.parse_args()
 
         files = args['files']
@@ -37,37 +37,40 @@ class UploadFile(Resource):
         title = args['Title']
 
         total_size = 0
+        file_ids = []
 
-        # Zielverzeichnisse erstellen
-        user_folder_path = os.path.join(UPLOAD_FOLDER, user)
-        os.makedirs(user_folder_path, exist_ok=True)
-        title_folder_path = os.path.join(user_folder_path, title)
-        os.makedirs(title_folder_path, exist_ok=True)
-
-        # Dateien speichern
+        # Save files to MongoDB
         for file in files:
             if file.filename == '':
+                Logger.error('No selected file')
                 return {'error': 'No selected file'}, 400
             if allowed_file(file.filename):
                 total_size += len(file.read())
                 file.seek(0)
                 if total_size > MAX_TOTAL_SIZE:
-                    shutil.rmtree(title_folder_path)
+                    # Reverse changes by deleting uploaded files
+                    for file_id in file_ids:
+                        mongo_manager.delete_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'_id': file_id}, use_GridFS=True)
+                    Logger.error(f'Total file size exceeds {MAX_TOTAL_SIZE} bytes')
                     return {'error': f'Total file size exceeds {MAX_TOTAL_SIZE} bytes'}, 413
-                file.save(os.path.join(title_folder_path, file.filename))
+                file_id = mongo_manager.insert_document(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'file': file, 'filename': file.filename, 'user': user, 'title': title}, use_GridFS=True)
+                file_ids.append(file_id)
+                Logger.info(f'File {file.filename} uploaded successfully')
             else:
+                Logger.error('Invalid file type')
                 return {'error': 'Invalid file type'}, 415
+
+        Logger.info('Files uploaded successfully')
         return {'message': 'Files uploaded successfully'}, 201
 
-
-# Ressource für Datei-Download
+# Resource for file download
 class DownloadFile(Resource):
     def get(self):
-        # Parameter validieren
+        # Validate parameters
         parser = reqparse.RequestParser()
-        parser.add_argument('filename', type=str, required=True, help="Filename is required")
-        parser.add_argument('user', type=str, required=True, help="User is required")
-        parser.add_argument('title', type=str, required=True, help="Title is required")
+        parser.add_argument('filename', location='headers', type=str, required=True, help="Filename is required")
+        parser.add_argument('user', location='headers', type=str, required=True, help="User is required")
+        parser.add_argument('title', location='headers', type=str, required=True, help="Title is required")
         args = parser.parse_args()
 
         filename = args['filename']
@@ -75,15 +78,43 @@ class DownloadFile(Resource):
         title = args['title']
 
         try:
-            # Datei-Pfad zusammenbauen
-            user_folder_path = os.path.join(UPLOAD_FOLDER, user)
-            title_folder_path = os.path.join(user_folder_path, title)
-            file_path = os.path.join(title_folder_path, filename)
-
-            if not os.path.exists(file_path):
+            # Retrieve file from MongoDB
+            files = mongo_manager.find_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
+            if not files:
+                Logger.error('File not found')
                 return {'error': 'File not found'}, 404
 
-            # Datei senden
-            return send_file(file_path, download_name=filename, as_attachment=True)
+            file = files[0]
+            Logger.info(f'File {filename} retrieved successfully')
+            # Send file
+            return send_file(file, download_name=filename, as_attachment=True)
         except Exception as e:
+            Logger.error(f'Error occurred: {str(e)}')
+            return {'error': f'Error occurred: {str(e)}'}, 500
+
+# Resource for file deletion
+class DeleteFile(Resource):
+    def delete(self):
+        # Validate parameters
+        parser = reqparse.RequestParser()
+        parser.add_argument('filename', location='headers', type=str, required=True, help="Filename is required")
+        parser.add_argument('user', location='headers', type=str, required=True, help="User is required")
+        parser.add_argument('title', location='headers', type=str, required=True, help="Title is required")
+        args = parser.parse_args()
+
+        filename = args['filename']
+        user = args['user']
+        title = args['title']
+
+        try:
+            # Delete file from MongoDB
+            result = mongo_manager.delete_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
+            if result.deleted_count == 0:
+                Logger.error('File not found')
+                return {'error': 'File not found'}, 404
+
+            Logger.info(f'File {filename} deleted successfully')
+            return {'message': 'File deleted successfully'}, 200
+        except Exception as e:
+            Logger.error(f'Error occurred: {str(e)}')
             return {'error': f'Error occurred: {str(e)}'}, 500
