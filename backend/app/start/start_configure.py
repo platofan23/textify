@@ -35,7 +35,7 @@ def create_app(config_path='./config/config.ini'):
     )
     Logger.info("CacheManager initialized with maximum size: " + str(config_manager.get_config_value('CACHE', 'MAX_ENTRIES', int)))
 
-    mongo_manager = MongoDBManager(config_manager)
+    mongo_manager = MongoDBManager()
     Logger.info("MongoDBManager initialized.")
 
     # Configure Flask app

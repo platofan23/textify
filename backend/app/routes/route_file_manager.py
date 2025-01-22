@@ -3,20 +3,19 @@ import configparser
 from flask import send_file
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
-from backend.app.utils import Logger, MongoDBManager
+from backend.app.utils import Logger, MongoDBManager, ConfigManager
 
 # Load configuration
-config = configparser.ConfigParser()
-config.read('./config/config.ini')
+config_path = './config/config.ini'
 if os.getenv("IsDocker"):
-    config.read('./config/docker.ini')
+    config_path = './config/docker.ini'
+config_manager = ConfigManager(config_path)
 
-MAX_TOTAL_SIZE = int(config['REST']['MAX_TOTAL_SIZE_GB']) * 1024 * 1024 * 1024
-ALLOWED_EXTENSIONS = set(config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','))
+MAX_TOTAL_SIZE = int(config_manager.get_rest_config().get("max_total_size_gb")) * 1024 * 1024 * 1024
+ALLOWED_EXTENSIONS = set(config_manager.get_rest_config().get("allowed_extensions"))
 
 # MongoDB setup
-config_manager = ConfigManager(config)
-mongo_manager = MongoDBManager(config_manager)
+mongo_manager = MongoDBManager()
 
 # Helper function to check allowed file types
 def allowed_file(filename):

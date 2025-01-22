@@ -18,17 +18,17 @@ class ConfigManager:
     def __init__(self, config_path: str = None):
         self.config = configparser.ConfigParser()
         self.config_path = config_path or self.DEFAULT_CONFIG_PATH
-        self.load_config()
-        self.validate_config()
+        self._load_config()
+        self._validate_config()
 
-    def load_config(self):
+    def _load_config(self):
         if not os.path.exists(self.config_path):
             Logger.error(f"Configuration file not found at {self.config_path}")
             raise FileNotFoundError(f"Configuration file not found at {self.config_path}")
         self.config.read(self.config_path)
         Logger.info(f"Configuration loaded from {self.config_path}")
 
-    def validate_config(self):
+    def _validate_config(self):
         required_sections = ['MONGO_DB', 'REST', 'TRANSLATE', 'TEXT', 'CACHE']
         for section in required_sections:
             if section not in self.config:
@@ -107,7 +107,8 @@ class ConfigManager:
             'host': self.config['REST']['HOST'],
             'port': int(self.config['REST']['PORT']),
             'max_content_length_mb': int(self.config['REST']['MAX_CONTENT_LENGTH_MB']),
-            'allowed_extensions': self.config['REST']['ALLOWED_EXTENSIONS'].split(','),
+            'max_total_size_gb': int(self.config['REST']['MAX_TOTAL_SIZE_GB']),
+            'allowed_extensions': self.config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','),
             'upload_folder': self.config['REST']['UPLOAD_FOLDER']
         }
         Logger.debug("REST configuration loaded.")
