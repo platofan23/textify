@@ -26,8 +26,7 @@ def create_app(config_path='./config/config.ini'):
     Logger.info(f"Environment is in Docker: {os.getenv('IsDocker')}")
 
     app = Flask(__name__)
-    config_manager = ConfigManager(config_path)
-    Logger.info(f"Loaded configuration from: {config_path}")
+    config_manager = ConfigManager()
 
     cache_manager = CacheManager(
         maxsize=config_manager.get_config_value('CACHE', 'MAX_ENTRIES', int),

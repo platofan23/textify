@@ -36,11 +36,7 @@ class MongoDBManager:
         Initializes the MongoDB connection.
 
         """
-        if os.getenv("IsDocker"):
-            config_path = './config/docker.ini'
-        else:
-            config_path = './config/config.ini'
-        self.config_manager = ConfigManager(config_path)
+        self.config_manager = ConfigManager()
 
         # Retrieve MongoDB connection details
         self.connection_string = self.config_manager.get_config_value(

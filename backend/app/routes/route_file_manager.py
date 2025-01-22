@@ -6,10 +6,7 @@ from werkzeug.datastructures import FileStorage
 from backend.app.utils import Logger, MongoDBManager, ConfigManager
 
 # Load configuration
-config_path = './config/config.ini'
-if os.getenv("IsDocker"):
-    config_path = './config/docker.ini'
-config_manager = ConfigManager(config_path)
+config_manager = ConfigManager()
 
 MAX_TOTAL_SIZE = int(config_manager.get_rest_config().get("max_total_size_gb")) * 1024 * 1024 * 1024
 ALLOWED_EXTENSIONS = set(config_manager.get_rest_config().get("allowed_extensions"))

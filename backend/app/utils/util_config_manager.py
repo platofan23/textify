@@ -13,20 +13,27 @@ class TranslationModel(Enum):
 
 class ConfigManager:
     _instance = None  # Singleton instance
-    DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), './config/config.ini')
+    _CONFIG_PATH = './config/docker.ini' if os.getenv("IsDocker") else './config/config.ini'
 
-    def __init__(self, config_path: str = None):
-        self.config = configparser.ConfigParser()
-        self.config_path = config_path or self.DEFAULT_CONFIG_PATH
-        self._load_config()
-        self._validate_config()
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ConfigManager, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if not hasattr(self, 'initialized'):  # Ensure __init__ is only called once
+            self.config = configparser.ConfigParser()
+            self._load_config()
+            self._validate_config()
+            self.initialized = True
+            Logger.info(f"ConfigManager initialized with config file: {self._CONFIG_PATH}")
 
     def _load_config(self):
-        if not os.path.exists(self.config_path):
-            Logger.error(f"Configuration file not found at {self.config_path}")
-            raise FileNotFoundError(f"Configuration file not found at {self.config_path}")
-        self.config.read(self.config_path)
-        Logger.info(f"Configuration loaded from {self.config_path}")
+        if not os.path.exists(self._CONFIG_PATH):
+            Logger.error(f"Configuration file not found at {self._CONFIG_PATH}")
+            raise FileNotFoundError(f"Configuration file not found at {self._CONFIG_PATH}")
+        self.config.read(self._CONFIG_PATH)
+        Logger.info(f"Configuration loaded from {self._CONFIG_PATH}")
 
     def _validate_config(self):
         required_sections = ['MONGO_DB', 'REST', 'TRANSLATE', 'TEXT', 'CACHE']
