@@ -46,10 +46,10 @@ class UploadFile(Resource):
                 if total_size > MAX_TOTAL_SIZE:
                     # Reverse changes by deleting uploaded files
                     for file_id in file_ids:
-                        mongo_manager.delete_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'_id': file_id}, use_GridFS=True)
+                        mongo_manager.delete_documents(config_manager.get_mongo_config().get("user_files_collection"), {'_id': file_id}, use_GridFS=True)
                     Logger.error(f'Total file size exceeds {MAX_TOTAL_SIZE} bytes')
                     return {'error': f'Total file size exceeds {MAX_TOTAL_SIZE} bytes'}, 413
-                file_id = mongo_manager.insert_document(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'file': file, 'filename': file.filename, 'user': user, 'title': title}, use_GridFS=True)
+                file_id = mongo_manager.insert_document(config_manager.get_mongo_config().get("user_files_collection"), {'file': file, 'filename': file.filename, 'user': user, 'title': title}, use_GridFS=True)
                 file_ids.append(file_id)
                 Logger.info(f'File {file.filename} uploaded successfully')
             else:
@@ -75,7 +75,7 @@ class DownloadFile(Resource):
 
         try:
             # Retrieve file from MongoDB
-            files = mongo_manager.find_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
+            files = mongo_manager.find_documents(config_manager.get_mongo_config().get("user_files_collection"), {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
             if not files:
                 Logger.error('File not found')
                 return {'error': 'File not found'}, 404
@@ -104,7 +104,7 @@ class DeleteFile(Resource):
 
         try:
             # Delete file from MongoDB
-            result = mongo_manager.delete_documents(config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'], {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
+            result = mongo_manager.delete_documents(config_manager.get_mongo_config().get("user_files_collection"), {'filename': filename, 'user': user, 'title': title}, use_GridFS=True)
             if result.deleted_count == 0:
                 Logger.error('File not found')
                 return {'error': 'File not found'}, 404
