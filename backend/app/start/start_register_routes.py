@@ -1,4 +1,4 @@
-from backend.app.routes import UploadFile, DownloadFile, ReadFile, TranslateText, TranslateFile, RegisterUser, LoginUser
+from backend.app.routes import UploadFile, DownloadFile, ReadFile, TranslateText, TranslateFile, RegisterUser, LoginUser, TTS
 from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 def register_routes(api, config_manager, cache_manager):
@@ -21,6 +21,14 @@ def register_routes(api, config_manager, cache_manager):
 
     api.add_resource(ReadFile, '/read_file')
     Logger.info("Registered route: /read_file -> ReadFile")
+
+    # Translation endpoints
+    api.add_resource(
+        TTS,
+        '/tts',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager}
+    )
+    Logger.info("Registered route: /tts-> TTS")
 
     # Translation endpoints
     api.add_resource(

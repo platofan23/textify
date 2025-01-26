@@ -3,6 +3,7 @@ from .route_ocr import ReadFile
 from .route_translation_file import TranslateFile
 from .route_translation_text import TranslateText
 from .route_user_management import RegisterUser, LoginUser
+from .route_tts import TTS
 
 __all__ = [
     "DownloadFile",
@@ -11,5 +12,6 @@ __all__ = [
     "TranslateFile",
     "TranslateText",
     "RegisterUser",
-    "LoginUser"
+    "LoginUser",
+    "TTS",
 ]
