@@ -64,7 +64,7 @@
       <td>Develop tests for TTS API calls and UI components.</td>
       <td>All tests pass with no failures.</td>
       <td>In Progress</td>
-      <td></td>
+      <td>JK</td>
       <td>2</td>
     </tr>
     <tr>
