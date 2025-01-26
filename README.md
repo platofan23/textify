@@ -1,7 +1,7 @@
 # Documentation Branch
 
 ## Purpose
-This branch is dedicated to maintaining all project-related documentation for the Textify project. It serves as the central repository for various documents, including Architecture Decision Records (ARD's), project overviews, lecture materials, Operational Process Manuals (OPM), Software Requirement Specifications, and Use-Case documents.
+This branch is dedicated to maintaining all project-related documentation for the Textify project. It serves as the central repository for various documents, including Architecture Decision Records (ADR's), project overviews, lecture materials, Operational Process Manuals (OPM), Software Requirement Specifications, and Use-Case documents.
 
 ## Contents
 - **ADR's**: Architecture Decision Records detailing key architectural choices and their rationales.
