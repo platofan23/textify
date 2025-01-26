@@ -4,7 +4,7 @@
 This branch is dedicated to maintaining all project-related documentation for the Textify project. It serves as the central repository for various documents, including Architecture Decision Records (ARD's), project overviews, lecture materials, Operational Process Manuals (OPM), Software Requirement Specifications, and Use-Case documents.
 
 ## Contents
-- **ARD's**: Architecture Decision Records detailing key architectural choices and their rationales.
+- **ADR's**: Architecture Decision Records detailing key architectural choices and their rationales.
 - **First_Overview**: Initial overview documents providing a high-level understanding of the project.
 - **Lecture**: Lecture materials, presentations, and educational resources related to the project.
 - **OPM**: Operational Process Manuals outlining the processes and workflows within the project.
@@ -13,7 +13,7 @@ This branch is dedicated to maintaining all project-related documentation for th
 
 ## Structure
 The documentation is organized into the following directories:
-- `ARD's/` - Architecture Decision Records
+- `ADR's/` - Architecture Decision Records
 - `Documentation/` - Code and Technical Documentation 
 - `First_Overview/` - Initial Project Overviews
 - `Lecture/` - Lecture Materials and Presentations
