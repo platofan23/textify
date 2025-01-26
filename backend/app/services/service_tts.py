@@ -25,18 +25,25 @@ class TTSService:
 
         Returns:
             BytesIO: In-memory WAV file.
+
+        Raises:
+            ValueError: If the input text is empty or invalid.
         """
+        if not text or not text.strip():
+            Logger.error("Invalid input: Text cannot be empty or whitespace only.")
+            raise ValueError("Text cannot be empty or whitespace only.")
+
         try:
             # Preprocess text
             text = text.strip()
             if not text.endswith("."):
                 text += "."  # Sicherstellen, dass der Satz korrekt abgeschlossen ist
 
-            # Erzeuge einen Hash als Cache-Schlüssel
+            # Cache-Schlüssel erstellen
             text_hash = hashlib.md5(text.encode()).hexdigest()
             cache_key = f"tts-{voice or 'default'}-{language or 'en'}-{text_hash}"
 
-            # Überprüfen, ob die Audiodatei bereits im Cache ist
+            # Cache prüfen
             cached_audio = self.cache_manager.get(cache_key)
             if cached_audio:
                 Logger.info(f"[CACHE HIT] Returning cached audio for key: {cache_key}")
@@ -46,7 +53,7 @@ class TTSService:
 
             Logger.info(f"[CACHE MISS] No cache entry for key: {cache_key}")
 
-            # Generiere die Audiodatei
+            # Audiodatei generieren
             audio_buffer = self.synthesizer.synthesize(text)
 
             # Cache die generierte Audiodatei
@@ -57,3 +64,4 @@ class TTSService:
         except Exception as e:
             Logger.error(f"Error during TTS synthesis: {str(e)}")
             raise
+
