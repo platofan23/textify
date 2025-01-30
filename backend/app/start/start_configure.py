@@ -41,6 +41,8 @@ def create_app(config_path='./config/config.ini'):
     max_content_length_mb = config_manager.get_config_value('REST', 'MAX_CONTENT_LENGTH_MB', int, default=10)
     app.config['MAX_CONTENT_LENGTH'] = max_content_length_mb * 1024 * 1024
     Logger.info(f"Set Flask MAX_CONTENT_LENGTH to: {max_content_length_mb} MB")
+    app.root_path = os.getcwd()
+    Logger.debug(f"Flask Root_path: {app.root_path}")
 
     CORS(app, origins=[
         "https://172.142.0.5:5173",

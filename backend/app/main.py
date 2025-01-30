@@ -1,3 +1,5 @@
+import os
+
 from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 from flask_restful import Api
@@ -5,7 +7,6 @@ from flask_restful import Api
 from backend.app.start import register_routes, preload_models, run_tests, create_app
 
 Logger.info("Starting the application initialization process.")
-
 # Initialize Flask app
 app, config_manager, cache_manager = create_app()
 Logger.info("Flask application and dependencies initialized successfully.")
@@ -14,6 +15,7 @@ Logger.info("Flask application and dependencies initialized successfully.")
 api = Api(app)
 register_routes(api, config_manager, cache_manager)
 Logger.info("API routes registered successfully.")
+
 
 # Run unit tests
 Logger.info("Running unit tests before application startup.")
