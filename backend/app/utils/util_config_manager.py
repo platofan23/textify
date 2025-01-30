@@ -13,22 +13,29 @@ class TranslationModel(Enum):
 
 class ConfigManager:
     _instance = None  # Singleton instance
-    DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), './config/config.ini')
+    _CONFIG_PATH = './config/docker.ini' if os.getenv("IsDocker") else './config/config.ini'
 
-    def __init__(self, config_path: str = None):
-        self.config = configparser.ConfigParser()
-        self.config_path = config_path or self.DEFAULT_CONFIG_PATH
-        self.load_config()
-        self.validate_config()
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ConfigManager, cls).__new__(cls)
+        return cls._instance
 
-    def load_config(self):
-        if not os.path.exists(self.config_path):
-            Logger.error(f"Configuration file not found at {self.config_path}")
-            raise FileNotFoundError(f"Configuration file not found at {self.config_path}")
-        self.config.read(self.config_path)
-        Logger.info(f"Configuration loaded from {self.config_path}")
+    def __init__(self):
+        if not hasattr(self, 'initialized'):  # Ensure __init__ is only called once
+            self.config = configparser.ConfigParser()
+            self._load_config()
+            self._validate_config()
+            self.initialized = True
+            Logger.info(f"ConfigManager initialized with config file: {self._CONFIG_PATH}")
 
-    def validate_config(self):
+    def _load_config(self):
+        if not os.path.exists(self._CONFIG_PATH):
+            Logger.error(f"Configuration file not found at {self._CONFIG_PATH}")
+            raise FileNotFoundError(f"Configuration file not found at {self._CONFIG_PATH}")
+        self.config.read(self._CONFIG_PATH)
+        Logger.info(f"Configuration loaded from {self._CONFIG_PATH}")
+
+    def _validate_config(self):
         required_sections = ['MONGO_DB', 'REST', 'TRANSLATE', 'TEXT', 'CACHE']
         for section in required_sections:
             if section not in self.config:
@@ -97,7 +104,8 @@ class ConfigManager:
         config = {
             'connection_string': self.config['MONGO_DB']['CONNECTION_STRING'],
             'database': self.config['MONGO_DB']['MONGO_DATABASE'],
-            'users_collection': self.config['MONGO_DB']['MONGO_USERS_COLLECTION']
+            'users_collection': self.config['MONGO_DB']['MONGO_USERS_COLLECTION'],
+            'user_files_collection': self.config['MONGO_DB']['MONGO_USER_FILES_COLLECTION']
         }
         Logger.debug("MongoDB configuration loaded.")
         return config
@@ -107,7 +115,8 @@ class ConfigManager:
             'host': self.config['REST']['HOST'],
             'port': int(self.config['REST']['PORT']),
             'max_content_length_mb': int(self.config['REST']['MAX_CONTENT_LENGTH_MB']),
-            'allowed_extensions': self.config['REST']['ALLOWED_EXTENSIONS'].split(','),
+            'max_total_size_gb': int(self.config['REST']['MAX_TOTAL_SIZE_GB']),
+            'allowed_extensions': self.config['REST']['ALLOWED_EXTENSIONS'].replace(" ", "").split(','),
             'upload_folder': self.config['REST']['UPLOAD_FOLDER']
         }
         Logger.debug("REST configuration loaded.")

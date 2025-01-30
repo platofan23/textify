@@ -17,7 +17,7 @@ Logger.info("API routes registered successfully.")
 
 # Run unit tests
 Logger.info("Running unit tests before application startup.")
-run_tests()
+#run_tests()
 
 # Preload models
 Logger.info("Preloading models for translation services.")
@@ -31,4 +31,4 @@ if __name__ == '__main__':
     port = config_manager.get_config_value('REST', 'PORT', int, default=5555)
     host = config_manager.get_config_value('REST', 'HOST', str, default='127.0.0.1')
     Logger.info(f"Flask application running on {host}:{port}")
-    app.run(host=host, port=port, debug=True)
+    app.run(host=host, port=port, debug=False)

@@ -1,3 +1,4 @@
+import os
 from itertools import count
 
 from pymongo import MongoClient, errors
@@ -21,23 +22,21 @@ class MongoDBManager:
     """
     _instance = None
 
-    def __new__(cls, config_manager: ConfigManager):
+    def __new__(cls):
         """
         Ensures a single instance of MongoDBManager is created.
         """
         if cls._instance is None:
-            cls._instance = super(MongoDBManager, cls).__new__(cls)
-            cls._instance._initialize(config_manager)
+            cls._instance = super(MongoDBManager ,cls).__new__(cls)
+            cls._instance._initialize()
         return cls._instance
 
-    def _initialize(self, config_manager: ConfigManager):
+    def _initialize(self):
         """
         Initializes the MongoDB connection.
 
-        Args:
-            config_manager (ConfigManager): The configuration manager for fetching MongoDB settings.
         """
-        self.config_manager = config_manager
+        self.config_manager = ConfigManager()
 
         # Retrieve MongoDB connection details
         self.connection_string = self.config_manager.get_config_value(

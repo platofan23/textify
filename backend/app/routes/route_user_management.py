@@ -1,7 +1,9 @@
+import json
 import os
 import configparser
 import secrets
-
+from Crypto.PublicKey import ECC
+from Crypto.IO import PEM
 from random import random
 from threading import Thread
 from pymongo import MongoClient
@@ -9,6 +11,8 @@ from flask_restful import Resource, reqparse
 from argon2 import PasswordHasher
 from datetime import datetime, timedelta
 from flask import make_response
+
+from backend.app.utils import Logger
 
 # Konfiguration laden
 config = configparser.ConfigParser()
@@ -28,7 +32,11 @@ ph = PasswordHasher()
 # Ressource für Benutzerregistrierung
 class RegisterUser(Resource):
     def post(self):
-        # Argumente aus den Headern parsen
+        """
+        Register a new user.
+        """
+
+        # Parse arguments
         parser = reqparse.RequestParser()
         parser.add_argument('Username', location='headers', required=True, help="Username is required")
         parser.add_argument('Password', location='headers', required=True, help="Password is required")
@@ -36,20 +44,24 @@ class RegisterUser(Resource):
 
         username = args['Username']
         password = args['Password']
-        
 
         try:
-            # Benutzer prüfen, ob existiert
+            # Check if username already exists
             if collection.find_one({'Username': username}):
                 return {'error': 'Username already exists'}, 409
 
-            # Benutzer erstellen
+            # Generate password hash and keys
             hashed_password = ph.hash(password)
+            public_key_str = self._generate_keys(username)
+
+            # Create user
             user = {
                 'Username': username,
-                'Password': hashed_password
+                'Password': hashed_password,
+                "PublicKey": public_key_str,
             }
             collection.insert_one(user)
+
             response = {'Message': 'User registered successfully', 'Username': username,
                         'AuthorizationKey': add_key(username)}
 
@@ -58,11 +70,28 @@ class RegisterUser(Resource):
         except Exception as e:
             return {'error': f'Error occurred: {str(e)}'}, 500
 
+    def _generate_keys(self, username):
+
+        # Generate ECC private key
+        private_key = ECC.generate(curve='secp256r1')
+        Logger.info(f'Generated keys')
+
+        with open('./keys/private_keys.json', 'r+') as f:
+            data = json.load(f)
+            if not isinstance(data, list):
+                data = []
+            data.append({'user': username, 'private_key': private_key.export_key(format='PEM')})
+            f.seek(0)
+            json.dump(data, f)
+
+
+        return private_key.public_key().export_key(format='PEM')
+
 
 
 class LoginUser(Resource):
     def post(self):
-        # Argumente parsen
+        # Parse arguments
         parser = reqparse.RequestParser()
         parser.add_argument('Username', location='headers', required=True, help="Username is required")
         parser.add_argument('Password', location='headers', required=True, help="Password is required")
@@ -73,6 +102,7 @@ class LoginUser(Resource):
 
 
         try:
+            # Check if user exists and password is correct
             user = collection.find_one({'Username': username})
             if user and ph.verify(user['Password'], password):
 

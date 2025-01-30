@@ -1,6 +1,6 @@
 import logging
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from flask import Flask
 
 from backend.app.routes import RegisterUser, LoginUser
@@ -24,7 +24,8 @@ class UserManagementTestCase(unittest.TestCase):
         logger.debug("Flask test client initialized.")
 
     @patch('backend.app.routes.route_user_management.collection.insert_one')
-    def test_user_registered_successfully(self, mock_insert):
+    @patch('builtins.open', new_callable=mock_open, read_data='[]')
+    def test_user_registered_successfully(self, mock_file, mock_insert):
         """
         Test that a user is registered successfully when valid details are provided.
         """
@@ -56,7 +57,8 @@ class UserManagementTestCase(unittest.TestCase):
         logger.debug("test_username_already_exists passed.")
 
     @patch('backend.app.routes.route_user_management.collection.insert_one')
-    def test_registration_error(self, mock_insert):
+    @patch('builtins.open', new_callable=mock_open, read_data='[]')
+    def test_registration_error(self, mock_file, mock_insert):
         """
         Test that a server error during registration is handled correctly.
         """
@@ -102,7 +104,7 @@ class UserManagementTestCase(unittest.TestCase):
         logger.debug("Received response: status_code=%s, data=%s", response.status_code, response.data.decode())
         # Assert that the response indicates unauthorized access.
         self.assertEqual(401, response.status_code)
-        self.assertIn('Username or password not found', response.data.decode())  # Updated to match actual error message
+        self.assertIn('Username or password not found', response.data.decode())
         logger.debug("test_invalid_login_credentials passed.")
 
     @patch('backend.app.routes.route_user_management.collection.find_one')
