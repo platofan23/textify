@@ -1,12 +1,17 @@
-import os
+from backend.app.utils import Logger  # Importiere die Logger-Klasse
+Logger.info("Starting the application initialization process.")
+# Setting up Logger
+Logger.SHOW_ERRORS = True
+Logger.SHOW_WARNINGS = True
+Logger.SHOW_INFO = False
+Logger.SHOW_DEBUG = True
 
-from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
 
 from flask_restful import Api
 
 from backend.app.start import register_routes, preload_models, run_tests, create_app
 
-Logger.info("Starting the application initialization process.")
+
 # Initialize Flask app
 app, config_manager, cache_manager = create_app()
 Logger.info("Flask application and dependencies initialized successfully.")

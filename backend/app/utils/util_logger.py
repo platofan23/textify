@@ -5,9 +5,10 @@ class Logger:
     _instance = None
 
     # Control which messages to show
-    SHOW_MESSAGES = True
+    SHOW_INFO = True
     SHOW_WARNINGS = True
     SHOW_ERRORS = True
+    SHOW_DEBUG = True
 
     # ANSI escape codes for colors
     HEADER = '\033[95m'
@@ -31,13 +32,13 @@ class Logger:
 
     @staticmethod
     def info(message):
-        if not Logger.SHOW_MESSAGES:
+        if not Logger.SHOW_INFO:
             return
         print(Logger()._colorize(Logger._log(message, "INFO"), Logger.OKBLUE))
 
     @staticmethod
     def debug(message):
-        if not Logger.SHOW_MESSAGES:
+        if not Logger.SHOW_DEBUG:
             return
         print(Logger()._colorize(Logger._log(message, "DEBUG"), Logger.OKGREEN))
 
@@ -51,7 +52,7 @@ class Logger:
 
     @staticmethod
     def set_show_messages(show_messages):
-        Logger.SHOW_MESSAGES = show_messages
+        Logger.SHOW_INFO = show_messages
 
     @staticmethod
     def set_show_warnings(show_warnings):
@@ -63,7 +64,7 @@ class Logger:
 
     @staticmethod
     def set_show_all(show_messages, show_warnings, show_errors):
-        Logger.SHOW_MESSAGES = show_messages
+        Logger.SHOW_INFO = show_messages
         Logger.SHOW_WARNINGS = show_warnings
         Logger.SHOW_ERRORS = show_errors
 

@@ -9,6 +9,7 @@ from Crypto.Protocol.KDF import HKDF
 from Crypto.PublicKey import ECC
 from Crypto.Random import get_random_bytes
 from PIL import Image
+
 from backend.app.utils import Logger
 
 

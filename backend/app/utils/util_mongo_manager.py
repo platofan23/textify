@@ -3,7 +3,7 @@ from itertools import count
 
 from pymongo import MongoClient, errors
 from backend.app.utils.util_config_manager import ConfigManager
-from backend.app.utils.util_logger import Logger
+from backend.app.utils import Logger
 import gridfs
 
 class MongoDBManager:
