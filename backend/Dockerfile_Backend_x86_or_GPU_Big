@@ -1,21 +1,19 @@
-# Verwende ein schlankes NVIDIA CUDA-Basis-Image
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
-# Setze Umgebungsvariablen für Python
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/
+    PYTHONPATH=/ \
+    DEBIAN_FRONTEND=noninteractive
 
-# Installiere Python und andere notwendige Pakete
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
-    python3-dev \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    libcublas-12-1 \
-    libcublas-dev-12-1 \
     build-essential \
     git \
     libpq-dev \
@@ -24,33 +22,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libc-dev \
     curl \
     espeak-ng \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Installiere Rust mit rustup (statt apt)
+# Create virtual environment
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && export PATH="/root/.cargo/bin:$PATH" \
     && rustup default stable \
     && rustc --version
 
-# Set Rust environment variables
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Setze Python als Standard
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-
-# Arbeitsverzeichnis im Container
 WORKDIR /backend
-
-# Kopiere die restlichen Projektdateien
 COPY ./ /backend
 
-# Installiere die CUDA-fähige Version von PyTorch explizit
-RUN python3.11 -m pip install --no-cache-dir --upgrade pip \
-    && python3.11 -m pip install --no-cache-dir torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121  \
-    && python3.11 -m pip install --no-cache-dir -r /backend/resources/resources.txt
+RUN python3 -m pip install --no-cache-dir \
+    torch==2.5.1+cu121 \
+    torchvision==0.20.1+cu121 \
+    torchaudio==2.5.1+cu121 \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    && python3 -m pip install --no-cache-dir -r /backend/resources/resources.txt
 
-# Expose-Port für die Anwendung
 EXPOSE 5555
-
-# Anwendung starten
 CMD ["hypercorn", "-b", "0.0.0.0:5555", "--certfile", "./resources/certs/server.crt", "--keyfile", "./resources/certs/server.key", "backend.app.main:app"]
