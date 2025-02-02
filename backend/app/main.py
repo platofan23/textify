@@ -17,7 +17,7 @@ Logger.info("API routes registered successfully.")
 
 # Run unit tests
 Logger.info("Running unit tests before application startup.")
-#run_tests()
+run_tests()
 
 # Preload models
 Logger.info("Preloading models for translation services.")
