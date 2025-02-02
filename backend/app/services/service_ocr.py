@@ -5,6 +5,8 @@ from typing import Literal
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 
+from backend.app.utils import Logger
+
 DEVICE = torch.device("cuda:0")
 
 def multi_reader(image, model: Literal["easyocr", "doctr"] = "easyocr", language=None):
@@ -12,6 +14,7 @@ def multi_reader(image, model: Literal["easyocr", "doctr"] = "easyocr", language
         language = "en"
 
     if model == "easyocr":
+        Logger.debug(type(image))
         return reader_easyocr(image, [language])
     elif model == "doctr":
         return reader_doctr(image)

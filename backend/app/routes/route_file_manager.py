@@ -1,3 +1,6 @@
+import io
+
+from PIL import Image
 from flask import send_file
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
@@ -50,16 +53,28 @@ class UploadFile(Resource):
                 total_size += len(file.read())
                 file.seek(0)
                 if total_size > MAX_TOTAL_SIZE:
+
                     # Reverse changes by deleting uploaded files
                     for file_id in file_ids:
                         mongo_manager.delete_documents(config_manager.get_mongo_config().get("user_files_collection"), {'_id': file_id}, use_GridFS=False)
+                        mongo_manager.delete_documents(config_manager.get_mongo_config().get("user_text_collection"), {'file_id': file_id.inserted_id}, use_GridFS=False)
                     Logger.error(f'Total file size exceeds {MAX_TOTAL_SIZE} bytes')
                     return {'error': f'Total file size exceeds {MAX_TOTAL_SIZE} bytes'}, 413
 
+                # Encrypt file
                 encrypted_file_lib = crypt.encrypt_file(user, file)
                 crypt.get_encrypted_file_size_mb(encrypted_file_lib)
 
+                # Perform OCR
+                file.seek(0)  # Reset file pointer to the beginning
+
+                text = multi_reader(file.read(), "doctr", language="en")
+
+                # Save file to MongoDB
                 file_id = mongo_manager.insert_document(config_manager.get_mongo_config().get("user_files_collection"), {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title}, use_GridFS=False)
+                mongo_manager.insert_document(config_manager.get_mongo_config().get("user_text_collection"),
+                                              {'text': text, 'user': username, 'title': title, 'file_id': file_id.inserted_id},
+                                              use_GridFS=False)
                 file_ids.append(file_id)
                 Logger.info(f'File {file.filename} uploaded successfully')
             else:

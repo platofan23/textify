@@ -105,7 +105,8 @@ class ConfigManager:
             'connection_string': self.config['MONGO_DB']['CONNECTION_STRING'],
             'database': self.config['MONGO_DB']['MONGO_DATABASE'],
             'users_collection': self.config['MONGO_DB']['MONGO_USERS_COLLECTION'],
-            'user_files_collection': self.config['MONGO_DB']['MONGO_USER_FILES_COLLECTION']
+            'user_files_collection': self.config['MONGO_DB']['MONGO_USER_FILES_COLLECTION'],
+            'user_text_collection': self.config['MONGO_DB']['MONGO_USER_TEXT_COLLECTION']
         }
         Logger.debug("MongoDB configuration loaded.")
         return config
