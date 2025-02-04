@@ -23,7 +23,8 @@ class TTSSynthesizer:
         self.model_name = model_name
 
         # Lade das Modell mit GPU-Unterstützung
-        self.tts = TTS(model_name=model_name, gpu=(self.device == "cuda"))
+        self.tts = TTS(model_name=model_name)
+        self.tts.to(self.device)
         Logger.info(f"TTSSynthesizer initialized with model={model_name} on {self.device}.")
 
     def synthesize(self, text):
