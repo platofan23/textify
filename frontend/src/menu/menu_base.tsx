@@ -121,6 +121,14 @@ export default function Menu({
                                 >
                                     Library
                                 </ListItemButton>
+                                <ListItemButton
+                                    selected={path === "Upload"}
+                                    onClick={() => {
+                                        navigate("Upload")
+                                    }}
+                                >
+                                    Upload
+                                </ListItemButton>
                             </Accordion>
                         </ListItem>
                         <ListItem>

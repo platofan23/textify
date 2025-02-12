@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import Editor from "./Editor"
+import Editor from "./component_editor_translate"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
 import streamText from "./text_stream"
 import { Alert, Box, Button, MenuItem, Modal, Select, Typography } from "@mui/material"

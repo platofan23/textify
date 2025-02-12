@@ -8,6 +8,7 @@ import { Home } from "./components/component_home.tsx"
 import Translate from "./components/translate.tsx"
 import { BrowserRouter as Router, useNavigate } from "react-router-dom"
 import { Library } from "./pages/library.tsx"
+import FileUploadPage from "./pages/uploade_page.tsx"
 
 export interface User {
     Username: string
@@ -20,7 +21,12 @@ function MainWrap() {
         <>
             <Router>
                 <Menu setUser={setUser} user={user}>
-                    {[<Home key="Home" />, <Library key="Library" />, <Translate key="Translate" />]}
+                    {[
+                        <Home key="Home" />,
+                        <Library key="Library" />,
+                        <FileUploadPage key="Upload" />,
+                        <Translate key="Translate" />,
+                    ]}
                 </Menu>
             </Router>
         </>
