@@ -68,7 +68,8 @@ class UploadFile(Resource):
                 # Perform OCR
                 file.seek(0)  # Reset file pointer to the beginning
 
-                text = multi_reader(file.read(), "doctr", language="en")
+                text, text_font_size = multi_reader(file.read(), "doctr", language="en")
+                Logger.debug(f'Text: {text}; Font size: {text_font_size}')
 
                 # Save file to MongoDB
                 file_id = mongo_manager.insert_document(config_manager.get_mongo_config().get("user_files_collection"), {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title}, use_GridFS=False)

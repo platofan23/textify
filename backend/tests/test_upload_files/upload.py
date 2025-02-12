@@ -2,7 +2,7 @@ import requests
 
 # Prepare the file to be uploaded
 files = {
-    'File': ('test_apple_wiki.png', open('test_apple_wiki.png', 'rb'), 'image/png')
+    'File': ('Text.png', open('Text.png', 'rb'), 'image/png')
 }
 
 # Prepare the headers
