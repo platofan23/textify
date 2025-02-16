@@ -1,6 +1,6 @@
 import hashlib
 from io import BytesIO
-from backend.app.synthesizers import TTSSynthesizer
+from backend.app.synthesizers.synthezier_coqui import TTSSynthesizer
 from backend.app.utils.util_logger import Logger
 
 class TTSService:
@@ -11,57 +11,56 @@ class TTSService:
     def __init__(self, config_manager, cache_manager):
         self.config_manager = config_manager
         self.cache_manager = cache_manager
-        self.synthesizer = TTSSynthesizer()  # Coqui TTS verwenden
         Logger.info("TTSService initialized.")
 
-    def synthesize_audio(self, text, voice, language):
+    def synthesize_audio(self, text, model, speaker=None, language="de"):
         """
         Synthesizes text into speech and returns the result as a BytesIO object.
 
         Args:
-            text (str): The text to synthesize.
-            voice (str): Voice setting (currently unused for Coqui TTS).
-            language (str): Language setting (currently unused for Coqui TTS).
+            text (str): The text to convert to speech.
+            model (str): The TTS model to use.
+            speaker (str, optional): The speaker voice to use (if applicable).
+            language (str, optional): The language to use for synthesis.
 
         Returns:
-            BytesIO: In-memory WAV file.
-
-        Raises:
-            ValueError: If the input text is empty or invalid.
+            BytesIO: The generated speech audio.
         """
         if not text or not text.strip():
             Logger.error("Invalid input: Text cannot be empty or whitespace only.")
             raise ValueError("Text cannot be empty or whitespace only.")
 
+        # Ensure language is only passed for multilingual models
+        is_multi_lingual = "multilingual" in model or "xtts" in model
+        language = language if is_multi_lingual else None
+
+        Logger.info(f"🔍 Using model='{model}', speaker='{speaker}', language='{language}' for TTS.")
+
+        # Check cache
+        text_hash = hashlib.md5(text.encode()).hexdigest()
+        cache_key = f"tts-{model}-{speaker}-{language}-{text_hash}"
+
+        cached_audio = self.cache_manager.get(cache_key)
+        if cached_audio:
+            Logger.info(f"[CACHE HIT] Returning cached audio for key: {cache_key}")
+            audio_buffer = BytesIO(cached_audio)
+            audio_buffer.seek(0)
+            return audio_buffer
+
+        Logger.info(f"[CACHE MISS] No cache entry for key: {cache_key}")
+
         try:
-            # Preprocess text
-            text = text.strip()
-            if not text.endswith("."):
-                text += "."  # Sicherstellen, dass der Satz korrekt abgeschlossen ist
+            # ✅ Fix: Only pass `config_manager` and `cache_manager` to `TTSSynthesizer`
+            synthesizer = TTSSynthesizer(self.config_manager, self.cache_manager)
 
-            # Cache-Schlüssel erstellen
-            text_hash = hashlib.md5(text.encode()).hexdigest()
-            cache_key = f"tts-{voice or 'default'}-{language or 'en'}-{text_hash}"
+            # ✅ Fix: Pass `model`, `speaker`, and `language` to `synthesize()`
+            audio_buffer = synthesizer.synthesize(text, model, speaker, language)
 
-            # Cache prüfen
-            cached_audio = self.cache_manager.get(cache_key)
-            if cached_audio:
-                Logger.info(f"[CACHE HIT] Returning cached audio for key: {cache_key}")
-                audio_buffer = BytesIO(cached_audio)
-                audio_buffer.seek(0)
-                return audio_buffer
-
-            Logger.info(f"[CACHE MISS] No cache entry for key: {cache_key}")
-
-            # Audiodatei generieren
-            audio_buffer = self.synthesizer.synthesize(text)
-
-            # Cache die generierte Audiodatei
-            self.cache_manager.set(cache_key, audio_buffer.getvalue())
+            # Cache the audio
+            self.cache_manager.set(cache_key, audio_buffer if isinstance(audio_buffer, bytes) else audio_buffer.getvalue())
             Logger.info(f"[CACHE SET] Stored audio in cache for key: {cache_key}")
 
             return audio_buffer
         except Exception as e:
-            Logger.error(f"Error during TTS synthesis: {str(e)}")
+            Logger.error(f"❌ Error during TTS synthesis: {str(e)}")
             raise
-

@@ -1,62 +1,95 @@
 import tempfile
 import os
-import torch
 from io import BytesIO
 from TTS.api import TTS
 from backend.app.utils.util_logger import Logger
-
 
 class TTSSynthesizer:
     """
     Synthesizes text into speech using the Coqui TTS library with GPU support.
     """
 
-    def __init__(self, model_name="tts_models/de/thorsten/tacotron2-DCA"):
+    def __init__(self, config_manager, cache_manager):
         """
-        Initializes the TTS synthesizer with a specified model.
+        Initializes the TTS synthesizer with caching support.
 
         Args:
-            model_name (str): The name of the Coqui TTS model to use.
+            config_manager (ConfigManager): Configuration manager instance.
+            cache_manager (CacheManager): Cache manager instance.
         """
-        # Prüfe, ob eine GPU verfügbar ist
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model_name = model_name
+        self.config_manager = config_manager
+        self.cache_manager = cache_manager
+        self.device = "cuda" if self.config_manager.get_torch_device() == "cuda" else "cpu"
 
-        # Lade das Modell mit GPU-Unterstützung
-        self.tts = TTS(model_name=model_name)
-        self.tts.to(self.device)
-        Logger.info(f"TTSSynthesizer initialized with model={model_name} on {self.device}.")
+        # Dictionary to store loaded models in memory
+        self.loaded_models = {}
 
-    def synthesize(self, text):
+    def get_model(self, model_name):
+        """
+        Loads a model if not already cached.
+
+        Args:
+            model_name (str): The TTS model to load.
+
+        Returns:
+            TTS: Loaded TTS model instance.
+        """
+        if model_name in self.loaded_models:
+            Logger.info(f"✅ Using cached model: {model_name}")
+            return self.loaded_models[model_name]
+
+        Logger.info(f"⚠️ Loading model: {model_name}...")
+        try:
+            model = TTS(model_name=model_name)
+            model.to(self.device)
+            self.loaded_models[model_name] = model  # Cache model in memory
+            Logger.info(f"✅ Model '{model_name}' loaded successfully.")
+            return model
+        except Exception as e:
+            Logger.error(f"❌ Failed to load model '{model_name}': {str(e)}")
+            raise
+
+    def synthesize(self, text, model, speaker=None, language=None):
         """
         Synthesizes the given text into a WAV file in memory.
 
         Args:
             text (str): The text to synthesize.
+            model (str): The TTS model to use.
+            speaker (str, optional): The speaker voice to use (if applicable).
+            language (str, optional): The language to use.
 
         Returns:
             BytesIO: In-memory WAV file.
         """
         try:
-            Logger.info(f"Synthesizing text with Coqui TTS on {self.device}...")
+            Logger.info(f"🔊 Synthesizing text using model='{model}', speaker='{speaker}', language='{language}'...")
 
-            # Temporäre Datei erstellen (Windows-kompatibel)
+            # Dynamically load the correct model
+            tts = self.get_model(model)
+
+            # Create a temporary file for output
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
-                temp_filename = tmpfile.name  # Speichere den Dateipfad
+                temp_filename = tmpfile.name
 
-            # Synthese in die Datei schreiben (mit GPU-Unterstützung)
-            self.tts.tts_to_file(text=text, file_path=temp_filename)
+            # Generate speech
+            tts.tts_to_file(
+                text=text,
+                file_path=temp_filename,
+                speaker=speaker,
+                language=language
+            )
 
-            # Datei in BytesIO einlesen
+            # Load generated audio into memory
             with open(temp_filename, "rb") as f:
                 audio_buffer = BytesIO(f.read())
 
-            # Datei manuell löschen (weil delete=False)
+            # Clean up temp file
             os.remove(temp_filename)
 
-            Logger.info("Audio synthesis completed successfully.")
+            Logger.info("✅ Audio synthesis completed successfully.")
             audio_buffer.seek(0)
             return audio_buffer
         except Exception as e:
-            Logger.error(f"Error during synthesis: {str(e)}")
+            Logger.error(f"❌ Error during synthesis: {str(e)}")
             raise

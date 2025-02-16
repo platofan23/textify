@@ -11,7 +11,7 @@ class MongoDBManager:
     A singleton class to manage MongoDB operations.
 
     Provides basic methods for interacting with a MongoDB database, such as inserting,
-    finding, and deleting documents.
+    finding, and deleting documents. Also includes a health check method.
 
     Attributes:
         client (MongoClient): The MongoDB client instance.
@@ -34,7 +34,6 @@ class MongoDBManager:
     def _initialize(self):
         """
         Initializes the MongoDB connection.
-
         """
         self.config_manager = ConfigManager()
 
@@ -62,15 +61,6 @@ class MongoDBManager:
     def get_collection(self, collection_name: str):
         """
         Retrieves a MongoDB collection.
-
-        Args:
-            collection_name (str): The name of the collection to retrieve.
-
-        Returns:
-            Collection: The MongoDB collection instance.
-
-        Raises:
-            ValueError: If the collection does not exist.
         """
         if collection_name not in self.db.list_collection_names():
             Logger.warning(f"Attempt to access non-existent collection '{collection_name}'.")
@@ -78,17 +68,24 @@ class MongoDBManager:
         Logger.info(f"Retrieved collection '{collection_name}'.")
         return self.db[collection_name]
 
+    def check_health(self):
+        """
+        Checks the health status of the MongoDB connection.
+
+        Returns:
+            dict: A dictionary containing the health status of the database.
+        """
+        try:
+            self.client.admin.command("ping")  # Test connection
+            Logger.info("✅ MongoDB is healthy.")
+            return {"status": "healthy", "database": "connected"}
+        except errors.PyMongoError as e:
+            Logger.error(f"❌ MongoDB health check failed: {e}")
+            return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+
     def insert_document(self, collection_name: str, document: dict, use_GridFS: bool = False):
         """
         Inserts a document into a MongoDB collection.
-
-        Args:
-            collection_name (str): The name of the collection.
-            document (dict): The document to insert.
-            use_GridFS (bool): Whether to use GridFS for large files.
-
-        Returns:
-            InsertOneResult: The result of the insert operation.
         """
         collection = self.get_collection(collection_name)
 
@@ -110,14 +107,6 @@ class MongoDBManager:
     def find_documents(self, collection_name: str, query: dict, use_GridFS: bool = False):
         """
         Finds documents in a MongoDB collection.
-
-        Args:
-            collection_name (str): The name of the collection.
-            query (dict): The query to filter documents.
-            use_GridFS (bool): Whether to use GridFS for large files.
-
-        Returns:
-            list: A list of documents that match the query.
         """
         collection = self.get_collection(collection_name)
         documents = list(collection.find(query))
@@ -140,14 +129,6 @@ class MongoDBManager:
     def delete_documents(self, collection_name: str, query: dict, use_GridFS: bool = False):
         """
         Deletes documents from a MongoDB collection.
-
-        Args:
-            collection_name (str): The name of the collection.
-            query (dict): The query to match documents to delete.
-            use_GridFS (bool): Whether to use GridFS for large files.
-
-        Returns:
-            DeleteResult: The result of the delete operation.
         """
         collection = self.get_collection(collection_name)
 

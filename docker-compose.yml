@@ -4,17 +4,23 @@ services:
   flask:
     build:
       context: ./Backend
-      dockerfile: Dockerfile_Backend_x86_or_GPU_Big
+      dockerfile: Dockerfile_Backend_arm64_or_CPU
     container_name: flask-api
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [ gpu ]
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
     environment:
       - IsDocker=True
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "https://localhost:5555/health" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     networks:
       backend:
         ipv4_address: 172.142.1.4
