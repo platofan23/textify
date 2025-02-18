@@ -2,7 +2,7 @@ import requests
 
 # Prepare the file to be uploaded
 files = {
-    'File': ('Text.png', open('Text.png', 'rb'), 'image/png')
+    'Files': ('Text.png', open('Text.png', 'rb'), 'image/png')
 }
 
 # Prepare the headers

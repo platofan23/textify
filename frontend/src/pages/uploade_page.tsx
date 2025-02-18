@@ -3,10 +3,10 @@ import { Box } from "@mui/material"
 import { Button, Typography, TextField, Grid, Paper, Alert, IconButton } from "@mui/material"
 import { CloudUpload, Delete } from "@mui/icons-material"
 import { useDropzone, FileWithPath } from "react-dropzone"
-
+import { User } from "../main.tsx"
 type FileWithPreview = FileWithPath & { preview: string }
 
-const FileUploadPage = () => {
+const FileUploadPage = ({ user }: { user: User | null }) => {
     const [title, setTitle] = useState<string>("")
     const [files, setFiles] = useState<FileWithPreview[]>([])
     const [error, setError] = useState<string>("")
@@ -49,12 +49,22 @@ const FileUploadPage = () => {
             return
         }
 
-        // Handle form submission
+        // Upload the book
         const formData = new FormData()
-        formData.append("title", title)
-        files.forEach((file) => formData.append("pages", file))
 
-        console.log("Submitting:", { title, files })
+        files.forEach((file) => formData.append("Files", file))
+
+        fetch("http://localhost:5555/upload_files", {
+            method: "POST",
+            headers: {
+                // Let the browser set the correct boundary for multipart/form-data automatically
+                // "Content-Type": "multipart/form-data",
+                User: user.Username,
+                Title: title,
+            },
+            body: formData,
+        })
+
         // Reset form
         setTitle("")
         setFiles([])

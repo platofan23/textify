@@ -28,10 +28,10 @@ class UploadFile(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('User', location='headers', required=True, help="User header is required")
         parser.add_argument('Title', location='headers', required=True, help="Title header is required")
-        parser.add_argument('File', type=FileStorage, location="files", action='append', required=True)
+        parser.add_argument('Files', type=FileStorage, location="files", action='append', required=True)
         args = parser.parse_args()
 
-        files = args['File']
+        files = args['Files']
         username = args['User']
         title = args['Title']
 
@@ -39,10 +39,13 @@ class UploadFile(Resource):
         file_ids = []
 
         # check if user exists
-        user = mongo_manager.find_documents(config_manager.get_mongo_config().get("users_collection"), {'Username': username})[0]
-        if not user:
-            Logger.error('User not found')
+        user_documents = mongo_manager.find_documents(config_manager.get_mongo_config().get("users_collection"),
+                                                      {'Username': username})
+        if not user_documents:
+            Logger.error('User not found ' + username)
             return {'error': 'User not found'}, 404
+
+        user = user_documents[0]
 
         # Save files to MongoDB
         for file in files:

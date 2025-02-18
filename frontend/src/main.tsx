@@ -24,7 +24,7 @@ function MainWrap() {
                     {[
                         <Home key="Home" />,
                         <Library key="Library" />,
-                        <FileUploadPage key="Upload" />,
+                        <FileUploadPage key="Upload" user={user} />,
                         <Translate key="Translate" />,
                     ]}
                 </Menu>
