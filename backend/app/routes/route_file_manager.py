@@ -150,3 +150,37 @@ class DeleteFile(Resource):
         except Exception as e:
             Logger.error(f'Error occurred: {str(e)}')
             return {'error': f'Error occurred: {str(e)}'}, 500
+
+
+class GetBookInfo(Resource):
+    def get(self):
+        """
+        Retrieves book information for a user.
+        Returns:
+            list: A list of books and their page counts.
+        """
+
+        # Validate parameters
+        parser = reqparse.RequestParser()
+        parser.add_argument('user', location='headers', type=str, required=True, help="User is required")
+        args = parser.parse_args()
+
+        user = args['user']
+
+        try:
+            # Retrieve books from MongoDB
+            Logger.info(f'Retrieving books for user {user}')
+            books = mongo_manager.aggregate_documents(config_manager.get_mongo_config().get("user_files_collection"),
+                                                      [{"$match": {"user": user}}, {
+                                                          "$group": {
+                                                              "_id": "$title",
+                                                              "count": {"$sum": 1}
+                                                          }}])
+
+            Logger.info(f'Books retrieved successfully')
+            Logger.debug(f'Files: {books}')
+
+            return books
+        except Exception as e:
+            Logger.error(f'Error occurred: {str(e)}')
+            return {'error': f'Error occurred: {str(e)}'}, 500

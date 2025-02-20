@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Box } from "@mui/material"
+import { Box, Grid2 } from "@mui/material"
 import { Button, Typography, TextField, Grid, Paper, Alert, IconButton } from "@mui/material"
 import { CloudUpload, Delete } from "@mui/icons-material"
 import { useDropzone, FileWithPath } from "react-dropzone"
@@ -59,7 +59,7 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
             headers: {
                 // Let the browser set the correct boundary for multipart/form-data automatically
                 // "Content-Type": "multipart/form-data",
-                User: user.Username,
+                User: user?.Username ?? "",
                 Title: title,
             },
             body: formData,
@@ -119,9 +119,9 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
                     </Alert>
                 )}
 
-                <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid2 container spacing={2} sx={{ mt: 2 }}>
                     {files.map((file) => (
-                        <Grid item xs={4} sm={3} key={file.name}>
+                        <Grid2 columns={{ xs: 3, sm: 4 }} key={file.name}>
                             <Paper sx={{ p: 1, position: "relative" }}>
                                 <img
                                     src={file.preview}
@@ -141,9 +141,9 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
                                     <Delete fontSize="small" />
                                 </IconButton>
                             </Paper>
-                        </Grid>
+                        </Grid2>
                     ))}
-                </Grid>
+                </Grid2>
 
                 <Button type="submit" variant="contained" size="large" fullWidth sx={{ mt: 3 }}>
                     Upload Book

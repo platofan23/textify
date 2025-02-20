@@ -166,3 +166,22 @@ class MongoDBManager:
             f"Deleted {result.deleted_count} documents from collection '{collection_name}' matching query: {query}."
         )
         return result
+
+    def aggregate_documents(self, collection_name: str, pipeline: list):
+        """
+        Aggregates documents in a MongoDB collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            pipeline (list): The aggregation pipeline.
+
+        Returns:
+            list: A list of documents resulting from the aggregation.
+        """
+        collection = self.get_collection(collection_name)
+        result = list(collection.aggregate(pipeline))
+        Logger.info(
+            f"Aggregated documents in collection '{collection_name}' with pipeline: {pipeline}."
+        )
+
+        return result
