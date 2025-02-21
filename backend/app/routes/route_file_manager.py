@@ -171,11 +171,20 @@ class GetBookInfo(Resource):
             # Retrieve books from MongoDB
             Logger.info(f'Retrieving books for user {user}')
             books = mongo_manager.aggregate_documents(config_manager.get_mongo_config().get("user_files_collection"),
-                                                      [{"$match": {"user": user}}, {
-                                                          "$group": {
-                                                              "_id": "$title",
-                                                              "count": {"$sum": 1}
-                                                          }}])
+                                                      [
+                                                          {
+                                                              "$match": {"user": user}
+                                                          },
+                                                          {
+                                                              "$group": {
+                                                                  "_id": "$title",
+                                                                  "count": {"$sum": 1}
+                                                              }
+                                                          },
+                                                          {
+                                                              "$sort": {"_id": 1}
+                                                          }
+                                                      ])
 
             Logger.info(f'Books retrieved successfully')
             Logger.debug(f'Files: {books}')

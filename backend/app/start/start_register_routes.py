@@ -23,8 +23,8 @@ def register_routes(api, config_manager, cache_manager):
     api.add_resource(ReadFile, '/read_file')
     Logger.info("Registered route: /read_file -> ReadFile")
 
-    api.add_resource(GetBookInfo, '/book_info')
-    Logger.info("Registered route: /book_info -> GetBookInfo")
+    api.add_resource(GetBookInfo, '/get_books')
+    Logger.info("Registered route: /get_books -> GetBookInfo")
 
     # Translation endpoints
     api.add_resource(
