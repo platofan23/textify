@@ -1,5 +1,6 @@
 from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslation, ReadFile, RegisterUser, SpeakerTTS, \
     TranslateFile, TranslateText, TTS, UploadFile, HealthCheck
+from backend.app.routes.route_tts_languages import LanguageTTS
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 
@@ -53,7 +54,12 @@ def register_routes(api, config_manager, cache_manager):
         resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager}
     )
     Logger.info("Registered route: /tts -> TTS")
-
+    api.add_resource(
+        LanguageTTS,
+        '/tts/languages',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager}
+    )
+    Logger.info("Registered route: /tts/languages -> LanguageTTS")
     api.add_resource(
         ModelTTS,
         '/tts/models',

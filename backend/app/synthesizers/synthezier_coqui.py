@@ -27,24 +27,25 @@ class TTSSynthesizer:
     def get_model(self, model_name):
         """
         Loads a model if not already cached.
-
-        Args:
-            model_name (str): The TTS model to load.
-
-        Returns:
-            TTS: Loaded TTS model instance.
         """
         if model_name in self.loaded_models:
-            Logger.info(f"✅ Using cached model: {model_name}")
+            Logger.info(f"✅ Using cached model from memory: {model_name}")
             return self.loaded_models[model_name]
 
-        Logger.info(f"⚠️ Loading model: {model_name}...")
+        Logger.info(f"⚠️ Checking if model '{model_name}' is cached...")
         try:
-            model = TTS(model_name=model_name)
-            model.to(self.device)
-            self.loaded_models[model_name] = model  # Cache model in memory
-            Logger.info(f"✅ Model '{model_name}' loaded successfully.")
-            return model
+            Logger.info(f"🛠️ [CACHE DEBUG] Checking cache for model: tts_model-{model_name}")
+            cached_model = self.cache_manager.load_cached_tts_model(model_name)
+            if cached_model:
+                Logger.info(f"✅ Loaded '{model_name}' from cache.")
+                return cached_model
+            else:
+                Logger.info(f"🔍 Model '{model_name}' not found in cache, loading fresh...")
+                model = TTS(model_name)
+                model.to(self.device)
+                self.cache_manager.cache_tts_model(model_name, model)
+                Logger.info(f"✅ Model '{model_name}' loaded and cached successfully.")
+                return model
         except Exception as e:
             Logger.error(f"❌ Failed to load model '{model_name}': {str(e)}")
             raise
@@ -64,15 +65,11 @@ class TTSSynthesizer:
         """
         try:
             Logger.info(f"🔊 Synthesizing text using model='{model}', speaker='{speaker}', language='{language}'...")
-
-            # Dynamically load the correct model
             tts = self.get_model(model)
 
-            # Create a temporary file for output
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
                 temp_filename = tmpfile.name
 
-            # Generate speech
             tts.tts_to_file(
                 text=text,
                 file_path=temp_filename,
@@ -80,11 +77,8 @@ class TTSSynthesizer:
                 language=language
             )
 
-            # Load generated audio into memory
             with open(temp_filename, "rb") as f:
                 audio_buffer = BytesIO(f.read())
-
-            # Clean up temp file
             os.remove(temp_filename)
 
             Logger.info("✅ Audio synthesis completed successfully.")

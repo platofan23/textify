@@ -22,8 +22,8 @@ class TTS(Resource):  # ✅ Ensure it inherits from Resource
         data = json_data['data']
         text = data.get('text')
         model = data.get('model', "tts_models/de/thorsten/tacotron2-DCA")  # Default model
-        speaker = data.get('speaker', None)  # Optional speaker
-        language = data.get('language', "de")  # Default language
+        speaker = data.get('speaker', None)
+        language = data.get('language', "de")
 
         if not text:
             Logger.warning("Missing required 'text' parameter in the request.")
