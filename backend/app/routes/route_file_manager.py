@@ -70,14 +70,19 @@ class UploadFile(Resource):
 
                 # Perform OCR
                 file.seek(0)  # Reset file pointer to the beginning
+                text = multi_reader(file.read(), "doctr", language="en")
+                Logger.debug(f'Text: {type(text)}')
 
-                text, text_font_size = multi_reader(file.read(), "doctr", language="en")
-                Logger.debug(f'Text: {text}; Font size: {text_font_size}')
+                # Encrypt text
+                encrypted_text = crypt.encrypt_orc_text(user, text)
+                Logger.debug(f'Encrypted text: {encrypted_text}')
+                # How to decrypt -> crypt.decrypt_ocr_text("Admin", encrypted_text)
+
 
                 # Save file to MongoDB
                 file_id = mongo_manager.insert_document(config_manager.get_mongo_config().get("user_files_collection"), {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title}, use_GridFS=False)
                 mongo_manager.insert_document(config_manager.get_mongo_config().get("user_text_collection"),
-                                              {'text': {'source': text}, 'user': username, 'title': title, 'file_id': file_id.inserted_id},
+                                              {'text': {'source': encrypted_text}, 'user': username, 'title': title, 'file_id': file_id.inserted_id},
                                               use_GridFS=False)
                 file_ids.append(file_id)
                 Logger.info(f'File {file.filename} uploaded successfully')

@@ -65,11 +65,11 @@ class Crypt:
                 "Ciphertext": ciphertext}
 
 
-    def _decrypt_file(self, user, file: dict, file_name: str):
-        Logger.info(f"Starting file decryption for {file_name}.")
+    def _decrypt_file(self, username, file: dict):
+        Logger.info(f"Starting file decryption")
         with open('./keys/private_keys.json', 'r') as f:
             data = json.load(f)
-            private_key = ECC.import_key([item for item in data if item['user'] == user][0]['private_key'])
+            private_key = ECC.import_key([item for item in data if item['user'] == username][0]['private_key'])
 
         # Retrieve encrypted data
         ephemeral_public_key_der = file["Ephemeral_public_key_der"]
@@ -91,13 +91,13 @@ class Crypt:
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
 
-        Logger.info(f"File decryption for {file_name} completed successfully.")
+        Logger.info(f"File decryption completed successfully.")
         return plaintext
 
 
-    def decrypt_png(self, user, file: dict, file_name: str):
+    def decrypt_png(self, username, file: dict, file_name: str):
         Logger.info(f"Starting PNG decryption for {file_name}.")
-        plaintext = self._decrypt_file(user, file, file_name)
+        plaintext = self._decrypt_file(username, file)
 
         # Save decrypted content as PNG
         file_path = f'./decrypted_files/decrypted_{file_name}'
@@ -130,3 +130,9 @@ class Crypt:
         )
         total_size_mb = total_size_bytes / (1024 * 1024)
         Logger.info(f'Encrypted file size: {total_size_mb} MB')
+
+    def encrypt_orc_text(self, user, text: list[dict[str, int]]):
+        return self.encrypt_file(user, io.BytesIO(json.dumps(text).encode()))
+
+    def decrypt_ocr_text(self, username, file: dict):
+        return json.loads(self._decrypt_file(username, file))

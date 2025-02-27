@@ -49,10 +49,9 @@ def reader_doctr(image):
             for line in block.lines
             for word in line.words
         ]
-        text = " ".join(word[0] for word in text_with_font_size)
-        font_sizes = [group['size'] for group in _font_size_cleanup(text_with_font_size)]
 
-        return text, font_sizes
+
+        return _font_size_cleanup(text_with_font_size)
     except Exception as e:
         Logger.error(f"Doctr OCR failed: {e}")
         raise
@@ -72,15 +71,13 @@ def _font_size_cleanup(text_with_font_size):
         text_size_list.append(font_size)
         size_avg_new = sum(text_size_list) / len(text_size_list)
 
-        Logger.debug(abs(size_avg_new - font_size))
-        Logger.warning(f"Processing index {index} of {len(text_with_font_size)}")
 
         if abs(size_avg_new - font_size) > 0.02:
             font_list.append({"text": text_list, "size": size_avg})
             text_list = []
             text_size_list = [font_size]
             size_avg = font_size
-            Logger.error("Font size cut detected")
+            Logger.debug("Font size cut detected")
         else:
             size_avg = size_avg_new
 
