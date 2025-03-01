@@ -48,6 +48,7 @@ class UploadFile(Resource):
         user = user_documents[0]
 
         # Save files to MongoDB
+        page = 1
         for file in files:
             if file.filename == '':
                 Logger.error('No selected file')
@@ -82,9 +83,10 @@ class UploadFile(Resource):
                 # Save file to MongoDB
                 file_id = mongo_manager.insert_document(config_manager.get_mongo_config().get("user_files_collection"), {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title}, use_GridFS=False)
                 mongo_manager.insert_document(config_manager.get_mongo_config().get("user_text_collection"),
-                                              {'text': {'source': encrypted_text}, 'user': username, 'title': title, 'file_id': file_id.inserted_id},
+                                              {'text': {'source': encrypted_text}, 'user': username, 'title': title, 'file_id': file_id.inserted_id, 'page': page},
                                               use_GridFS=False)
                 file_ids.append(file_id)
+                page += 1
                 Logger.info(f'File {file.filename} uploaded successfully')
             else:
                 Logger.error('Invalid file type')
