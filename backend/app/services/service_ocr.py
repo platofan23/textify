@@ -43,7 +43,7 @@ def reader_doctr(image):
         result = model(doc)
 
         text_with_font_size = [
-            (word.value, word.geometry[1][1] - word.geometry[0][1])
+            (word.value, word.geometry[1][1] - word.geometry[0][1], block.geometry)
             for page in result.pages
             for block in page.blocks
             for line in block.lines
