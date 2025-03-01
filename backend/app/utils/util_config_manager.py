@@ -141,20 +141,20 @@ class ConfigManager:
         """
         models = self.get_config_value('TTS', 'AVAILABLE_MODELS', str)
         Logger.info("TTS models retrieved: " + models)
-        return [model.strip() for model in models.split(',') if model.strip()]
+        return [models.strip() for models in models.split(',') if models.strip()]
 
     def get_tts_languages(self) -> list:
         """
         Returns a list of available TTS languages.
         """
-        languages = self.get_config_value('TTS', 'AVAILABLE_TTS_LANGUAGES', str)
+        languages = self.get_config_value('TTS', 'AVAILABLE_LANGUAGES', str)
         Logger.info("TTS languages retrieved: " + languages)
-        return [lang.strip() for lang in languages.split(',') if lang.strip()]
+        return [languages.strip() for languages in languages.split(',') if languages.strip()]
 
     def get_tts_speakers(self) -> list:
         """
         Returns a list of available TTS speakers.
         """
-        speakers = self.get_config_value('TTS', 'AVAILABLE_TTS_SPEAKERS', str)
+        speakers = self.get_config_value('TTS', 'AVAILABLE_SPEAKERS', str)
         Logger.info("TTS speakers retrieved: " + speakers)
-        return [spk.strip() for spk in speakers.split(',') if spk.strip()]
+        return [speakers.strip() for speakers in speakers.split(',') if speakers.strip()]
