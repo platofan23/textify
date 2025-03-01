@@ -13,7 +13,6 @@ def mock_config_manager():
     """
     Fixture for creating a mock configuration manager that returns preset values.
     """
-
     class MockConfigManager:
         def __init__(self):
             self.mock_config = {
@@ -23,6 +22,7 @@ def mock_config_manager():
                 'TRANSLATE': {
                     'TORCH_CPU_DEVICE': 'cpu',
                     'TORCH_GPU_DEVICE': 'cuda',
+                    'AVAILABLE_MODELS': 'Helsinki-NLP/opus-mt-en-de'
                 }
             }
 
@@ -58,8 +58,9 @@ def test_unsupported_translation_model(mock_config_manager, mock_cache_manager):
     logger.debug("Running test_unsupported_translation_model.")
     service = TranslationService(mock_config_manager, mock_cache_manager)
 
+    # For unsupported model, pass an invalid model name.
     with pytest.raises(ValueError, match="Unsupported translation model"):
-        service.translate_and_chunk_text("InvalidModel", "en", "de", "Hello")
+        service.translate_and_chunk_text("InvalidModel", "Hello")
     logger.debug("test_unsupported_translation_model passed.")
 
 
@@ -73,12 +74,12 @@ def test_translation_model_mapping(mock_config_manager, mock_cache_manager):
 
     # Define the expected mapping.
     model_mapping = {
-        "OpusMT": "Helsinki-NLP/opus-mt",
+        "OpusMT": "Helsinki-NLP/opus-mt-en-de",
         "LibreTranslate": "LibreTranslate"
     }
 
     # Assert that valid keys return the expected values.
-    assert model_mapping.get("OpusMT") == "Helsinki-NLP/opus-mt"
+    assert model_mapping.get("OpusMT") == "Helsinki-NLP/opus-mt-en-de"
     assert model_mapping.get("LibreTranslate") == "LibreTranslate"
     logger.debug("Valid model mappings verified.")
 
@@ -106,12 +107,12 @@ def test_translate_text_cache_hit(mock_config_manager, mock_cache_manager):
     mock_cache_manager.set(cache_key, ["Hallo"])
     logger.debug("Cache set with key '%s'.", cache_key)
 
-    # Retrieve the translation from the cache.
-    result = service.translate_and_chunk_text("Helsinki-NLP/opus-mt", "en", "de", "Hello")
+    # Retrieve the translation from the cache using the updated interface.
+    result = service.translate_and_chunk_text("Helsinki-NLP/opus-mt-en-de", "Hello")
     assert result == ["Hallo"], "Expected the cached result to be returned."
     logger.debug("Cache hit verified; cached result returned.")
 
-    # Print the cache hit message (for visual confirmation if needed).
+    # For visual confirmation if needed.
     print("[CACHE HIT] Returning cached text:", cache_key)
 
 
@@ -122,20 +123,19 @@ def test_translate_text_cache_miss(mock_config_manager, mock_cache_manager):
     logger.debug("Running test_translate_text_cache_miss.")
     service = TranslationService(mock_config_manager, mock_cache_manager)
 
-    # Ensure that the cache is initially empty for the given key.
+    # Define a cache key that should not exist.
     cache_key = "Helsinki-NLP/opus-mt-en-de-8b1a9953c4611296a827abf8c47804d8"
     assert mock_cache_manager.get(cache_key) is None, "Expected cache miss; key should not exist."
     logger.debug("Cache miss confirmed for key '%s'.", cache_key)
 
-    # Compute the translation (which should also update the cache).
-    result = service.translate_and_chunk_text("Helsinki-NLP/opus-mt", "en", "de", "Hello")
-    # Assert that the result does not equal a stale or incorrect value.
+    # Compute the translation (which should also update the cache) using the updated interface.
+    result = service.translate_and_chunk_text("Helsinki-NLP/opus-mt-en-de", "Hello")
+    # Assert that the result does not equal an incorrect value.
     assert result != ["Hey"], "Expected a new translation that does not match the stale value."
     logger.debug("Cache miss handled; new translation computed and cache updated.")
 
 
 if __name__ == '__main__':
-    # Start method: run the tests if this file is executed directly.
+    # Run tests if this file is executed directly.
     import pytest
-
     pytest.main()

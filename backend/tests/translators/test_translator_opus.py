@@ -25,15 +25,14 @@ def test_translate_text_opus(mock_cache_manager):
     This test ensures that:
       - The mocked models and tokenizer are set up correctly.
       - The translator generates the expected "Translated Text" output.
-      - The cache is cleared to avoid stale values.
-      - Cache saving is patched so that pickling errors with MagicMock objects are avoided.
+      - The cache is used appropriately to avoid redundant translations.
     """
     logger.debug("Starting test_translate_text_opus.")
     # Patch the MarianMTModel, MarianTokenizer and the CacheManager.get and set methods.
     with patch("backend.app.translators.translator_opus.MarianMTModel") as mock_model, \
-            patch("backend.app.translators.translator_opus.MarianTokenizer") as mock_tokenizer, \
-            patch.object(mock_cache_manager, 'get', return_value=None) as mock_cache_get, \
-            patch.object(mock_cache_manager, 'set', return_value=None) as mock_cache_set:
+         patch("backend.app.translators.translator_opus.MarianTokenizer") as mock_tokenizer, \
+         patch.object(mock_cache_manager, 'get', return_value=None) as mock_cache_get, \
+         patch.object(mock_cache_manager, 'set', return_value=None) as mock_cache_set:
         # Setup mocks for the translation pipeline.
         logger.debug("Setting up mocks for MarianMTModel and MarianTokenizer.")
         mock_tokenizer.from_pretrained.return_value = mock_tokenizer
@@ -43,12 +42,8 @@ def test_translate_text_opus(mock_cache_manager):
         mock_model.generate.return_value = ["Translated Text"]
         mock_tokenizer.batch_decode.return_value = ["Translated Text"]
 
-        # Clear cache to avoid stale values.
-        logger.debug("Clearing cache to avoid stale values.")
-        mock_cache_manager.clear_cache()
-
-        # Initialize the translator with provided language directions, cache manager, and device.
-        translator = OpusMTTranslator('en', 'de', mock_cache_manager, 'cpu')
+        # Initialize the translator with the full model name, cache manager, and device.
+        translator = OpusMTTranslator("Helsinki-NLP/opus-mt-en-de", mock_cache_manager, 'cpu')
         logger.debug("Initialized OpusMTTranslator instance.")
 
         # Act: Translate the input text.
@@ -61,7 +56,6 @@ def test_translate_text_opus(mock_cache_manager):
 
 
 if __name__ == '__main__':
-    # Start method: Run the tests if this file is executed directly.
+    # Run the tests if this file is executed directly.
     import pytest
-
     pytest.main()

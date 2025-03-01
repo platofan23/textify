@@ -1,15 +1,15 @@
 import base64
 import hashlib
 
-from backend.app.translators import OpusMTTranslator, LibreTranslateTranslator
-from backend.app.utils import TranslationModel, PDFProcessor, preprocess_text, split_text_into_chunks, join_and_split_translations
-from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
+from backend.app.translators import OpusMTTranslator
+from backend.app.utils import PDFProcessor, preprocess_text, split_text_into_chunks, join_and_split_translations
+from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class TranslationService:
     """
     Provides translation functionality for both PDF files and plain text.
 
-    This service handles translation requests by utilizing the OpusMT or LibreTranslate models,
+    This service handles translation requests by utilizing translation models,
     supports caching to avoid redundant translations, and processes PDF files page by page.
     """
     _instance = None  # Singleton instance
@@ -19,14 +19,14 @@ class TranslationService:
         Initializes TranslationService with instances of ConfigManager and CacheManager.
 
         Args:
-            config_manager (ConfigManager): Manages application configurations and device settings.
-            cache_manager (CacheManager): Handles caching of translations to optimize performance.
+            config_manager: Manages application configurations and device settings.
+            cache_manager: Handles caching of translations to optimize performance.
         """
         self.config_manager = config_manager
         self.cache_manager = cache_manager
         Logger.info("TranslationService initialized.")
 
-    def translate_file(self, file, model, sourcelanguage, targetlanguage):
+    def translate_file(self, file, model):
         """
         Translates a base64-encoded PDF file page by page.
 
@@ -35,21 +35,13 @@ class TranslationService:
 
         Args:
             file (str): Base64-encoded PDF file.
-            model (str): Translation model (OpusMT or LibreTranslate).
-            sourcelanguage (str): Source language code.
-            targetlanguage (str): Target language code.
+            model (str): Full translation model name (e.g., "Helsinki-NLP/opus-mt-en-de").
 
         Returns:
             list or dict: List of translated pages, or error message if extraction fails.
         """
-        try:
-            model_enum = TranslationModel(model)
-        except ValueError:
-            Logger.error(f"Unsupported translation model: {model}")
-            raise ValueError(f"Unsupported translation model: {model}")
-
         file_hash = hashlib.md5(file.encode()).hexdigest()
-        cache_key = f"{model_enum.value}-{sourcelanguage}-{targetlanguage}-{file_hash}"
+        cache_key = f"{model}-{file_hash}"
 
         cached_translation = self.cache_manager.get(cache_key)
         if cached_translation:
@@ -66,10 +58,9 @@ class TranslationService:
             return {"error": "Failed to extract text from PDF."}, 400
 
         translated_pages = []
-
         for i, page in enumerate(extracted_text):
             Logger.debug(f"Translating page {i + 1}.")
-            translated_text = self.translate_and_chunk_text(model, sourcelanguage, targetlanguage, page)
+            translated_text = self.translate_and_chunk_text(model, page)
             translated_pages.append(translated_text)
 
         self.cache_manager.set(cache_key, translated_pages)
@@ -77,7 +68,7 @@ class TranslationService:
 
         return translated_pages
 
-    def translate_and_chunk_text(self, model, sourcelanguage, targetlanguage, text):
+    def translate_and_chunk_text(self, model, text):
         """
         Translates plain text using the specified translation model.
 
@@ -85,24 +76,15 @@ class TranslationService:
         Caching is used to optimize performance by storing previous translations.
 
         Args:
-            model (str): Translation model (OpusMT or LibreTranslate).
-            sourcelanguage (str): Source language code.
-            targetlanguage (str): Target language code.
+            model (str): Full translation model name (e.g., "Helsinki-NLP/opus-mt-en-de").
             text (str): Text to be translated.
 
         Returns:
             list or str: Translated text or error message if translation fails.
         """
-        try:
-            model_enum = TranslationModel(model)
-        except ValueError:
-            Logger.error(f"Unsupported translation model: {model}")
-            raise ValueError(f"Unsupported translation model: {model}")
-
         text = preprocess_text(text)
-
         text_hash = hashlib.md5(text.encode()).hexdigest()
-        cache_key = f"{model_enum.value}-{sourcelanguage}-{targetlanguage}-{text_hash}"
+        cache_key = f"{model}-{text_hash}"
 
         cached_translation = self.cache_manager.get(cache_key)
         if cached_translation:
@@ -111,56 +93,33 @@ class TranslationService:
         else:
             Logger.info(f"[CACHE MISS] No cache entry for: {cache_key}")
 
-        tokenizer = OpusMTTranslator.load_tokenizer(sourcelanguage, targetlanguage)
+        # Use the model string directly as the full model name.
+        tokenizer = OpusMTTranslator.load_tokenizer(model)
         chunks = split_text_into_chunks(tokenizer, text, self.config_manager.get_config_value('TEXT', 'MAX_TOKEN', int))
 
         translated_chunks = []
         for chunk in chunks:
             Logger.debug(f"Translating chunk: {chunk[:50]}...")
-            translated_chunk = self.translate_text(model_enum, sourcelanguage, targetlanguage, chunk)
+            translated_chunk = self.translate_text(model, chunk)
             translated_chunks.append(translated_chunk)
 
         translated_text = join_and_split_translations(translated_chunks)
-
         self.cache_manager.set(cache_key, translated_text)
         Logger.info(f"[CACHE SET] Storing text translation in cache: {cache_key}")
 
         return translated_text
 
-    def translate_text(self, model_enum, sourcelanguage, targetlanguage, text):
+    def translate_text(self, model, text):
         """
         Helper method to perform actual text translation using the specified model.
 
         Args:
-            model_enum (TranslationModel): Enum representing the selected translation model.
-            sourcelanguage (str): Source language code.
-            targetlanguage (str): Target language code.
+            model (str): Full translation model name (e.g., "Helsinki-NLP/opus-mt-en-de").
             text (str): Text to translate.
 
         Returns:
             list or str: Translated text.
         """
-        if isinstance(model_enum, str):
-            model_enum = TranslationModel(model_enum)
-
-        if model_enum == TranslationModel.OPUS_MT:
-            translator = OpusMTTranslator(
-                sourcelanguage,
-                targetlanguage,
-                self.cache_manager,
-                self.config_manager.get_torch_device()
-            )
-        elif model_enum == TranslationModel.LIBRE:
-            translator = LibreTranslateTranslator(
-                sourcelanguage,
-                targetlanguage,
-                self.config_manager.get_libre_api_key(),
-                self.cache_manager,
-                self.config_manager.get_config_value('TRANSLATE', 'URL_LIBRE_TRANSLATE', str, default='http://localhost:55000/translate'),
-                self.config_manager.get_config_value('TRANSLATE', 'HEADER_LIBRE_TRANSLATE', dict, default='{"Content-Type": "application/json"}')
-            )
-        else:
-            Logger.error(f"Unsupported translation model: {model_enum.value}")
-            raise ValueError(f"Unsupported translation model: {model_enum.value}")
-
+        # Instantiate translator using the full model name.
+        translator = OpusMTTranslator(model, self.cache_manager, self.config_manager.get_torch_device())
         return translator.translate(text)

@@ -6,11 +6,27 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/
 
-# Installiere Python und andere notwendige Pakete
+# Installiere Systemabhängigkeiten
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
+    python3-dev \
+    build-essential \
+    git \
+    libpq-dev \
+    gcc \
+    ffmpeg \
+    libc-dev \
+    curl \
+    espeak-ng \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Installiere Rust mit rustup (statt apt)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/root/.cargo/bin:$PATH" \
+    && rustup default stable \
+    && rustc --version
+
+# Set Rust environment variables
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Arbeitsverzeichnis im Container
 WORKDIR /backend
@@ -18,7 +34,7 @@ WORKDIR /backend
 # Kopiere die restlichen Projektdateien
 COPY ./ /backend
 
-# Installiere die CUDA-fähige Version von PyTorch explizit
+# Installiere Python-Abhängigkeiten
 RUN python3.12 -m pip install --no-cache-dir --upgrade pip \
     && python3.12 -m pip install --no-cache-dir -r /backend/resources/resources.txt
 
