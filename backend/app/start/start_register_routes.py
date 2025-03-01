@@ -2,7 +2,7 @@ from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslati
     TranslateFile, TranslateText, TTS, UploadFile, HealthCheck
 from backend.app.routes.route_tts_languages import LanguageTTS
 from backend.app.utils.util_logger import Logger  # Import the Logger class
-from backend.app.routes.route_get_books import GetBookInfo
+from backend.app.routes import GetBookInfo
 
 
 def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_manager):

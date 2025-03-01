@@ -31,7 +31,7 @@ class Logger:
         pass
 
     @staticmethod
-    def info(message):
+    def info(message, end="\n"):
         if not Logger.SHOW_INFO:
             return
         print(Logger()._colorize(Logger._log(message, "INFO"), Logger.OKBLUE), end=end)

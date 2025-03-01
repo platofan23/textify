@@ -4,7 +4,7 @@ from .util_config_manager import ConfigManager
 from .util_pdf_processor import PDFProcessor
 from .util_text_manager import preprocess_text, split_text_into_chunks, join_and_split_translations
 from .util_mongo_manager import MongoDBManager
-from .util_crypt import Crypt
+from .util_crypt import Crypto_Manager
 
 __all__ = [
     "CacheManager",
@@ -15,5 +15,5 @@ __all__ = [
     "join_and_split_translations",
     "MongoDBManager",
     "Logger",
-    "Crypt"
+    "Crypto_Manager",
 ]
