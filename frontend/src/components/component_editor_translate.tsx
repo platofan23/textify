@@ -84,7 +84,7 @@ const Editor = forwardRef(({ readOnly, defaultValue, onTextChange, onSelectionCh
                 content: attr(data-value) !important;
             }
         `}</style>
-            <div ref={containerRef}></div>
+            <div style={{ height: 500 }} ref={containerRef}></div>
         </>
     )
 })
