@@ -6,6 +6,7 @@ from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class CacheManager:
     _instance = None  # Singleton instance
+    _dont_spam_model = False
 
     def __new__(cls, cache_file="cache.pkl", maxsize=1000, clear_cache_on_start=False):
         if cls._instance is None:
@@ -74,7 +75,9 @@ class CacheManager:
         model = self.tts_in_memory_cache.get(cache_key)
 
         if model is not None:
-            Logger.info(f" [CACHE] TTS model '{model_name}' retrieved from RAM cache.")
+            if not self._dont_spam_model:
+                self._dont_spam_model = True
+                Logger.info(f" [CACHE] TTS model '{model_name}' retrieved from RAM cache.")
         else:
             Logger.info(f"️ [CACHE] No cached TTS model found for '{model_name}'.")
 
