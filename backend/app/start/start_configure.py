@@ -5,6 +5,7 @@ from flask_cors import CORS
 import torch
 
 from backend.app.utils import ConfigManager, CacheManager
+from backend.app.utils.util_crypt import Crypto_Manager
 from backend.app.utils.util_mongo_manager import MongoDBManager
 from backend.app.utils.util_logger import Logger
 
@@ -37,6 +38,7 @@ def create_app(config_path='./config/config.ini'):
     # Initialize cache manager using configured maximum entries and clear cache on startup.
     max_entries = config_manager.get_config_value('CACHE', 'MAX_ENTRIES', int)
     cache_manager = CacheManager(maxsize=max_entries, clear_cache_on_start=True)
+    crypto_manager = Crypto_Manager()
     Logger.info(f"CacheManager initialized with max size: {max_entries}")
 
     # Initialize MongoDB manager.
@@ -56,4 +58,4 @@ def create_app(config_path='./config/config.ini'):
     ])
     Logger.info("CORS configured for allowed origins.")
 
-    return app, config_manager, cache_manager
+    return app, config_manager, cache_manager, mongo_manager, crypto_manager

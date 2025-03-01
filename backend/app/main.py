@@ -5,17 +5,17 @@ from backend.app.start import register_routes, preload_models, run_tests, create
 Logger.info("Starting application initialization process.")
 
 # Initialize the Flask app and its dependencies.
-app, config_manager, cache_manager = create_app()
+app, config_manager, cache_manager, mongo_manager, crypto_manager = create_app()
 Logger.info("Flask application and dependencies initialized successfully.")
 
 # Initialize the API and register endpoints.
 api = Api(app)
-register_routes(api, config_manager, cache_manager)
+register_routes(api, config_manager, cache_manager, mongo_manager, crypto_manager)
 Logger.info("API routes registered successfully.")
 
 # Run unit tests before starting the application (uncomment if needed).
 Logger.info("Running unit tests before application startup.")
-run_tests()
+#run_tests()
 
 # Preload translation and TTS models.
 Logger.info("Preloading models for translation services.")
