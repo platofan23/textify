@@ -30,10 +30,10 @@ class Logger:
         pass
 
     @staticmethod
-    def info(message):
+    def info(message, end='\n'):
         if not Logger.SHOW_MESSAGES:
             return
-        print(Logger()._colorize(Logger._log(message, "INFO"), Logger.OKBLUE))
+        print(Logger()._colorize(Logger._log(message, "INFO"), Logger.OKBLUE), end=end)
 
     @staticmethod
     def debug(message):
