@@ -157,4 +157,7 @@ class ConfigManager:
         """
         speakers = self.get_config_value('TTS', 'AVAILABLE_SPEAKERS', str)
         Logger.info("TTS speakers retrieved: " + speakers)
-        return [speakers.strip() for speakers in speakers.split(',') if speakers.strip()]
+        speakers = [speakers.strip() for speakers in speakers.split(',') if speakers.strip()]
+        speakers.sort()
+
+        return speakers
