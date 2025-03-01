@@ -136,7 +136,6 @@ class TTSSynthesizer:
 
             # Ensure buffer is ready to read
             audio_buffer.seek(0)
-            Logger.info(" Audio synthesis completed successfully (RAM-optimized).")
 
             return audio_buffer
 
