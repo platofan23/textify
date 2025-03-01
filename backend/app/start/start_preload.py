@@ -33,7 +33,7 @@ def _preload_translation_model(model_name: str, device: str, cache_manager):
 
 def _preload_tts_model(tts_model_name: str, device: str, cache_manager):
     """
-    Helper function to preload a TTS model exclusively in the in-memory cache.
+    Helper function to preload a TTS model and keep it in memory.
 
     Args:
         tts_model_name (str): Full TTS model name.
@@ -41,24 +41,23 @@ def _preload_tts_model(tts_model_name: str, device: str, cache_manager):
         cache_manager: Instance of CacheManager for storing preloaded TTS models.
     """
     tts_model_name = tts_model_name.strip()
-    if cache_manager.load_cached_tts_model(tts_model_name) is not None:
-        Logger.info(f"[TTS] Model '{tts_model_name}' is already preloaded and cached.")
-        return
 
     try:
-        Logger.info(f"[TTS] Loading TTS model '{tts_model_name}'...")
-        # Check cache first (though this call is redundant due to the above check)
-        cached_tts_model = cache_manager.load_cached_tts_model(tts_model_name)
-        if cached_tts_model:
-            tts_model = cached_tts_model
-            Logger.info(f"[TTS] Loaded '{tts_model_name}' from cache.")
+        Logger.info(f"🔍 [Preloading] Loading TTS model '{tts_model_name}' into RAM...")
+        tts_model = TTS(tts_model_name)
+        tts_model.to(device)
+
+        # Store model in memory cache
+        cache_manager.cache_tts_model(tts_model_name, tts_model)
+
+        #  Verify the model was stored
+        if cache_manager.load_cached_tts_model(tts_model_name):
+            Logger.info(f"[Preloading] Successfully cached TTS model '{tts_model_name}' in RAM.")
         else:
-            tts_model = TTS(tts_model_name)
-            tts_model.to(device)
-            cache_manager.cache_tts_model(tts_model_name, tts_model)
-            Logger.info(f"[TTS] Successfully preloaded and cached TTS model '{tts_model_name}'.")
+            Logger.error(f"[Preloading] Failed to cache TTS model '{tts_model_name}' in RAM!")
+
     except Exception as e:
-        Logger.error(f"[TTS] Failed to preload TTS model '{tts_model_name}': {str(e)}")
+        Logger.error(f"[Preloading] Failed to preload TTS model '{tts_model_name}': {str(e)}")
 
 
 def preload_models(config_manager, cache_manager):

@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
+import torch
 
 from backend.app.utils import ConfigManager, CacheManager
 from backend.app.utils.util_mongo_manager import MongoDBManager
@@ -21,6 +22,9 @@ def create_app(config_path='./config/config.ini'):
     # If running in Docker, use the Docker-specific configuration file.
     if os.getenv("IsDocker"):
         config_path = './config/docker.ini'
+
+    torch.set_num_threads(4)  # Use up to 4 threads for intra-op parallelism
+    torch.set_num_interop_threads(2)  # Use 2 threads for inter-op parallelism
 
     Logger.info(f"Running in Docker: {os.getenv('IsDocker')}")
 
