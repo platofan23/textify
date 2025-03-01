@@ -1,39 +1,35 @@
 import torch
 from transformers import MarianMTModel, MarianTokenizer
-from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
+from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class OpusMTTranslator:
     """
-    OpusMTTranslator uses Helsinki-NLP's MarianMT models to translate text
-    between specified languages.
+    OpusMTTranslator uses Helsinki-NLP's MarianMT models to translate text.
 
-    This class handles text translation by loading the appropriate MarianMT model
-    for the specified source and target languages. It utilizes caching to optimize
-    performance and avoid redundant translations.
+    This class handles text translation by loading the specified MarianMT model.
+    It utilizes caching to optimize performance and avoid redundant model and tokenizer loading.
 
     Args:
-        source_lang (str): Source language code (e.g., 'en').
-        target_lang (str): Target language code (e.g., 'de').
-        cache_manager (CacheManager): Cache to store and reuse translations, models, and tokenizers.
+        model_name (str): Full model name (e.g., "Helsinki-NLP/opus-mt-en-de").
+        cache_manager (CacheManager): Cache to store and reuse models and tokenizers.
         device (str): Device to load the model ('cpu' or 'cuda').
     """
 
-    def __init__(self, source_lang, target_lang, cache_manager, device):
-        model_key = f"model-{source_lang}-{target_lang}"
-        tokenizer_key = f"tokenizer-{source_lang}-{target_lang}"
+    def __init__(self, model_name, cache_manager, device):
+        model_key = f"model-{model_name}"
+        tokenizer_key = f"tokenizer-{model_name}"
 
         if cache_manager.get(model_key) and cache_manager.get(tokenizer_key):
-            Logger.info(f"✅ Model and tokenizer for '{source_lang}-{target_lang}' loaded from cache.")
+            Logger.info(f"✅ Model and tokenizer for '{model_name}' loaded from cache.")
             self.model = cache_manager.get(model_key)
             self.tokenizer = cache_manager.get(tokenizer_key)
         else:
-            model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
-            Logger.info(f"🔄 Loading model and tokenizer for '{source_lang}-{target_lang}'...")
+            Logger.info(f"🔄 Loading model and tokenizer for '{model_name}'...")
             try:
                 self.tokenizer = MarianTokenizer.from_pretrained(model_name)
             except Exception as e:
-                Logger.error(f"Unsupported language pair: {source_lang}-{target_lang}. Error: {str(e)}")
-                raise ValueError(f"Unsupported language pair: {source_lang}-{target_lang}")
+                Logger.error(f"Error loading tokenizer for model '{model_name}'. Error: {str(e)}")
+                raise ValueError(f"Error loading tokenizer for model '{model_name}'")
             self.model = MarianMTModel.from_pretrained(model_name)
             cache_manager.set(model_key, self.model)
             cache_manager.set(tokenizer_key, self.tokenizer)
@@ -42,20 +38,19 @@ class OpusMTTranslator:
         self.model.to(self.device)
 
     @staticmethod
-    def load_tokenizer(sourcelanguage: str, targetlanguage: str):
+    def load_tokenizer(model_name: str):
         """
-        Loads and returns the MarianTokenizer for the specified language pair.
+        Loads and returns the MarianTokenizer for the given model name.
 
-        Args:
-            sourcelanguage (str): Source language code.
-            targetlanguage (str): Target language code.
-
-        Returns:
-            MarianTokenizer: Tokenizer for the specified language pair.
+        Raises:
+            ValueError: If the model cannot be loaded (e.g. due to an invalid model name).
         """
-        model_name = f"Helsinki-NLP/opus-mt-{sourcelanguage}-{targetlanguage}"
-        Logger.debug(f"Loading tokenizer for language pair: {sourcelanguage}-{targetlanguage}")
-        return MarianTokenizer.from_pretrained(model_name)
+        Logger.debug(f"Loading tokenizer for model: {model_name}")
+        try:
+            return MarianTokenizer.from_pretrained(model_name)
+        except Exception as e:
+            Logger.error(f"Failed to load tokenizer for model '{model_name}': {str(e)}")
+            raise ValueError("Unsupported translation model") from e
 
     def translate(self, text):
         Logger.info(f"Translating text: {text[:50]}...")

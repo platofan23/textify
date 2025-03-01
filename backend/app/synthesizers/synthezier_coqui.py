@@ -1,13 +1,15 @@
-import tempfile
-import os
+import torch
 from io import BytesIO
 from TTS.api import TTS
+import soundfile as sf
+import numpy as np
+
 from backend.app.utils.util_logger import Logger
 import wave
 
 class TTSSynthesizer:
     """
-    Synthesizes text into speech using the Coqui TTS library with GPU support.
+    Synthesizes text into speech using the Coqui TTS library with RAM caching support.
     """
 
     def __init__(self, config_manager, cache_manager):
@@ -23,40 +25,33 @@ class TTSSynthesizer:
         self.cache_manager = cache_manager
         self.device = "cuda" if self.config_manager.get_torch_device() == "cuda" else "cpu"
 
-        # Dictionary to store loaded models in memory
-        self.loaded_models = {}
-
-
     def get_model(self, model_name):
         """
-        Loads a model if not already cached.
-
-        Args:
-            model_name (str): The TTS model to load.
-
-        Returns:
-            TTS: Loaded TTS model instance.
+        Loads a TTS model from RAM cache if available, otherwise loads and caches it.
         """
-        if model_name in self.loaded_models:
-            if not self.dont_spam_model:
-                Logger.info(f"✅ Using cached model: {model_name}")
-                self.dont_spam_model = True
-            return self.loaded_models[model_name]
+        cached_model = self.cache_manager.load_cached_tts_model(model_name)
 
-        Logger.info(f"⚠️ Loading model: {model_name}...")
-        try:
-            model = TTS(model_name=model_name)
-            model.to(self.device)
-            self.loaded_models[model_name] = model  # Cache model in memory
-            Logger.info(f"✅ Model '{model_name}' loaded successfully.")
-            return model
-        except Exception as e:
-            Logger.error(f"❌ Failed to load model '{model_name}': {str(e)}")
-            raise
+        if cached_model:
+            if not self.dont_spam_model:
+                self.dont_spam_model = True
+                Logger.info(f" [CACHE] Using preloaded TTS model from RAM: {model_name}")
+            return cached_model
+
+        # Only show the warning **once** (instead of repeating it twice)
+        Logger.warning(f"⚠️ [CACHE] No cached TTS model found for '{model_name}', loading fresh...")
+
+        model = TTS(model_name)
+        model.to(self.device)
+
+        # Store in RAM cache
+        self.cache_manager.cache_tts_model(model_name, model)
+        Logger.info(f"[CACHE] Model '{model_name}' successfully stored in RAM.")
+
+        return model
 
     def synthesize(self, text: str, model, speaker=None, language=None):
         """
-        Synthesizes the given text into a WAV file in memory.
+        Synthesizes text into speech directly in memory (optimized for speed).
 
         Args:
             text (str): The text to synthesize.
@@ -65,13 +60,11 @@ class TTSSynthesizer:
             language (str, optional): The language to use.
 
         Returns:
-            BytesIO: In-memory WAV file.
+            BytesIO: In-memory WAV file (RAM-optimized, no temp files).
         """
         try:
-            Logger.info(f"🔊 Synthesizing text using model='{model}', speaker='{speaker}', language='{language}'...")
+            Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
 
-            # Dynamically load the correct model
-            tts = self.get_model(model)
 
             Logger.info("Audio synthesis running")
             # Make text chunks
@@ -130,32 +123,25 @@ class TTSSynthesizer:
             BytesIO: In-memory WAV file.
         """
         try:
-            # Create a temporary files for output
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
-                temp_filename = tmpfile.name
-
             # Dynamically load the correct model
             tts = self.get_model(model)
 
-            # Generate speech
-            tts.tts_to_file(
-                text=text_sentence,
-                file_path=temp_filename,
-                speaker=speaker,
-                language=language
-            )
+            # Use `.tts()` to generate raw audio samples
+            with torch.no_grad():
+                audio_array = tts.tts(text=text_sentence, speaker=speaker, language=language)
 
-            # Load generated audio into memory
-            with open(temp_filename, "rb") as f:
-                audio_buffer = BytesIO(f.read())
+            # convert NumPy array to WAV format (RAM-optimized)
+            audio_buffer = BytesIO()
+            sf.write(audio_buffer, np.array(audio_array), samplerate=22050, format='WAV')  # Adjust sample rate if needed
 
-            # Clean up temp file
-            os.remove(temp_filename)
-
-
+            # Ensure buffer is ready to read
             audio_buffer.seek(0)
+            Logger.info(" Audio synthesis completed successfully (RAM-optimized).")
+
             return audio_buffer
 
         except Exception as e:
-            Logger.error(f"❌ Error during synthesis: {str(e)}")
+            Logger.error(f"Error during synthesis: {str(e)}")
             raise
+
+

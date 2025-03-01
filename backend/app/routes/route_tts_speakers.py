@@ -17,7 +17,7 @@ class SpeakerTTS(Resource):
                 return {"error": "No TTS  speakers available"}, 404
 
             Logger.info(f"Returning available TTS  speakers: { speakers}")
-            return {"models":  speakers}, 200
+            return {"speakers":  speakers}, 200
 
         except Exception as e:
             Logger.error(f"Error retrieving TTS  speakers: {str(e)}\n{traceback.format_exc()}")

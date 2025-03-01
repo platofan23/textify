@@ -2,7 +2,7 @@ from flask import request
 from flask_restful import Resource
 
 from backend.app.services import TranslationService
-from backend.app.utils.util_logger import Logger  # Importiere die Logger-Klasse
+from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class TranslateFile(Resource):
     """
@@ -30,7 +30,7 @@ class TranslateFile(Resource):
         """
         Handles POST requests to translate a PDF file.
 
-        Receives a JSON payload containing the base64-encoded PDF and translation parameters,
+        Receives a JSON payload containing the base64-encoded PDF and the model,
         validates the input, and returns the translated content or an error response.
 
         Returns:
@@ -48,19 +48,17 @@ class TranslateFile(Resource):
         # Extract required parameters from the request data
         data = json_data['data']
         model = data.get('model')
-        sourcelanguage = data.get('sourcelanguage')
-        targetlanguage = data.get('targetlanguage')
         file = data.get('file')
 
         # Validate required parameters to ensure all necessary data is provided
-        if not model or not sourcelanguage or not targetlanguage or not file:
+        if not model or not file:
             Logger.warning("Missing required parameters in the request.")
             return {"error": "Missing required parameters"}, 400
 
         # Attempt to translate the PDF file and handle potential errors
         try:
-            Logger.info(f"Starting translation with model={model}, sourcelanguage={sourcelanguage}, targetlanguage={targetlanguage}.")
-            result = self.translation_service.translate_file(file, model, sourcelanguage, targetlanguage)
+            Logger.info(f"Starting translation with model={model}.")
+            result = self.translation_service.translate_file(file, model)
             Logger.info("Translation completed successfully.")
             return {"translation": result}, 200
         except ValueError as e:
