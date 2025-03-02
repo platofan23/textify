@@ -3,7 +3,7 @@ Logger.info("Starting the application initialization process.")
 # Setting up Logger
 Logger.SHOW_ERRORS = True
 Logger.SHOW_WARNINGS = True
-Logger.SHOW_INFO = False
+Logger.SHOW_INFO = True
 Logger.SHOW_DEBUG = True
 
 

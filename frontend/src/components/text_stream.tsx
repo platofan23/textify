@@ -15,7 +15,7 @@ async function streamText(
             continue
         }
 
-        await fetch("http://localhost:5555/translate/text", {
+        await fetch("http://localhost:5558/translate/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -23,10 +23,8 @@ async function streamText(
             body: JSON.stringify({
                 data: {
                     text: text,
-                    sourcelanguage: sourcelanguage,
-                    targetlanguage: targetlanguage,
                     upload_id: upload_id,
-                    model: "Helsinki-NLP/opus-mt",
+                    model: "Helsinki-NLP/opus-mt-" + sourcelanguage + "-" + targetlanguage,
                 },
             }),
         })

@@ -43,13 +43,14 @@ def reader_doctr(image):
         result = model(doc)
 
         text_with_font_size = [
-            (word.value, word.geometry[1][1] - word.geometry[0][1], block.geometry)
+            (word.value, word.geometry[1][1] - word.geometry[0][1])
             for page in result.pages
             for block in page.blocks
             for line in block.lines
             for word in line.words
         ]
 
+        Logger.debug(f"OCR result: {text_with_font_size}")
 
         return _font_size_cleanup(text_with_font_size)
     except Exception as e:

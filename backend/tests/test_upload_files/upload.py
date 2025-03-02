@@ -12,7 +12,7 @@ headers = {
 }
 
 # Make the POST request
-response = requests.post('http://localhost:5555/upload_files', files=files, headers=headers)
+response = requests.post('http://localhost:5558/upload_files', files=files, headers=headers)
 
 # Print the response
 print(response.status_code)

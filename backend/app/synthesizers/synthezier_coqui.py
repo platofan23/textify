@@ -3,6 +3,7 @@ from io import BytesIO
 from TTS.api import TTS
 import soundfile as sf
 import numpy as np
+from debugpy.launcher import channel
 
 from backend.app.utils.util_logger import Logger
 import wave
@@ -65,9 +66,11 @@ class TTSSynthesizer:
         try:
             Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
 
+            Logger.debug(f"{text}")
 
             Logger.info("Audio synthesis running")
-            # Make text chunks
+
+            # Split the text into chunks of 252 characters
             char_count = 0
             audio_buffers = []
             last_punctuation_mark = 0
@@ -80,6 +83,7 @@ class TTSSynthesizer:
                     if last_punctuation_mark == 0:
                         i += 1
                         continue
+                    # Synthesize the text up to the last punctuation mark
                     audio_buffers.append(self._tts_for_synthesize(text[:last_punctuation_mark], model, speaker, language))
                     Logger.info(f" {i/len(text)}% of the text has been synthesized.")
                     text = text[last_punctuation_mark:]
@@ -88,7 +92,11 @@ class TTSSynthesizer:
                     last_punctuation_mark = 0
                     continue
                 i += 1
+            # If the text is shorter than 252 characters, synthesize it directly
+            if len(audio_buffers) == 0:
+                audio_buffers.append(self._tts_for_synthesize(text, model, speaker, language))
 
+            Logger.debug(f"🔊 Synthesizing {len(audio_buffers)} audio chunks...")
 
             Logger.info("✅ Audio synthesis completed successfully.")
 

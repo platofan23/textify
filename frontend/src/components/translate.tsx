@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import Editor from "./component_editor_translate"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
 import streamText from "./text_stream"
-import { Alert, Box, Button, Grid2, MenuItem, Modal, Select, Typography } from "@mui/material"
+import { Alert, Box, Button, Grid2, MenuItem, Select, Typography } from "@mui/material"
 
 const Delta = Quill.import("delta")
 
@@ -14,7 +14,7 @@ const Translate = () => {
     // Use a ref to access the quill instance directly
     const quillRefInput = useRef<Quill | null>(null)
     const quillRefOutput = useRef<Quill | null>(null)
-
+    const [readBlock, setReadBlock] = useState<boolean>(false)
     const [text, setText] = useState<string>("")
     const [LanguageError, setLanguageError] = useState<boolean>(false)
     const [sourcelanguage, setSourcelanguage] = useState<string>("de")
@@ -22,6 +22,7 @@ const Translate = () => {
     const [readButton, setReadButton] = useState<
         "inherit" | "error" | "primary" | "secondary" | "info" | "success" | "warning"
     >("primary")
+
     const Language = [
         { value: "de", label: "German" },
         { value: "en", label: "English" },
@@ -40,7 +41,6 @@ const Translate = () => {
     const appendText = (newText: string | undefined) => {
         if (newText === undefined) {
             setLanguageError(true)
-
             return
         }
         setText((prevText) => prevText + newText)
@@ -51,14 +51,50 @@ const Translate = () => {
     }, [text])
 
     function readTranslatedText() {
-        if (quillRefOutput.current?.getText() !== null) {
+        if (readBlock) {
+            return
+        }
+        if (quillRefOutput.current?.getText() == null) {
             setReadButton("error")
             setTimeout(() => {
                 setReadButton("primary")
             }, 1000)
+            return
         }
 
-        let textToRead = quillRefOutput.current?.getText()
+        if (quillRefOutput.current?.getText() !== null) {
+            setReadButton("success")
+            setReadBlock(true)
+        }
+
+        const textToRead = quillRefOutput.current?.getText().slice(0, -1)
+        const requestData = {
+            data: {
+                text: textToRead,
+                model: "tts_models/multilingual/multi-dataset/xtts_v2",
+                language: targetlanguage,
+                speaker: "Claribel Dervla",
+            },
+        }
+
+        fetch("http://localhost:5558/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+        })
+            .then((res) => res.blob())
+            .then((blob) => {
+                const audioURL = URL.createObjectURL(blob)
+                const audio = new Audio(audioURL)
+                audio.play()
+                audio.onended = () => {
+                    setReadButton("primary")
+                    setReadBlock(false)
+                }
+            })
+            .catch((error) => {
+                console.error("TTS request failed:", error)
+            })
     }
 
     async function translateText() {
@@ -235,4 +271,5 @@ const Translate = () => {
         </Box>
     )
 }
+
 export default Translate

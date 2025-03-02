@@ -10,6 +10,7 @@ from backend.app.utils.util_crypt import Crypto_Manager
 
 
 class UploadFile(Resource):
+
     def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: Crypto_Manager):
         """
         Constructor that injects MongoDBManager, ConfigManager, and Crypto_Manager for file uploads.
@@ -40,13 +41,7 @@ class UploadFile(Resource):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.allowed_extensions
 
     def post(self):
-        """
-        Handles the POST request for file uploads.
-        Expects headers:
-            - User: Username of the uploader.
-            - Title: A title for the file.
-        Expects one or more files (multipart/form-data) under the key 'File'.
-        """
+        # Validate parameters
         parser = reqparse.RequestParser()
         parser.add_argument('User', location='headers', required=True, help="User header is required")
         parser.add_argument('Title', location='headers', required=True, help="Title header is required")
@@ -60,46 +55,75 @@ class UploadFile(Resource):
         total_size = 0
         file_ids = []
 
-        # Check if the user exists in the "users" collection.
-        user_docs = self.mongo_manager.find_documents("users", {'Username': username})
-        if not user_docs:
-            Logger.error('User not found')
+        # check if user exists
+        user_documents = self.mongo_manager.find_documents(
+            self.config_manager.get_mongo_config().get("users_collection"),
+            {'Username': username})
+        if not user_documents:
+            Logger.error('User not found ' + username)
             return {'error': 'User not found'}, 404
-        user = user_docs[0]
 
+        user = user_documents[0]
+
+        # Save files to MongoDB
+        page = 1
         for file in files:
             if file.filename == '':
                 Logger.error('No selected file')
                 return {'error': 'No selected file'}, 400
+            if self.allowed_file(file.filename):
+                total_size += len(file.read())
+                file.seek(0)
+                if total_size > self.max_total_size:
 
-            if not self.allowed_file(file.filename):
+                    # Reverse changes by deleting uploaded files
+                    for file_id in file_ids:
+                        self.mongo_manager.delete_documents(
+                            self.config_manager.get_mongo_config().get("user_files_collection"), {'_id': file_id},
+                            use_GridFS=False)
+                        self.mongo_manager.delete_documents(
+                            self.config_manager.get_mongo_config().get("user_text_collection"),
+                            {'file_id': file_id.inserted_id}, use_GridFS=False)
+                    Logger.error(f'Total file size exceeds {self.max_total_size} bytes')
+                    return {'error': f'Total file size exceeds {self.max_total_size} bytes'}, 413
+
+                # Encrypt file
+                encrypted_file_lib = self.crypto_manager.encrypt_file(user, file)
+                self.crypto_manager.get_encrypted_file_size_mb(encrypted_file_lib)
+
+                # Perform OCR
+                file.seek(0)  # Reset file pointer to the beginning
+                text = multi_reader(file.read(), "doctr", language="en")
+                Logger.debug(f'Text: {type(text)}')
+
+                # Encrypt text
+                encrypted_text = self.crypto_manager.encrypt_orc_text(user, text)
+                Logger.debug(f'Encrypted text: {encrypted_text}')
+                # How to decrypt -> crypt.decrypt_ocr_text("Admin", encrypted_text)
+
+                # Ensure collection names are strings
+                user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection",
+                                                                                   "user_files")
+                user_text_collection = self.config_manager.get_mongo_config().get("user_text_collection", "user_texts")
+
+                if not isinstance(user_files_collection, str) or not isinstance(user_text_collection, str):
+                    Logger.error('Invalid collection name configuration')
+                    return {'error': 'Invalid collection name configuration'}, 500
+
+                # Save file to MongoDB
+                file_id = self.mongo_manager.insert_document(user_files_collection,
+                                                             {'file_lib': encrypted_file_lib, 'filename': file.filename,
+                                                              'user': username, 'title': title}, use_GridFS=False)
+                self.mongo_manager.insert_document(user_text_collection,
+                                                   {'text': {'source': encrypted_text}, 'user': username,
+                                                    'title': title, 'file_id': file_id.inserted_id, 'page': page},
+                                                   use_GridFS=False)
+                file_ids.append(file_id)
+                page += 1
+                Logger.info(f'File {file.filename} uploaded successfully')
+            else:
                 Logger.error('Invalid file type')
                 return {'error': 'Invalid file type'}, 415
-
-            # Calculate total size of uploaded files.
-            file_content = file.read()
-            total_size += len(file_content)
-            file.seek(0)
-            if total_size > self.max_total_size:
-                # If total size is exceeded, delete previously uploaded files.
-                for file_id in file_ids:
-                    self.mongo_manager.delete_documents(self.user_files_collection, {'_id': file_id}, use_GridFS=False)
-                Logger.error(f'Total file size exceeds {self.max_total_size} bytes')
-                return {'error': f'Total file size exceeds {self.max_total_size} bytes'}, 413
-
-            # Encrypt the file using the injected crypto_manager.
-            encrypted_file_lib = self.crypto_manager.encrypt_file(user, file)
-            size_mb = self.crypto_manager.get_encrypted_file_size_mb(encrypted_file_lib)
-            Logger.info(f'Encrypted file size: {size_mb} MB')
-
-            # Insert the encrypted file document into the file collection.
-            file_id = self.mongo_manager.insert_document(
-                self.user_files_collection,
-                {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title},
-                use_GridFS=False
-            )
-            file_ids.append(file_id)
-            Logger.info(f'File {file.filename} uploaded successfully')
 
         Logger.info('Files uploaded successfully')
         return {'message': 'Files uploaded successfully'}, 201
