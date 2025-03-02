@@ -1,5 +1,6 @@
 from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslation, ReadFile, RegisterUser, SpeakerTTS, \
-    TranslateFile, TranslateText, TTS, UploadFile, HealthCheck
+    TranslateFile, TranslateText, TTS, UploadFile, HealthCheck, TTSPage
+from backend.app.routes.route_translate_page import TranslatePage
 from backend.app.routes.route_tts_languages import LanguageTTS
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 from backend.app.routes import GetBookInfo
@@ -37,6 +38,20 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager}
     )
     Logger.info("Registered route: /get_books -> GetBookInfo")
+
+    api.add_resource(
+        TranslatePage,
+        '/translate/page',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager, 'mongo_manager':mongo_manager, 'crypto_manager':crypto_manager}
+    )
+    Logger.info("Registered route: /translate/page -> TranslatePage")
+
+    api.add_resource(
+        TTSPage,
+        '/tts/page',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager, 'mongo_manager':mongo_manager, 'crypto_manager':crypto_manager}
+    )
+    Logger.info("Registered route: /tts/page -> TTSPage")
 
     # Translation endpoints
     api.add_resource(
@@ -107,13 +122,14 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
     api.add_resource(
         LoginUser,
         '/login',
-        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager})
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
+        )
     Logger.info("Registered route: /login -> LoginUser")
 
 
     api.add_resource(
         RegisterUser,
         '/register',
-        resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager}
+        resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
         ),
     Logger.info("Registered route: /register -> RegisterUser")

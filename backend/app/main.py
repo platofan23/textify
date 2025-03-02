@@ -1,10 +1,5 @@
 from backend.app.utils import Logger  # Importiere die Logger-Klasse
 Logger.info("Starting the application initialization process.")
-# Setting up Logger
-Logger.SHOW_ERRORS = True
-Logger.SHOW_WARNINGS = True
-Logger.SHOW_INFO = False
-Logger.SHOW_DEBUG = True
 
 
 from flask_restful import Api
@@ -27,7 +22,7 @@ Logger.info("Running unit tests before application startup.")
 
 # Preload translation and TTS models.
 Logger.info("Preloading models for translation services.")
-preload_models(config_manager, cache_manager)
+#preload_models(config_manager, cache_manager)
 
 Logger.info("Application startup process completed successfully.")
 

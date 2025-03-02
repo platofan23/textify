@@ -1,7 +1,4 @@
 import io
-from PIL import Image
-from flask import send_file
-from backend.app.services import multi_reader
 from flask import send_file, make_response
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
@@ -155,7 +152,7 @@ class DownloadFile(Resource):
             Logger.info(f'File {filename} retrieved successfully')
 
             # Decrypt the file using the injected crypto_manager.
-            plain_data = self.crypto_manager.decrypt_file(username, file_entry["file_lib"], filename)
+            plain_data = self.crypto_manager.decrypt_file(username, file_entry["file_lib"])
 
             # Use BytesIO to hold the decrypted file in memory.
             file_like = io.BytesIO(plain_data)

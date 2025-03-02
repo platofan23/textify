@@ -3,9 +3,8 @@ from io import BytesIO
 from TTS.api import TTS
 import soundfile as sf
 import numpy as np
-
-from backend.app.utils.util_logger import Logger
 import wave
+from backend.app.utils.util_logger import Logger
 
 class TTSSynthesizer:
     """
@@ -28,6 +27,12 @@ class TTSSynthesizer:
     def get_model(self, model_name):
         """
         Loads a TTS model from RAM cache if available, otherwise loads and caches it.
+
+        Args:
+            model_name (str): The name of the model to load.
+
+        Returns:
+            TTS: The loaded model instance.
         """
         cached_model = self.cache_manager.load_cached_tts_model(model_name)
 
@@ -37,7 +42,6 @@ class TTSSynthesizer:
                 Logger.info(f" [CACHE] Using preloaded TTS model from RAM: {model_name}")
             return cached_model
 
-        # Only show the warning **once** (instead of repeating it twice)
         Logger.warning(f"⚠️ [CACHE] No cached TTS model found for '{model_name}', loading fresh...")
 
         model = TTS(model_name)
@@ -65,49 +69,57 @@ class TTSSynthesizer:
         try:
             Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
 
+            # Chunking logic (ensures meaningful segments)
+            text_segments = self._chunk_text(text)
+            if not text_segments:
+                raise ValueError("No valid text segments to synthesize.")
 
-            Logger.info("Audio synthesis running")
-            # Make text chunks
-            char_count = 0
             audio_buffers = []
-            last_punctuation_mark = 0
-            i = 0
-            while len(text) > i:
-                char_count += 1
-                if text[i] in [".", "!", "?"]:
-                    last_punctuation_mark = char_count
-                if char_count >= 252:
-                    if last_punctuation_mark == 0:
-                        i += 1
-                        continue
-                    audio_buffers.append(self._tts_for_synthesize(text[:last_punctuation_mark], model, speaker, language))
-                    Logger.info(f" {i/len(text)}% of the text has been synthesized.")
-                    text = text[last_punctuation_mark:]
-                    char_count = 0
-                    i = 0
-                    last_punctuation_mark = 0
-                    continue
-                i += 1
+            for i, segment in enumerate(text_segments):
+                buffer = self._tts_for_synthesize(segment, model, speaker, language)
+                if buffer and buffer.getbuffer().nbytes > 0:
+                    audio_buffers.append(buffer)
+                else:
+                    Logger.warning(f"❗ TTS returned an empty buffer for segment {i}: {segment}")
 
+            if not audio_buffers:
+                raise ValueError("❌ No valid audio buffers generated. TTS synthesis failed.")
 
             Logger.info("✅ Audio synthesis completed successfully.")
 
-
-            # Combine all audio buffers into one
-            combined_audio = BytesIO()
-            with wave.open(combined_audio, 'wb') as combined_wave:
-                for buffer in audio_buffers:
-                    with wave.open(buffer, 'rb') as wave_file:
-                        if combined_wave.getnframes() == 0:
-                            combined_wave.setparams(wave_file.getparams())
-                        combined_wave.writeframes(wave_file.readframes(wave_file.getnframes()))
-            combined_audio.seek(0)
+            # Merge all buffers into a single WAV file
+            combined_audio = self._combine_audio_buffers(audio_buffers)
             return combined_audio
 
         except Exception as e:
             Logger.error(f"❌ Error during synthesis: {str(e)}")
             raise
 
+    def _chunk_text(self, text):
+        """
+        Splits text into smaller segments for synthesis.
+
+        Args:
+            text (str): The full text to split.
+
+        Returns:
+            list: A list of segmented text chunks.
+        """
+        char_limit = 250
+        segments = []
+        current_segment = ""
+
+        for word in text.split():
+            if len(current_segment) + len(word) + 1 > char_limit:
+                segments.append(current_segment.strip())
+                current_segment = word
+            else:
+                current_segment += " " + word
+
+        if current_segment.strip():
+            segments.append(current_segment.strip())
+
+        return segments
 
     def _tts_for_synthesize(self, text_sentence: str, model, speaker=None, language=None):
         """
@@ -123,24 +135,53 @@ class TTSSynthesizer:
             BytesIO: In-memory WAV file.
         """
         try:
-            # Dynamically load the correct model
             tts = self.get_model(model)
 
-            # Use `.tts()` to generate raw audio samples
             with torch.no_grad():
                 audio_array = tts.tts(text=text_sentence, speaker=speaker, language=language)
 
-            # convert NumPy array to WAV format (RAM-optimized)
+            if len(audio_array) == 0:
+                raise ValueError("TTS returned an empty audio array.")
+
+            # Convert to WAV format
             audio_buffer = BytesIO()
-            sf.write(audio_buffer, np.array(audio_array), samplerate=22050, format='WAV')  # Adjust sample rate if needed
+            sf.write(audio_buffer, np.array(audio_array), samplerate=22050, format='WAV')
 
-            # Ensure buffer is ready to read
             audio_buffer.seek(0)
-
             return audio_buffer
 
         except Exception as e:
-            Logger.error(f"Error during synthesis: {str(e)}")
-            raise
+            Logger.error(f"Error during synthesis for text: {text_sentence[:30]}... - {str(e)}")
+            return None
 
+    def _combine_audio_buffers(self, audio_buffers):
+        """
+        Combines multiple audio buffers into a single WAV file.
 
+        Args:
+            audio_buffers (list of BytesIO): List of audio buffers to merge.
+
+        Returns:
+            BytesIO: A single WAV buffer containing all combined audio.
+        """
+        if not audio_buffers:
+            raise ValueError("❌ No audio buffers provided for merging.")
+
+        combined_audio = BytesIO()
+
+        with wave.open(combined_audio, 'wb') as combined_wave:
+            first_wave = None
+
+            for buffer in audio_buffers:
+                buffer.seek(0)
+                with wave.open(buffer, 'rb') as wave_file:
+                    params = wave_file.getparams()
+
+                    if first_wave is None:
+                        first_wave = params
+                        combined_wave.setparams(params)
+
+                    combined_wave.writeframes(wave_file.readframes(wave_file.getnframes()))
+
+        combined_audio.seek(0)
+        return combined_audio

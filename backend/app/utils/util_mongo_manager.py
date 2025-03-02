@@ -3,13 +3,12 @@ from pymongo import MongoClient, errors
 from typing import Any, Dict, List, Union
 from backend.app.utils.util_config_manager import ConfigManager
 from backend.app.utils import Logger
-import gridfs
 
 class MongoDBManager:
     """
     Singleton-Klasse zur Verwaltung von MongoDB-Operationen.
 
-    Ermöglicht grundlegende Operationen wie das Einfügen, Suchen und Löschen von Dokumenten.
+    Ermöglicht grundlegende Operationen wie das Einfügen, Suchen, Aktualisieren und Löschen von Dokumenten.
     Wenn eine Collection nicht existiert, wird diese beim ersten Insert automatisch erstellt.
     """
     _instance = None
@@ -41,7 +40,6 @@ class MongoDBManager:
             self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
             self.db = self.client[self.database_name]
             self.client.admin.command("ping")
-            Logger.warning(self.db.list_collection_names())
             Logger.info(f"Connected to MongoDB database '{self.database_name}' successfully.")
         except errors.ServerSelectionTimeoutError as e:
             Logger.error(f"Could not connect to MongoDB: {e}")
@@ -156,8 +154,24 @@ class MongoDBManager:
         """
         collection = self.get_collection(collection_name)
         result = list(collection.aggregate(pipeline))
-        Logger.info(
-            f"Aggregated documents in collection '{collection_name}' with pipeline: {pipeline}."
-        )
+        Logger.info(f"Aggregated documents in collection '{collection_name}' with pipeline: {pipeline}.")
+        return result
 
+    def update_document(self, collection_name: str, query: Dict[str, Any], update: Dict[str, Any], upsert: bool = False) -> Any:
+        """
+        Updates an element in the specified collection if it exists.
+
+        Args:
+            collection_name (str): Name of the collection.
+            query (dict): MongoDB query to identify the document.
+            update (dict): The update operations to perform.
+            upsert (bool, optional): If True, insert a new document if no document matches the query.
+                                     Defaults to False.
+
+        Returns:
+            The result of the update operation.
+        """
+        collection = self.get_collection(collection_name)
+        result = collection.update_one(query, update, upsert=upsert)
+        Logger.info(f"Updated document(s) in collection '{collection_name}' matching query: {query}. Matched: {result.matched_count}, Modified: {result.modified_count}.")
         return result
