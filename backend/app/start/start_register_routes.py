@@ -2,7 +2,7 @@ from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslati
     TranslateFile, TranslateText, TTS, UploadFile, HealthCheck, TTSPage
 from backend.app.routes.route_translate_page import TranslatePage
 from backend.app.routes.route_tts_languages import LanguageTTS
-from backend.app.utils.util_logger import Logger  # Import the Logger class
+from backend.app.utils.util_logger import Logger
 from backend.app.routes import GetBookInfo
 
 

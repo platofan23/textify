@@ -22,7 +22,7 @@ Logger.info("Running unit tests before application startup.")
 
 # Preload translation and TTS models.
 Logger.info("Preloading models for translation services.")
-#preload_models(config_manager, cache_manager)
+preload_models(config_manager, cache_manager)
 
 Logger.info("Application startup process completed successfully.")
 

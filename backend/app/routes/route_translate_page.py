@@ -1,8 +1,8 @@
-from flask import request, make_response
-from flask_restful import Resource, reqparse
-
+from flask import request
+from flask_restful import Resource
 from backend.app.services import TranslationService
 from backend.app.utils.util_logger import Logger
+
 
 class TranslatePage(Resource):
     """
@@ -13,12 +13,13 @@ class TranslatePage(Resource):
 
     def __init__(self, config_manager, cache_manager, mongo_manager, crypto_manager):
         """
-        Initializes TranslatePage with ConfigManager, CacheManager, and MongoDBManager.
+        Initializes TranslatePage with ConfigManager, CacheManager, MongoDBManager, and Crypto_Manager.
 
         Args:
             config_manager (ConfigManager): Provides configuration details.
             cache_manager (CacheManager): Manages caching of translations.
             mongo_manager (MongoDBManager): The MongoDB manager instance.
+            crypto_manager (Crypto_Manager): Manages encryption/decryption for text.
         """
         self.translation_service = TranslationService(config_manager, cache_manager)
         self.config_manager = config_manager
@@ -27,21 +28,7 @@ class TranslatePage(Resource):
         Logger.info("TranslatePage instance initialized.")
 
     def post(self):
-        """
-        Processes POST requests for page translation.
-
-        Expects a JSON payload with the following data:
-            - model: Translation model identifier.
-            - page_content: The content of the page to translate.
-            - page: The page number.
-            - title: The title of the document.
-            - user: The user associated with the document.
-
-        Returns:
-            A JSON response with the update result or an error message.
-        """
         Logger.info("POST request received for TranslatePage.")
-
         json_data = request.get_json()
         if not json_data or 'data' not in json_data:
             Logger.warning("Missing 'data' object in request.")
@@ -49,63 +36,79 @@ class TranslatePage(Resource):
 
         data = json_data['data']
         model = data.get('model')
-        text= data.get('text')
         page = data.get('page')
         title = data.get('title')
         user = data.get('user')
 
+        # Language-Detection
         try:
             language = model.rsplit('-', 1)[-1]
-        except Exception as e:
+        except Exception:
             Logger.error("Failed to extract language from model.")
             return {"error": "Invalid model format"}, 400
 
-        # Validate required parameters.
-        if not model or not text:
-            Logger.warning("Missing required parameters: model or text.")
+        # Validate required parameters
+        if not model:
+            Logger.warning("Missing required parameter: model.")
             return {"error": "Missing required parameters"}, 400
-
         if page is None:
             Logger.warning("Missing required parameter: page.")
             return {"error": "Missing required parameter: page"}, 400
 
         try:
-            Logger.info(f"Starting page translation with model: {model}.")
-            # Perform the translation using the translation service.
-            result = self.translation_service.translate_and_chunk_text(model, text)
+            Logger.info(f"Starting page translation with model={model}, page={page}, title={title}, user={user}.")
+
+            # 1) Check if there's already a translation for this language
+            user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")
+            existing_translation = self.mongo_manager.retrieve_and_decrypt_translation(
+                user=user,
+                page=page,
+                title=title,
+                language=language,
+                user_files_collection=user_files_collection,
+                crypto_manager=self.crypto_manager
+            )
+            if existing_translation:
+                # if already there, directly return
+                Logger.info(f"Translation for language '{language}' already exists. Returning existing translation.")
+                return {"translation": existing_translation}, 200
+
+            # 2) If no existing translation, decrypt the source text
+            doc, source_text = self.mongo_manager.retrieve_and_decrypt_page(
+                user=user,
+                page=page,
+                title=title,
+                user_files_collection=user_files_collection,
+                crypto_manager=self.crypto_manager
+            )
+
+            # 3) Translate
+            translated_text = self.translation_service.translate_and_chunk_text(model, source_text)
             Logger.info("Page translation completed successfully.")
 
-            encrypted_result = self.crypto_manager.encrypt_string(user, result)
-
-            # Retrieve the collection name from configuration.
+            # 4) Encrypt result & update DB
+            encrypted_result = self.crypto_manager.encrypt_string(user, translated_text)
             collection_name = self.config_manager.get_mongo_config().get("user_files_collection")
             if not collection_name:
                 Logger.error("User files collection name is not defined in the configuration.")
                 return {"error": "Configuration error: Missing collection name"}, 500
 
-            # Build the query to find the document based on title, page, and user.
             query = {"title": title, "page": page, "user": user}
-            # Build the update operation to set the new translation in the field for the detected language.
-            update_op = {"$set": {"translations." + language: encrypted_result}}
-
-            # Update the document only if it exists.
+            update_op = {"$set": {f"translations.{language}": encrypted_result}}
             update_result = self.mongo_manager.update_document(collection_name, query, update_op, upsert=True)
 
             if update_result.matched_count == 0:
                 Logger.warning(f"No matching document found for query: {query}.")
                 return {"error": "No matching document found to update"}, 404
 
-            response = {
-                "message": "Page translation updated successfully",
-                "matched_count": update_result.matched_count,
-                "modified_count": update_result.modified_count
-            }
-            Logger.info(
-                f"Update result: Matched: {update_result.matched_count}, Modified: {update_result.modified_count}.")
-            return make_response(response, 200)
+            response = {"translation": translated_text}
+            Logger.info("Text translation updated successfully.")
+            return response, 200
+
         except ValueError as ve:
             Logger.error(f"Invalid input: {str(ve)}")
             return {"error": f"Invalid input: {str(ve)}"}, 422
         except Exception as e:
-            Logger.error("Internal Server Error during page translation.")
+            Logger.error(f"Internal Server Error during page translation: {str(e)}")
             return {"error": f"Internal Server Error: {str(e)}"}, 500
+

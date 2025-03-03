@@ -337,7 +337,7 @@ class Crypto_Manager:
             raise ValueError(f"Failed to retrieve PublicKey for user '{username}': {e}")
 
     @staticmethod
-    def get_encrypted_file_size_mb(encrypted_file_lib: dict) -> float:
+    def get_encrypted_file_size_mb( encrypted_file_lib: dict) -> float:
         """
         Calculates and returns the size of the encrypted file in megabytes.
 
