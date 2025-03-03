@@ -1,6 +1,6 @@
+import "./components/polyfills.ts"
 import { StrictMode, useEffect } from "react"
 import { createRoot } from "react-dom/client"
-
 import Menu from "./menu/menu_base.tsx"
 import React from "react"
 import { Typography } from "@mui/material"

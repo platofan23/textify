@@ -237,7 +237,7 @@ class DeleteFile(Resource):
 
 
 class GetBookInfo(Resource):
-    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager):
+    def __init__(self, config_manager: ConfigManager, mongo_manager: MongoDBManager):
         """
         Constructor that injects MongoDBManager and ConfigManager for file deletion.
 

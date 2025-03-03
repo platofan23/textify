@@ -1,0 +1,52 @@
+
+
+DEBUG: OCR result: [{'Block': {'Data': [{'text': ['Voter', 'turnout', 'was'], 'size': 0.14263490188953487}, {'text': ['82.5%,', 'a', 'SIX', 'percentage', 'point', 'increase', 'from', '2021,', 'and', 'the', 'highest', 'since', 'German'], 'size': 0.15832890764758498}, {'text': ['reunification.s)'], 'size': 0.18957803415697672}], 'Block_Geometry': ((0.0400390625, 0.19125863008720928), (0.96484375, 0.673328488372093))}}] 	(called from File "C:\Users\Chris\Documents\GitHub\textify\backend\app\services\service_ocr.py", line 81)
+
+____________________________________________________
+
+
+{
+  "_id": {
+    "$oid": "67c5facb4d288d5a327e2f8b"
+  },
+  "text": {
+    "source": {
+      "DER_length": {
+        "$binary": {
+          "base64": "AAAAWw==",
+          "subType": "00"
+        }
+      },
+      "Ephemeral_public_key_der": {
+        "$binary": {
+          "base64": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0XDaGupORapzmEOTINq+a2wVYW9E3A5Hp3d/BpA7cxdZ0lR8xcDi1HfJNjy4Bdz/xThfMpLlVZOOzp/qg+FQng==",
+          "subType": "00"
+        }
+      },
+      "Nonce": {
+        "$binary": {
+          "base64": "pgR+qUlr7zr81BldQWSlLQ==",
+          "subType": "00"
+        }
+      },
+      "Tag": {
+        "$binary": {
+          "base64": "Q7BjVkyaw/Dr3gfrRCNfoA==",
+          "subType": "00"
+        }
+      },
+      "Ciphertext": {
+        "$binary": {
+          "base64": "aW8hypHTEcgOL4laquB17atIN+Zi1eD+Tw7UTVydUn8Di21kjYsAIMixJlR/PcLyT0UYtvdWqbU6ZrCZ/GJ5WPcNYeoTk5oXsrT5IA1dF2qPKwi14Nla34lK2Sl/WqdakHHP0rNBm6DDC4lkALA9VXH1y6VF4iqHwAC3ENBCiwaruBaTUV9gBUfR3qND+brBd+qiiNSeXMX4kvmGngLe9UWv4gMsryUA8eCeBrV2NSv7HmsbcRG1PxGJXymiHn0XXXfW+6jKX+popITgHm8BaotXLzywVUFnV5nSip+UJiupHv13vTnjmwE0xP0l2JAi0KR2Zq+RwzjeitFAcZ45rvdD6HgoBHvHkZFY4NPYlPh4xRkL9DVyDMtnZ7Hi42CoDA2zIT0w7Iu83UagJJXrTxw44V+sohp9CB/iTM006tScC6dITfvcw/fGJnphvC36nZy9iaa7aCoXFwxdE42aW04MOUavINLCgIwHkctfIWyuQ08IFlFeTNaun1J/GTzfsP13hpi7M2n4ELohcdmtDT8=",
+          "subType": "00"
+        }
+      }
+    }
+  },
+  "user": "Admin",
+  "title": "Test Title",
+  "file_id": {
+    "$oid": "67c5facb4d288d5a327e2f8a"
+  },
+  "page": 1
+}
