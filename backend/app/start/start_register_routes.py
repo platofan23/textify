@@ -34,7 +34,7 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
     api.add_resource(
         GetBookInfo,
         '/get_books',
-        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager}
     )
     Logger.info("Registered route: /get_books -> GetBookInfo")
 
