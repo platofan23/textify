@@ -1,8 +1,9 @@
 import io
+import json
 
 import gridfs
 from pymongo import MongoClient, errors
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Tuple
 from backend.app.utils.util_config_manager import ConfigManager
 from backend.app.utils import Logger
 from backend.app.utils.util_crypt import Crypto_Manager
@@ -159,94 +160,183 @@ class MongoDBManager:
         Updates a document in MongoDB or stores large binary files in GridFS.
 
         Args:
-            collection_name (str): The name of the collection.
-            query (dict): MongoDB query to find the document.
-            update (dict): The update operations (ignored if use_GridFS=True).
-            upsert (bool, optional): Whether to insert if no match is found. Defaults to False.
-            use_GridFS (bool, optional): If True, store the file using GridFS. Defaults to False.
+            collection_name (str): Name of the (GridFS-)Collection in MongoDB.
+            query (dict): The query to find the document(s).
+            update (dict): The update instructions (ignored if use_GridFS=True).
+            upsert (bool, optional): Insert if no match is found. Defaults to False.
+            use_GridFS (bool, optional): If True, store/delete files in GridFS instead of normal update.
             file_data (bytes, optional): The binary data to store (only required if use_GridFS=True).
 
         Returns:
-            result (UpdateResult or GridFS file ID): Update operation result or the GridFS file ID.
+            - GridFS file ID (if use_GridFS=True)
+            - UpdateResult (if use_GridFS=False)
         """
+        # Falls wir GridFS verwenden:
         if use_GridFS:
             if not file_data:
                 raise ValueError("file_data is required when using GridFS.")
 
             fs = gridfs.GridFS(self.db, collection=collection_name)
 
-            # Delete existing files before inserting new one
+            # 1) Alte Dateien löschen (GridFS kann nicht direkt 'updaten', daher löschen und neu anlegen).
             existing_files = fs.find(query)
-            for file in existing_files:
-                Logger.info(f"🗑️ Deleting old file with ID {file._id} from GridFS...")
-                fs.delete(file._id)
+            for old_file in existing_files:
+                Logger.info(f"🗑️ Deleting old file with ID {old_file._id} from GridFS collection '{collection_name}'.")
+                fs.delete(old_file._id)
 
-            # Store the new file in GridFS
+            # 2) Neue Datei in GridFS anlegen.
+            #    Metadaten werden aus `query` übernommen, damit man file_obj.<field> = ... abfragen kann.
             file_id = fs.put(file_data, **query)
             Logger.info(f"✅ Inserted file into GridFS collection '{collection_name}' with ID: {file_id}.")
             return file_id
 
-        # Standard document update
+        # --- Normales UpdateOne in einer Collection ---
         collection = self.get_collection(collection_name)
+
+        # Prüfen, ob im 'update' bereits ein Mongo-Operator enthalten ist.
+        # Falls nicht, fassen wir das in {"$set": ...} ein.
+        if not any(key.startswith("$") for key in update.keys()):
+            update = {"$set": update}
+
         result = collection.update_one(query, update, upsert=upsert)
+
         Logger.info(
-            f"📌 Updated document(s) in '{collection_name}' | Matched: {result.matched_count}, Modified: {result.modified_count}.")
+            f"📌 Updated document(s) in '{collection_name}' "
+            f"| Matched: {result.matched_count}, Modified: {result.modified_count}."
+        )
         return result
 
     # -------------------------------------------------------------------------
     # Spezifische Methoden (keine Code-Dupletten dank interner Hilfsmethoden!)
     # -------------------------------------------------------------------------
     def retrieve_and_decrypt_page(
-        self,
-        user: str,
-        page: int,
-        title: str,
-        user_files_collection: str,
-        crypto_manager: Crypto_Manager
-    ) -> str:
+            self,
+            user: str,
+            page: int,
+            title: str,
+            user_files_collection: str,
+            crypto_manager: Crypto_Manager
+    ) -> Union[dict, list]:
         """
         Retrieves a document from 'user_files_collection' for the given user/page/title,
-        decrypts doc['source'] using the Crypto_Manager, and returns the plaintext as a string.
+        decrypts doc['text']['source'] using the Crypto_Manager, and returns the structured data.
 
-        Raises ValueError if not found or 'source' missing.
+        Args:
+            user (str): The user requesting the document.
+            page (int): The page number.
+            title (str): The document title.
+            user_files_collection (str): MongoDB collection name.
+            crypto_manager (Crypto_Manager): The encryption manager instance.
+
+        Returns:
+            Union[dict, list]: The decrypted document structure (can be a dict or list).
+
+        Raises:
+            ValueError: If the document or the 'source' field is missing.
         """
         query = {"user": user, "page": page, "title": title}
-        Logger.info(f"Retrieving page with query={query} from {user_files_collection}.")
+        Logger.info(f"Retrieving page with query={query} from collection '{user_files_collection}'.")
+
         doc = self._retrieve_document(user_files_collection, query)
+
         if not doc:
             raise ValueError(f"No matching document found for user={user}, page={page}, title={title}.")
 
-        if "source" not in doc:
-            raise ValueError("Document does not contain 'source' field.")
-        # Entschlüsseln:
-        decrypted_bytes = self._decrypt_data(user, doc["source"], crypto_manager)
-        return decrypted_bytes.decode("utf-8")
+        if "text" not in doc or "source" not in doc["text"]:
+            raise ValueError("Document does not contain 'text' or 'source' field.")
+
+        # Entschlüsselung des 'source'-Blocks innerhalb 'text'
+        encrypted_source = doc["text"]["source"]
+        decrypted_bytes = self._decrypt_data(user, encrypted_source, crypto_manager)
+
+        try:
+            # Konvertiere das entschlüsselte Byte-Array zurück zu JSON
+            decrypted_data = json.loads(decrypted_bytes.decode("utf-8"))
+            Logger.info(f"Successfully decrypted source text. Data type: {type(decrypted_data)}")
+
+            if not isinstance(decrypted_data, (dict, list)):
+                raise ValueError(f"Unexpected decrypted format: Expected dict or list, got {type(decrypted_data)}")
+
+            return decrypted_data
+
+        except json.JSONDecodeError as e:
+            Logger.error(f"Failed to parse decrypted source text: {str(e)}")
+            raise ValueError("Decrypted source text is not a valid JSON format.")
 
     def retrieve_and_decrypt_tts_audio(
-        self,
-        user: str,
-        page: int,
-        title: str,
-        language: str,
-        tts_files_collection: str,
-        crypto_manager: Crypto_Manager
-    ) -> (Union[dict, None], Union[io.BytesIO, None]):
+            self,
+            user: str,
+            page: int,
+            title: str,
+            language: str,
+            tts_files_collection: str,
+            crypto_manager: Crypto_Manager
+    ) -> Tuple[Union[dict, None], Union[io.BytesIO, None]]:
         """
-        Checks if there's a TTS doc for (user, page, title, language) in 'tts_files_collection',
-        decrypts doc["encrypted_audio"], and returns (doc, audio_buffer).
-        Or (None, None) if not found or no 'encrypted_audio'.
+        Retrieves encrypted TTS audio from GridFS by user/page/title/language,
+        decrypts it, and returns (doc, audio_buffer).
+        If not found or missing audio, returns (None, None).
+
+        Args:
+            user (str): The username (for loading the user's private key).
+            page (int): The page number.
+            title (str): The document title.
+            language (str): The TTS audio language or voice tag.
+            tts_files_collection (str): The name of the GridFS collection for TTS files.
+            crypto_manager (Crypto_Manager): For decrypting the audio.
+
+        Returns:
+            (dict or None, io.BytesIO or None):
+                - A dictionary with the file's metadata (doc) if found,
+                - A BytesIO stream with the decrypted audio.
+                or (None, None) if not found or missing.
         """
         query = {"user": user, "page": page, "title": title, "language": language}
-        Logger.info(f"Retrieving TTS audio with query={query} from {tts_files_collection}.")
-        doc = self._retrieve_document(tts_files_collection, query)
-        if not doc or "encrypted_audio" not in doc or not doc["encrypted_audio"]:
-            Logger.info("No TTS audio doc or 'encrypted_audio' missing/empty -> (None, None).")
+        Logger.info(f"Retrieving TTS audio with query={query} from GridFS collection '{tts_files_collection}'.")
+
+        fs = gridfs.GridFS(self.db, collection=tts_files_collection)
+
+        # Finde passendes TTS-File in GridFS
+        matching_files = list(fs.find(query))
+        if not matching_files:
+            Logger.info(f"No TTS audio found for {query}. -> (None, None)")
             return None, None
 
-        decrypted_bytes = self._decrypt_data(user, doc["encrypted_audio"], crypto_manager)
-        audio_buffer = io.BytesIO(decrypted_bytes)
-        audio_buffer.seek(0)
-        return doc, audio_buffer
+        # Nimm das erste gefundene. (Wenn du mehrere Versionen haben kannst, musst du ggf. alle durchgehen.)
+        file_obj = matching_files[0]
+        Logger.debug(f"Found TTS GridFS file ID={file_obj._id}. Retrieving data...")
+
+        # Gelesene verschlüsselte Bytes
+        encrypted_audio_data = file_obj.read()
+        if not encrypted_audio_data:
+            Logger.info("Found TTS file but it is empty -> (None, None).")
+            return None, None
+
+        Logger.info("Decrypting existing TTS audio.")
+        # Audio entschlüsseln
+        try:
+            decrypted_audio_bytes = crypto_manager.decrypt_file(user, encrypted_audio_data)
+            audio_buffer = io.BytesIO(decrypted_audio_bytes)
+            audio_buffer.seek(0)
+        except Exception as e:
+            Logger.error(f"Failed to decrypt TTS audio: {str(e)}")
+            return None, None
+
+        Logger.info("Successfully retrieved existing TTS audio from GridFS.")
+        # dateiMetadaten = file_obj (enthält doc._id, length, uploadDate, etc.)
+        # Du kannst das in ein dict konvertieren oder so zurückgeben.
+        file_doc = {
+            "_id": file_obj._id,
+            "filename": file_obj.filename,
+            "user": file_obj.user if hasattr(file_obj, "user") else None,
+            "page": file_obj.page if hasattr(file_obj, "page") else None,
+            "title": file_obj.title if hasattr(file_obj, "title") else None,
+            "language": file_obj.language if hasattr(file_obj, "language") else None,
+            "length": file_obj.length,
+            "uploadDate": file_obj.uploadDate
+        }
+
+        return file_doc, audio_buffer
 
     def retrieve_and_decrypt_translation(
         self,

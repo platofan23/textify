@@ -60,44 +60,61 @@ class TTSPage(Resource):
             # 2️⃣ **Retrieve text from DB if no audio found**
             Logger.info("No existing TTS audio found. Fetching text from DB.")
             user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")
-            text = self.mongo_manager.retrieve_and_decrypt_page(
+            text_data = self.mongo_manager.retrieve_and_decrypt_page(
                 user=user, page=page, title=title, user_files_collection=user_files_collection,
                 crypto_manager=self.crypto_manager
             )
-            Logger.info("Text retrieved from DB for TTS synthesis.")
 
-            if not text:
+            if not text_data:
                 Logger.warning("No text found in DB for TTS synthesis.")
                 return {"error": "No text available to synthesize."}, 404
+
+            # 🔹 **Convert text structure to a single string**
+            text = self._extract_text_from_structure(text_data)
+
+            if not text.strip():
+                Logger.warning("Extracted text is empty after formatting.")
+                return {"error": "Extracted text is empty. Cannot proceed with TTS."}, 400
+
+            Logger.info(f"Extracted text for TTS synthesis: {text[:100]}...")  # Log first 100 chars
 
             # 3️⃣ **Generate TTS audio**
             Logger.info("Synthesizing new TTS audio.")
             audio_buffer = self.tts_service.synthesize_audio(text, model, speaker, language)
-            Logger.info("Audio synthesis completed successfully.")
+
+            # 🔹 **Ensure we have a BytesIO object**
+            if not isinstance(audio_buffer, io.BytesIO):
+                raise ValueError("TTS output is not a valid BytesIO object.")
+
+            audio_buffer.seek(0)
+            file_data = audio_buffer.read()  # Convert to bytes
 
             # 4️⃣ **Encrypt and Store in GridFS**
-            encrypted_audio = self.crypto_manager.encrypt_audio(user, audio_buffer)
+            encrypted_audio = self.crypto_manager.encrypt_audio(user, file_data)
 
             query = {"title": title, "page": page, "user": user, "language": language}
             update_op = {"$set": {}}  # Empty update operation for GridFS
 
             # Use GridFS for storing the audio
-            update_result = self.mongo_manager.update_document(
+            file_id = self.mongo_manager.update_document(
                 collection_name=tts_collection,
                 query=query,
                 update=update_op,
                 upsert=True,
                 use_GridFS=True,
-                gridfs_field="encrypted_audio",  # Store file in GridFS
-                file_data=encrypted_audio  # The encrypted audio data
+                file_data=encrypted_audio  # Ensure this is bytes!
             )
 
-            Logger.info(f"Stored new TTS audio in GridFS. Matched={update_result.matched_count}, Modified={update_result.modified_count}.")
+            Logger.info(f"Stored new TTS audio in GridFS with ID: {file_id}")
 
             # 5️⃣ **Return the newly synthesized audio**
             Logger.info("Returning newly synthesized TTS audio file.")
-            audio_buffer.seek(0)
-            return send_file(audio_buffer, mimetype="audio/wav", as_attachment=True, download_name="output.wav")
+
+            # 🔹 **Convert bytes back to BytesIO before sending**
+            audio_stream = io.BytesIO(file_data)
+            audio_stream.seek(0)
+
+            return send_file(audio_stream, mimetype="audio/wav", as_attachment=True, download_name="output.wav")
 
         except ValueError as ve:
             Logger.error(f"Invalid input: {str(ve)}")
@@ -105,3 +122,31 @@ class TTSPage(Resource):
         except Exception as e:
             Logger.error(f"Internal Server Error during TTS processing: {str(e)}")
             return {"error": f"Internal Server Error: {str(e)}"}, 500
+
+    def _extract_text_from_structure(self, text_data):
+        """
+        Extracts text from the structured OCR data and converts it to a single string.
+
+        Args:
+            text_data (list): List of dictionaries containing text in structured format.
+
+        Returns:
+            str: A single string with extracted text.
+        """
+        extracted_text = []
+
+        try:
+            if isinstance(text_data, list):
+                for item in text_data:
+                    if isinstance(item, dict) and "Block" in item and "Data" in item["Block"]:
+                        for entry in item["Block"]["Data"]:
+                            if "text" in entry and isinstance(entry["text"], list):
+                                extracted_text.append(" ".join(entry["text"]))
+
+            final_text = " ".join(extracted_text).strip()
+            Logger.info(f"Extracted text for TTS synthesis: {final_text[:100]}...")  # Log first 100 chars
+            return final_text
+
+        except Exception as e:
+            Logger.error(f"Error extracting text from structure: {str(e)}")
+            return ""
