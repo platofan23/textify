@@ -8,13 +8,12 @@ from Cryptodome.Hash import SHA256
 from Cryptodome.Protocol.KDF import HKDF
 from Cryptodome.PublicKey import ECC
 from Cryptodome.Random import get_random_bytes
-from PIL import Image
 from backend.app.utils import Logger
 
 
 class Crypto_Manager:
     """
-    Singleton class for performing cryptographic operations including ECC key generation,
+    Singleton class for performing cryptographic operations, including ECC key generation,
     file encryption/decryption, and authorization key management.
     """
     _instance = None
@@ -25,15 +24,21 @@ class Crypto_Manager:
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, 'initialized'):
-            try:
-                with open('./keys/private_keys.json', 'r') as f:
-                    self._private_ECC_keys_json = json.load(f)
-            except Exception as e:
-                Logger.error(f"Failed to load private keys: {e}")
-                self._private_ECC_keys_json = None
+        if not hasattr(self, "initialized"):
+            self._load_private_keys()
             self.initialized = True
             Logger.info("Crypto_Manager initialized successfully.")
+
+    def _load_private_keys(self):
+        """
+        Loads private ECC keys from the local file. If the file is not found or corrupted, initializes with None.
+        """
+        try:
+            with open("./keys/private_keys.json", "r") as f:
+                self._private_ECC_keys_json = json.load(f)
+        except Exception as e:
+            Logger.error(f"Failed to load private keys: {e}")
+            self._private_ECC_keys_json = None
 
     def generate_ecc_keys(self, username: str) -> str:
         """
@@ -45,322 +50,204 @@ class Crypto_Manager:
         Returns:
             str: The generated public key in PEM format.
         """
-        private_key = ECC.generate(curve='secp256r1')
-        Logger.info(f'Generated ECC keys for {username}')
+        private_key = ECC.generate(curve="secp256r1")
+        Logger.info(f"Generated ECC keys for {username}")
 
-        private_keys_path = './keys/private_keys.json'
+        private_keys_path = "./keys/private_keys.json"
+        self._store_private_key(private_keys_path, username, private_key)
+        return private_key.public_key().export_key(format="PEM")
+
+    def _store_private_key(self, file_path: str, username: str, private_key):
+        """
+        Stores a private ECC key in a JSON file.
+
+        Args:
+            file_path (str): Path to the private keys file.
+            username (str): Username associated with the key.
+            private_key: ECC private key object.
+        """
         try:
-            with open(private_keys_path, 'r+') as f:
+            with open(file_path, "r+") as f:
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError:
                     data = []
                 if not isinstance(data, list):
                     data = []
-                data.append({'user': username, 'private_key': private_key.export_key(format='PEM')})
+                data.append({"user": username, "private_key": private_key.export_key(format="PEM")})
                 f.seek(0)
                 json.dump(data, f)
                 f.truncate()
         except FileNotFoundError:
-            with open(private_keys_path, 'w') as f:
-                json.dump([{'user': username, 'private_key': private_key.export_key(format='PEM')}], f)
+            with open(file_path, "w") as f:
+                json.dump([{"user": username, "private_key": private_key.export_key(format="PEM")}], f)
 
-        return private_key.public_key().export_key(format='PEM')
-
-    def encrypt_file(self, user: dict, file: typing.IO) -> dict:
+    def _load_user_key(self, user: str):
         """
-        Encrypts a given file or buffer using ECC and AES-GCM.
+        Retrieves the ECC private key for the given user from storage.
 
         Args:
-            user (dict): User document containing the user's public key.
-            file (typing.IO): The file object or buffer to encrypt.
+            user (str): Username.
 
         Returns:
-            dict: A dictionary containing the encrypted file components.
-        """
-        public_key = ECC.import_key(user['PublicKey'])
-        ephemeral_key = ECC.generate(curve='secp256r1')
-        ephemeral_public_key = ephemeral_key.public_key()
-        shared_secret = ephemeral_key.d * public_key.pointQ
-        shared_secret_bytes = shared_secret.x.to_bytes(32, 'big')
-        aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
-        nonce = get_random_bytes(16)
-        cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-
-        # Read and encrypt file content
-        file.seek(0)
-        ciphertext = cipher.encrypt(file.read())
-        tag = cipher.digest()
-        ephemeral_public_key_der = ephemeral_public_key.export_key(format='DER')
-
-        return {
-            "Ephemeral_public_key_der": ephemeral_public_key_der,
-            "Nonce": nonce,
-            "Tag": tag,
-            "Ciphertext": ciphertext
-        }
-
-    def decrypt_file(self, user: str, file: dict) -> bytes:
-        """
-        Decrypts an encrypted file using the private key corresponding to the user.
-
-        Args:
-            user (str): The username used to lookup the private key.
-            file (dict): The dictionary containing encrypted file components.
-
-        Returns:
-            bytes: The decrypted file content.
+            ECC key object.
         """
         try:
-            with open('./keys/private_keys.json', 'r') as f:
+            with open("./keys/private_keys.json", "r") as f:
                 data = json.load(f)
-                private_key_str = [item for item in data if item['user'] == user][0]['private_key']
-                private_key = ECC.import_key(private_key_str)
+                private_key_str = next(item["private_key"] for item in data if item["user"] == user)
+                return ECC.import_key(private_key_str)
         except Exception as e:
             Logger.error(f"Error loading private key for user {user}: {e}")
             raise
 
-        ephemeral_public_key_der = file["Ephemeral_public_key_der"]
-        nonce = file["Nonce"]
-        tag = file["Tag"]
-        ciphertext = file["Ciphertext"]
-        ephemeral_public_key = ECC.import_key(ephemeral_public_key_der)
-        shared_secret = private_key.d * ephemeral_public_key.pointQ
-        shared_secret_bytes = shared_secret.x.to_bytes(32, 'big')
-        aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
+    def _derive_aes_key(self, shared_secret) -> bytes:
+        """
+        Derives a 32-byte AES key from the shared ECC secret using HKDF.
+
+        Args:
+            shared_secret: Shared secret computed from ECC keys.
+
+        Returns:
+            bytes: 32-byte AES key.
+        """
+        shared_secret_bytes = shared_secret.x.to_bytes(32, "big")
+        return HKDF(shared_secret_bytes, 32, b"", SHA256, 1)
+
+    def encrypt_file(self, user: dict, file: typing.IO) -> dict:
+        """
+        Encrypts a file using ECC and AES-GCM.
+
+        Args:
+            user (dict): User object containing 'PublicKey'.
+            file (typing.IO): File object to encrypt.
+
+        Returns:
+            dict: Encrypted file components.
+        """
+        public_key = ECC.import_key(user["PublicKey"])
+        ephemeral_key = ECC.generate(curve="secp256r1")
+        shared_secret = ephemeral_key.d * public_key.pointQ
+        aes_key = self._derive_aes_key(shared_secret)
+
+        nonce = get_random_bytes(16)
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+
+        file.seek(0)
+        ciphertext = cipher.encrypt(file.read())
+        tag = cipher.digest()
+
+        return {
+            "Ephemeral_public_key_der": ephemeral_key.public_key().export_key(format="DER"),
+            "Nonce": nonce,
+            "Tag": tag,
+            "Ciphertext": ciphertext,
+        }
+
+    def decrypt_file(self, user: str, file: dict) -> bytes:
+        """
+        Decrypts an encrypted file.
+
+        Args:
+            user (str): Username.
+            file (dict): Encrypted file components.
+
+        Returns:
+            bytes: Decrypted file content.
+        """
+        private_key = self._load_user_key(user)
+        ephemeral_public_key = ECC.import_key(file["Ephemeral_public_key_der"])
+        shared_secret = private_key.d * ephemeral_public_key.pointQ
+        aes_key = self._derive_aes_key(shared_secret)
+
+        cipher = AES.new(aes_key, AES.MODE_GCM, nonce=file["Nonce"])
+        plaintext = cipher.decrypt_and_verify(file["Ciphertext"], file["Tag"])
+
         Logger.info("File decryption completed successfully.")
         return plaintext
 
     def encrypt_audio(self, user: typing.Union[dict, str], file: typing.IO) -> dict:
         """
-        Encrypts a given file or buffer using ECC and AES-GCM.
+        Encrypts an audio file using ECC and AES-GCM.
 
         Args:
-            user (dict or str): A user dictionary containing 'PublicKey' or a username string.
-            file (typing.IO): The file object or buffer to encrypt.
+            user (dict or str): User dictionary containing 'PublicKey' or username.
+            file (typing.IO): File object to encrypt.
 
         Returns:
-            dict: A dictionary containing the encrypted file components.
+            dict: Encrypted file components.
         """
-        # Falls der Benutzer als String übergeben wird, PublicKey aus der Datenbank oder Datei laden
         if isinstance(user, str):
-            try:
-                with open('./keys/private_keys.json', 'r') as f:
-                    data = json.load(f)
-                    entry = next((item for item in data if item['user'] == user), None)
-                    if entry is None:
-                        raise ValueError(f"No key found for user '{user}'.")
-                    private_key = ECC.import_key(entry['private_key'])
-                    public_key = private_key.public_key()
-                    user = {"PublicKey": public_key.export_key(format='PEM')}
-            except Exception as e:
-                Logger.error(f"Failed to retrieve key for user {user}: {e}")
-                raise ValueError(f"Failed to retrieve key for user {user}: {e}")
-
-        elif "PublicKey" not in user:
-            raise ValueError("User must be a dictionary containing a 'PublicKey' field.")
+            user = {"PublicKey": self._load_user_key(user).public_key().export_key(format="PEM")}
 
         if isinstance(file, bytes):
-            file=io.BytesIO(file)
+            file = io.BytesIO(file)
         elif isinstance(file, str):
             with open(file, "rb") as f:
                 file = io.BytesIO(f.read())
 
         if not isinstance(file, io.BytesIO):
-            raise TypeError("Invaled file tpye. Must be bytes, or file path")
+            raise TypeError("Invalid file type. Must be bytes or file path.")
 
         file.seek(0)
-
-        public_key = ECC.import_key(user['PublicKey'])
-        ephemeral_key = ECC.generate(curve='secp256r1')
-        ephemeral_public_key = ephemeral_key.public_key()
-        shared_secret = ephemeral_key.d * public_key.pointQ
-        shared_secret_bytes = shared_secret.x.to_bytes(32, 'big')
-        aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
-        nonce = get_random_bytes(16)
-        cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-
-        # Read and encrypt file content
-        ciphertext = cipher.encrypt(file.read())
-        tag = cipher.digest()
-        ephemeral_public_key_der = ephemeral_public_key.export_key(format='DER')
-
-        return {
-            "Ephemeral_public_key_der": ephemeral_public_key_der,
-            "Nonce": nonce,
-            "Tag": tag,
-            "Ciphertext": ciphertext
-        }
+        return self.encrypt_file(user, file)
 
     def decrypt_audio(self, user: str, file: dict) -> io.BytesIO:
         """
-        Decrypts an encrypted file or audio buffer using the private key corresponding to the user.
+        Decrypts an encrypted audio file.
 
         Args:
-            user (str): The username used to lookup the private key.
-            file (dict): The dictionary containing encrypted file components.
+            user (str): Username.
+            file (dict): Encrypted file components.
 
         Returns:
-            io.BytesIO: A BytesIO stream containing the decrypted file content.
+            io.BytesIO: Decrypted file content as a BytesIO stream.
         """
-        try:
-            # Load the private key for the user
-            with open('./keys/private_keys.json', 'r') as f:
-                data = json.load(f)
-                private_key_str = [item for item in data if item['user'] == user][0]['private_key']
-                private_key = ECC.import_key(private_key_str)
-        except Exception as e:
-            Logger.error(f"Error loading private key for user {user}: {e}")
-            raise
-
-        try:
-            # Retrieve encryption components
-            ephemeral_public_key_der = file["Ephemeral_public_key_der"]
-            nonce = file["Nonce"]
-            tag = file["Tag"]
-            ciphertext = file["Ciphertext"]
-
-            # Import the ephemeral public key
-            ephemeral_public_key = ECC.import_key(ephemeral_public_key_der)
-
-            # Compute the shared secret
-            shared_secret = private_key.d * ephemeral_public_key.pointQ
-            shared_secret_bytes = shared_secret.x.to_bytes(32, 'big')
-
-            # Derive the AES key
-            aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
-
-            # Decrypt using AES-GCM
-            cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-            plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-
-            Logger.info("File decryption completed successfully.")
-
-            # Convert decrypted data into a BytesIO stream (for audio or file handling)
-            decrypted_stream = io.BytesIO(plaintext)
-            decrypted_stream.seek(0)  # Reset the stream position
-
-            return decrypted_stream
-
-        except Exception as e:
-            Logger.error(f"Decryption error: {e}")
-            raise ValueError("Failed to decrypt the file") from e
+        plaintext = self.decrypt_file(user, file)
+        decrypted_stream = io.BytesIO(plaintext)
+        decrypted_stream.seek(0)
+        return decrypted_stream
 
     def encrypt_string(self, user, plaintext: str) -> dict:
         """
-        Encrypts a plaintext string using ECC and AES-GCM.
+        Encrypts a plaintext string.
 
         Args:
-            user (dict or str): A user dictionary containing 'PublicKey' or a username string.
-            plaintext (str): The string to encrypt.
+            user (dict or str): User object or username.
+            plaintext (str): Text to encrypt.
 
         Returns:
-            dict: A dictionary containing the encrypted string components.
+            dict: Encrypted string components.
         """
-        if not isinstance(plaintext, str):
-            plaintext = str(plaintext)
-
-        # Falls nur der Benutzername übergeben wurde oder kein PublicKey vorhanden ist, PublicKey laden
-        if isinstance(user, str) or "PublicKey" not in user:
-            user = self._get_user_with_public_key(user)  # Automatische PublicKey-Ladung
-
-        if "PublicKey" not in user:
-            raise ValueError(f"PublicKey for user '{user.get('Username', 'Unknown')}' could not be found.")
-
-        return self.encrypt_file(user, io.BytesIO(plaintext.encode('utf-8')))
+        return self.encrypt_file(user, io.BytesIO(plaintext.encode("utf-8")))
 
     def decrypt_string(self, user: str, encrypted_data: dict) -> str:
         """
-        Decrypts an encrypted string using the private key corresponding to the user.
+        Decrypts an encrypted string.
 
         Args:
-            user (str): The username used to lookup the private key.
-            encrypted_data (dict): The dictionary containing encrypted string components.
+            user (str): Username.
+            encrypted_data (dict): Encrypted string components.
 
         Returns:
-            str: The decrypted plaintext string.
+            str: Decrypted plaintext.
         """
-        plaintext_bytes = self.decrypt_file(user, encrypted_data)
-        return plaintext_bytes.decode('utf-8')
+        return self.decrypt_file(user, encrypted_data).decode("utf-8")
 
     def add_key(self, username: str, collection) -> str:
         """
-        Generates an authorization key valid for 7 days and stores it in the user's record.
+        Generates and stores an authorization key valid for 7 days.
 
         Args:
-            username (str): The username for whom the key is created.
-            collection: The MongoDB collection object.
+            username (str): Username.
+            collection: MongoDB collection.
 
         Returns:
-            str: The generated authorization key.
+            str: Generated authorization key.
         """
-        expiration_date = datetime.now() + timedelta(days=7)
         key = secrets.token_hex(32)
         collection.update_one(
-            {'Username': username},
-            {'$push': {'AuthorizationKeys': {'Key': key, 'ExpiresAt': expiration_date}}}
+            {"Username": username},
+            {"$push": {"AuthorizationKeys": {"Key": key, "ExpiresAt": datetime.now() + timedelta(days=7)}}},
         )
         return key
-
-    def delete_expired_keys(self, collection):
-        """
-        Removes expired authorization keys from the database.
-
-        Args:
-            collection: The MongoDB collection object.
-        """
-        current_time = datetime.now()
-        Logger.info('Deleting expired authorization keys')
-        collection.update_many(
-            {},
-            {'$pull': {'AuthorizationKeys': {'ExpiresAt': {'$lt': current_time}}}}
-        )
-
-    def _get_user_with_public_key(self, username: str) -> dict:
-        """
-        Retrieves the public key for a given username.
-
-        Args:
-            username (str): The username whose public key is needed.
-
-        Returns:
-            dict: A dictionary containing 'PublicKey'.
-        """
-        try:
-            with open('./keys/private_keys.json', 'r') as f:
-                data = json.load(f)
-                user_data = next((item for item in data if item['user'] == username), None)
-
-                if user_data is None:
-                    raise ValueError(f"No key found for user '{username}'.")
-
-                private_key = ECC.import_key(user_data['private_key'])
-                public_key = private_key.public_key().export_key(format='PEM')
-
-                return {"Username": username, "PublicKey": public_key}
-
-        except FileNotFoundError:
-            raise ValueError(f"Key file not found for user '{username}'.")
-        except Exception as e:
-            raise ValueError(f"Failed to retrieve PublicKey for user '{username}': {e}")
-
-    @staticmethod
-    def get_encrypted_file_size_mb( encrypted_file_lib: dict) -> float:
-        """
-        Calculates and returns the size of the encrypted file in megabytes.
-
-        Args:
-            encrypted_file_lib (dict): Dictionary containing encrypted file components.
-
-        Returns:
-            float: Size of the encrypted file in MB.
-        """
-        total_size_bytes = (
-                len(encrypted_file_lib["Ephemeral_public_key_der"]) +
-                len(encrypted_file_lib["Nonce"]) +
-                len(encrypted_file_lib["Tag"]) +
-                len(encrypted_file_lib["Ciphertext"])
-        )
-        return total_size_bytes / (1024 * 1024)
