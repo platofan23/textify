@@ -162,6 +162,17 @@ class Crypto_Manager:
         elif "PublicKey" not in user:
             raise ValueError("User must be a dictionary containing a 'PublicKey' field.")
 
+        if isinstance(file, bytes):
+            file=io.BytesIO(file)
+        elif isinstance(file, str):
+            with open(file, "rb") as f:
+                file = io.BytesIO(f.read())
+
+        if not isinstance(file, io.BytesIO):
+            raise TypeError("Invaled file tpye. Must be bytes, or file path")
+
+        file.seek(0)
+
         public_key = ECC.import_key(user['PublicKey'])
         ephemeral_key = ECC.generate(curve='secp256r1')
         ephemeral_public_key = ephemeral_key.public_key()
@@ -172,7 +183,6 @@ class Crypto_Manager:
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
 
         # Read and encrypt file content
-        file.seek(0)
         ciphertext = cipher.encrypt(file.read())
         tag = cipher.digest()
         ephemeral_public_key_der = ephemeral_public_key.export_key(format='DER')
