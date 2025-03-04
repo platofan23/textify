@@ -1,4 +1,4 @@
-from .route_file_manager import DownloadFile, UploadFile, GetBookInfo
+from .route_file_manager import DownloadFile, UploadFile, GetBookInfo, GetBookPage
 from .route_ocr import ReadFile
 from .route_translation_file import TranslateFile
 from .route_translation_text import TranslateText
@@ -24,4 +24,6 @@ __all__ = [
     "ModelTTS",
     "SpeakerTTS",
     "HealthCheck",
+    "GetBookPage"
+
 ]

@@ -2,7 +2,7 @@ from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslati
     TranslateFile, TranslateText, TTS, UploadFile, HealthCheck
 from backend.app.routes.route_tts_languages import LanguageTTS
 from backend.app.utils.util_logger import Logger  # Import the Logger class
-from backend.app.routes import GetBookInfo
+from backend.app.routes import GetBookInfo, GetBookPage
 
 
 def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_manager):
@@ -45,6 +45,13 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
     )
     Logger.info("Registered route: /upload_files -> UploadFile")
+
+    api.add_resource(
+        GetBookPage,
+        '/get_book_page',
+        resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
+    )
+    Logger.info("Registered route: /get_book_page -> GetBookPage")
 
     # Translation Endpoints
     api.add_resource(

@@ -79,14 +79,13 @@ class Crypto_Manager:
             "Ciphertext": ciphertext
         }
 
-    def decrypt_file(self, user: str, file: dict, file_name: str) -> bytes:
+    def decrypt_file(self, user: str, file: dict) -> bytes:
         """
         Decrypts an encrypted file using the private key corresponding to the user.
 
         Args:
             user (str): The username used to lookup the private key.
             file (dict): The dictionary containing encrypted file components.
-            file_name (str): The name of the file (for logging purposes).
 
         Returns:
             bytes: The decrypted file content.
