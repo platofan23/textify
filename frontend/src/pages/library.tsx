@@ -82,14 +82,20 @@ export function Library({
     // Export book to HTML
     const handleExportHtml = () => {
         if (selectedBook) {
-            const html = exportHtml(bookPages[selectedBook])
-            const blob = new Blob([html], { type: "text/html" })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = `${selectedBook}.html`
-            a.click()
-            URL.revokeObjectURL(url)
+            try {
+                console.log("Book data for export:", bookPages[selectedBook])
+                const html = exportHtml(bookPages[selectedBook])
+                const blob = new Blob([html], { type: "text/html" })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = `${selectedBook}.html`
+                a.click()
+                URL.revokeObjectURL(url)
+            } catch (error) {
+                console.error("Export failed:", error)
+                alert("Export failed. Check the console for details.")
+            }
         }
     }
 
@@ -150,6 +156,8 @@ export function Library({
                                     onNodesChange={(query) => {
                                         // Save editor state when nodes change
                                         if (selectedBook) {
+                                            console.log("Saving editor state...")
+                                            console.log(query.getNodes())
                                             const json = query.serialize()
                                             setBookPages((prev) => ({
                                                 ...prev,

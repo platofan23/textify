@@ -8,9 +8,9 @@ export const SettingsPanel = () => {
         let settingsComponent = null
         let displayName = null
         let error = null
+        const selectedId = selectedIdSet.keys().next().value
 
         try {
-            const selectedId = selectedIdSet.keys().next().value
             // Only attempt to access node if selectedId exists and is valid
             if (selectedId && typeof selectedId === "string") {
                 // Get all nodes to check if the selected node exists
