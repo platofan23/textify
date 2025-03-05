@@ -1,5 +1,5 @@
 from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslation, ReadFile, RegisterUser, SpeakerTTS, \
-    TranslateFile, TranslateText, TTS, UploadFile, HealthCheck, TTSPage
+    TranslateFile, TranslateText, TTS, UploadFile, HealthCheck, TTSPage, TranslateAllPages
 from backend.app.routes.route_translate_page import TranslatePage
 from backend.app.routes.route_tts_languages import LanguageTTS
 from backend.app.utils.util_logger import Logger
@@ -45,6 +45,14 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager, 'mongo_manager':mongo_manager, 'crypto_manager':crypto_manager}
     )
     Logger.info("Registered route: /translate/page -> TranslatePage")
+
+    api.add_resource(
+        TranslateAllPages,
+        '/translate/page_all',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager,
+                               'mongo_manager': mongo_manager, 'crypto_manager': crypto_manager}
+    )
+    Logger.info("Registered route: /translate/page_all -> TranslateAllPages")
 
     api.add_resource(
         TTSPage,

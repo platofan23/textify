@@ -9,6 +9,7 @@ from .route_tts_models import ModelTTS
 from .route_tts_speakers import  SpeakerTTS
 from .route_translate_page import TranslatePage
 from .route_tts_page import TTSPage
+from .route_translate_page_all import TranslateAllPages
 from .route_docker_healthcheck import HealthCheck
 
 
@@ -27,5 +28,6 @@ __all__ = [
     "SpeakerTTS",
     "HealthCheck",
     "TranslatePage",
-    "TTSPage"
+    "TTSPage",
+    "TranslateAllPages"
 ]
