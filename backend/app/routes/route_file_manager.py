@@ -304,7 +304,7 @@ class GetBookInfo(Resource):
         """
         self.mongo_manager = mongo_manager
         self.config_manager = config_manager
-        self.user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")
+        self.user_files_collection = self.config_manager.get_mongo_config().get("user_text_collection", "user_texts")
 
 
 
@@ -325,7 +325,7 @@ class GetBookInfo(Resource):
         try:
             # Retrieve books from MongoDB
             Logger.info(f'Retrieving books for user {user}')
-            books = self.mongo_manager.aggregate_documents(self.config_manager.get_mongo_config().get("user_files_collection"),
+            books = self.mongo_manager.aggregate_documents(self.user_files_collection,
                                                       [
                                                           {
                                                               "$match": {"user": user}

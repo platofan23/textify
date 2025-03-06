@@ -117,7 +117,9 @@ function SignIn({ setUser, user }: SignInProps) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Submit</Button>
+                    <Button variant="contained" type="submit">
+                        Submit
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Container>

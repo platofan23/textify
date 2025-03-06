@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react"
+import { Alert, Box, Button, Grid2, MenuItem, Select, Typography, Slider } from "@mui/material"
 import Editor from "./component_editor_translate"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
 import streamText from "./text_stream"
-import { Alert, Box, Button, Grid2, MenuItem, Select, Typography } from "@mui/material"
 
 const Delta = Quill.import("delta")
 
@@ -14,11 +14,13 @@ const Translate = () => {
     // Use a ref to access the quill instance directly
     const quillRefInput = useRef<Quill | null>(null)
     const quillRefOutput = useRef<Quill | null>(null)
+    const audioRef = useRef<HTMLAudioElement | null>(null) // Add ref to track audio element
     const [readBlock, setReadBlock] = useState<boolean>(false)
     const [text, setText] = useState<string>("")
     const [LanguageError, setLanguageError] = useState<boolean>(false)
     const [sourcelanguage, setSourcelanguage] = useState<string>("de")
     const [targetlanguage, setTargetlanguage] = useState<string>("en")
+    const [volume, setVolume] = useState<number>(1.0)
     const [readButton, setReadButton] = useState<
         "inherit" | "error" | "primary" | "secondary" | "info" | "success" | "warning"
     >("primary")
@@ -51,9 +53,17 @@ const Translate = () => {
     }, [text])
 
     function readTranslatedText() {
+        // If audio is currently playing, stop it
         if (readBlock) {
+            if (audioRef.current) {
+                audioRef.current.pause()
+                audioRef.current.remove()
+            }
+            setReadButton("primary")
+            setReadBlock(false)
             return
         }
+
         if (quillRefOutput.current?.getText() == null) {
             setReadButton("error")
             setTimeout(() => {
@@ -63,7 +73,7 @@ const Translate = () => {
         }
 
         if (quillRefOutput.current?.getText() !== null) {
-            setReadButton("success")
+            setReadButton("secondary")
             setReadBlock(true)
         }
 
@@ -86,14 +96,19 @@ const Translate = () => {
             .then((blob) => {
                 const audioURL = URL.createObjectURL(blob)
                 const audio = new Audio(audioURL)
+                audioRef.current = audio // Store reference to audio element
+                audio.volume = volume
                 audio.play()
                 audio.onended = () => {
                     setReadButton("primary")
                     setReadBlock(false)
+                    audioRef.current = null
                 }
             })
             .catch((error) => {
                 console.error("TTS request failed:", error)
+                setReadButton("primary")
+                setReadBlock(false)
             })
     }
 
@@ -101,6 +116,16 @@ const Translate = () => {
         setText("")
         streamText(appendText, quillRefInput.current?.getText().split("\n"), sourcelanguage, targetlanguage)
     }
+
+    // Clean up audio on component unmount
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause()
+                audioRef.current = null
+            }
+        }
+    }, [])
 
     return (
         <Box
@@ -264,8 +289,27 @@ const Translate = () => {
                         }}
                         color={readButton}
                     >
-                        Read
+                        {readBlock ? "Stop" : "Read"}
                     </Button>
+                </Grid2>
+
+                {/* Volume Control */}
+                <Grid2
+                    size={{ xs: 12 }}
+                    sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                    <Typography variant="body2" sx={{ mr: 2, minWidth: "60px" }}>
+                        Volume: {Math.round(volume * 100)}%
+                    </Typography>
+                    <Slider
+                        value={volume}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onChange={(_, newValue) => setVolume(newValue as number)}
+                        sx={{ maxWidth: 250 }}
+                        aria-label="Volume"
+                    />
                 </Grid2>
             </Grid2>
         </Box>

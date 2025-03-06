@@ -1,6 +1,8 @@
 import React from "react"
-import { Box, Typography, Divider, Alert } from "@mui/material"
+import { Box, Typography, Divider, Alert, Paper, CircularProgress } from "@mui/material"
 import { useEditor } from "@craftjs/core"
+import SettingsIcon from "@mui/icons-material/Settings"
+import TuneIcon from "@mui/icons-material/Tune"
 
 export const SettingsPanel = () => {
     const { selected, displayName, settingsComponent, error } = useEditor((state, query) => {
@@ -18,8 +20,6 @@ export const SettingsPanel = () => {
 
                 if (nodes[selectedId]) {
                     const node = query.node(selectedId).get()
-
-                    console.log("Node", node)
 
                     displayName =
                         node.data.custom?.displayName ||
@@ -50,10 +50,23 @@ export const SettingsPanel = () => {
     })
 
     return (
-        <Box sx={{ p: 2, border: "1px solid #e0e0e0", borderRadius: 1 }}>
-            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                Settings
-            </Typography>
+        <Paper
+            elevation={0}
+            sx={{
+                p: 2,
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+                height: "100%",
+                overflow: "auto",
+                maxHeight: "calc(100vh - 280px)",
+            }}
+        >
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <SettingsIcon sx={{ mr: 1, color: "text.secondary", fontSize: 20 }} />
+                <Typography variant="subtitle1" fontWeight="bold">
+                    Element Settings
+                </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
 
             {error && (
@@ -63,20 +76,60 @@ export const SettingsPanel = () => {
             )}
 
             {!selected && (
-                <Typography variant="body2" color="text.secondary">
-                    Select an element to edit its properties
-                </Typography>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        py: 6,
+                        color: "text.secondary",
+                    }}
+                >
+                    <TuneIcon sx={{ fontSize: 40, mb: 2, opacity: 0.7 }} />
+                    <Typography variant="body2" color="text.secondary" align="center">
+                        Select an element in the editor to modify its properties
+                    </Typography>
+                </Box>
             )}
 
             {selected && !settingsComponent && (
-                <Typography variant="body2" color="text.secondary">
-                    {displayName
-                        ? `No settings available for ${displayName}`
-                        : "No settings available for this element"}
-                </Typography>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        py: 4,
+                        color: "text.secondary",
+                    }}
+                >
+                    <Typography variant="body2" color="text.secondary" align="center">
+                        {displayName
+                            ? `No configuration options available for this ${displayName}`
+                            : "This element has no configurable properties"}
+                    </Typography>
+                </Box>
             )}
 
-            {selected && settingsComponent && React.createElement(settingsComponent)}
-        </Box>
+            {selected && settingsComponent && (
+                <Box>
+                    <Typography
+                        variant="subtitle2"
+                        gutterBottom
+                        sx={{
+                            mb: 2,
+                            color: "primary.main",
+                            fontWeight: "medium",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
+                        {displayName}
+                    </Typography>
+                    <Box sx={{ px: 0.5 }}>{React.createElement(settingsComponent)}</Box>
+                </Box>
+            )}
+        </Paper>
     )
 }
