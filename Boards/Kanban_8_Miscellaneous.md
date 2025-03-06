@@ -51,8 +51,8 @@
         - Uses a lightweight base image.<br>
         - Includes proper CMD/ENTRYPOINT for running the application.
       </td>
-      <td>To Do</td>
-      <td></td>
+      <td>Done</td>
+      <td>JK</td>
       <td>5</td>
     </tr>
     <tr>
@@ -99,7 +99,7 @@
         - Handles connection pooling and reconnections.<br>
         - Includes error handling and logging.
       </td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td>JK, CJ</td>
       <td>5</td>
     </tr>
