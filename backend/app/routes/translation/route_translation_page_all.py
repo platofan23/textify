@@ -44,7 +44,7 @@ class TranslateAllPages(Resource):
 
         try:
             Logger.info(f"Retrieving all pages for user={user}, title='{title}'.")
-            user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")
+            user_files_collection = self.config_manager.get_mongo_config().get("user_text_collection")
             query = {"user": user, "title": title}
             pages = self.mongo_manager.find_documents(user_files_collection, query)
 
@@ -53,6 +53,7 @@ class TranslateAllPages(Resource):
                 return {"error": "No pages found"}, 404
 
             for doc in pages:
+                Logger.debug(f"Processing document: {doc}")
                 page_number = doc.get("page")
                 Logger.info(f"Processing page {page_number} of title '{title}'.")
 
@@ -72,7 +73,7 @@ class TranslateAllPages(Resource):
                     page=page_number,
                     title=title,
                     user_files_collection=user_files_collection,
-                    crypto_manager=self.crypto_manager,
+
                 )
                 if not source_data:
                     Logger.warning(f"No source text found for page {page_number}. Skipping translation.")

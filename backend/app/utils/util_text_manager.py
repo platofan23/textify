@@ -18,7 +18,7 @@ def preprocess_text(text: Union[str, List[str]]) -> str:
     Logger.debug("Preprocessing text: Returning original string.")
     return text
 
-def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 150) -> List[str]:
+def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 250) -> List[str]:
     """
     Splits text into smaller chunks based on a specified maximum token limit.
 

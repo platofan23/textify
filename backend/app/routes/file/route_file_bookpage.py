@@ -45,7 +45,10 @@ class GetBookPage(Resource):
             Logger.info(f'Book page retrieved successfully')
 
             # Decrypt text
-            text = self.crypto_manager.decrypt_file(user, books[0]['text'][lang])
+            if lang == 'source':
+                text = self.crypto_manager.decrypt_file(user, books[0]['text']['source'])
+            else:
+                text = self.crypto_manager.decrypt_file(user, books[0]['translations'][lang])
 
             Logger.debug(f'text : {text}')
 

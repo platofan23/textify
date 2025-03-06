@@ -12,6 +12,8 @@ import {
     Tabs,
     CircularProgress,
     Alert,
+    Menu,
+    MenuItem,
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { User } from "../main"
@@ -112,6 +114,58 @@ export function Library({
     const [loading, setLoading] = useState<boolean>(false)
     const [editorKey, setEditorKey] = useState<number>(0) // Key to force editor re-render
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [contextMenu, setContextMenu] = useState<{
+        mouseX: number
+        mouseY: number
+        bookId: string | null
+    } | null>(null)
+
+    // Handle book context menu
+    const handleBookContextMenu = (event: React.MouseEvent, bookId: string) => {
+        event.preventDefault()
+        setContextMenu({
+            mouseX: event.clientX,
+            mouseY: event.clientY,
+            bookId,
+        })
+    }
+    const handleContextMenuClose = () => {
+        setContextMenu(null)
+    }
+
+    const handleTranslateBook = async () => {
+        if (!contextMenu?.bookId || !user) return
+
+        try {
+            const response = await fetch("http://localhost:5558/translate/page_all", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    data: {
+                        model: "Helsinki-NLP/opus-mt-en-de",
+                        title: contextMenu.bookId,
+                        user: user.Username,
+                    },
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error(`Translation failed: ${response.statusText}`)
+            }
+
+            const data = await response.json()
+            console.log("Translation response:", data)
+
+            alert(`Book "${contextMenu.bookId}" has been queued for translation.`)
+        } catch (error) {
+            console.error("Translation error:", error)
+            alert(`Translation failed: ${error.message}`)
+        } finally {
+            handleContextMenuClose()
+        }
+    }
 
     // Create a default empty page structure
     const createEmptyPageStructure = () => {
@@ -580,6 +634,7 @@ export function Library({
                                     <ListItemButton
                                         sx={{ justifyContent: "space-between" }}
                                         onClick={() => handleBookSelect(book._id)}
+                                        onContextMenu={(e) => handleBookContextMenu(e, book._id)}
                                         selected={selectedBook === book._id}
                                     >
                                         <Typography>{book._id}</Typography>
@@ -874,6 +929,17 @@ export function Library({
                     </Grid2>
                 )}
             </Grid2>
+            {/* Context Menu */}
+            <Menu
+                open={contextMenu !== null}
+                onClose={handleContextMenuClose}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                    contextMenu !== null ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
+                }
+            >
+                <MenuItem onClick={handleTranslateBook}>Translate to German</MenuItem>
+            </Menu>
         </>
     )
 }

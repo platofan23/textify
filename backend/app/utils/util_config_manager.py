@@ -162,6 +162,7 @@ class ConfigManager:
             'database': self.get_config_value('MONGO_DB', 'MONGO_DATABASE', str),
             'users_collection': self.get_config_value('MONGO_DB', 'MONGO_USERS_COLLECTION', str),
             'user_files_collection': self.get_config_value('MONGO_DB', 'MONGO_USER_FILES_COLLECTION', str),
+            'user_text_collection': self.get_config_value('MONGO_DB', 'MONGO_USER_TEXT_COLLECTION', str),
             'tts_files_collection': self.get_config_value('MONGO_DB', 'MONGO_TTS_FILES_COLLECTION', str)
         }
         Logger.info("MongoDB configuration retrieved.")
