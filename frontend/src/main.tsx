@@ -155,7 +155,7 @@ function MainWrap() {
                 setMode((prevMode) => {
                     const newMode = prevMode === "light" ? "dark" : "light"
                     localStorage.setItem("colorMode", newMode)
-                    console.log("Theme changed to:", newMode) // Debug log
+                    console.log("Theme changed to:", newMode)
                     return newMode
                 })
             },
@@ -171,6 +171,11 @@ function MainWrap() {
             loadBooks(user, setBooks)
         }
     }, [user])
+
+    useEffect(() => {
+        console.log("Theme updated:", mode)
+        document.body.style.backgroundColor = theme.palette.background.default
+    }, [theme, mode])
 
     return (
         <ColorModeContext.Provider value={colorMode}>
