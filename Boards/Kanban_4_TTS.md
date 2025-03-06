@@ -55,7 +55,7 @@
       <td>Enable Audio File Download</td>
       <td>Allow users to download generated audio files in MP3 or WAV formats.</td>
       <td>Files are correctly downloaded in the chosen format.</td>
-      <td>Done</td>
+      <td>In Progress</td>
       <td>JK</td>
       <td>2</td>
     </tr>
@@ -63,7 +63,7 @@
       <td>Write Unit Tests for TTS Features</td>
       <td>Develop tests for TTS API calls and UI components.</td>
       <td>All tests pass with no failures.</td>
-      <td>Done</td>
+      <td>In Progress</td>
       <td>JK</td>
       <td>2</td>
     </tr>
