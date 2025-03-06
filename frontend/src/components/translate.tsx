@@ -24,6 +24,8 @@ const Translate = () => {
     const [readButton, setReadButton] = useState<
         "inherit" | "error" | "primary" | "secondary" | "info" | "success" | "warning"
     >("primary")
+    const [speaker, setSpeaker] = useState<string>("Claribel Dervla")
+    const [speakers, setSpeakers] = useState<string[]>([])
 
     const Language = [
         { value: "de", label: "German" },
@@ -47,6 +49,19 @@ const Translate = () => {
         }
         setText((prevText) => prevText + newText)
     }
+
+    useEffect(() => {
+        fetch("http://localhost:5558/tts/speakers")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.speakers && Array.isArray(data.speakers)) {
+                    setSpeakers(data.speakers)
+                }
+            })
+            .catch((error) => {
+                console.error("Failed to fetch speakers:", error)
+            })
+    }, [])
 
     useEffect(() => {
         quillRefOutput.current?.setText(text)
@@ -83,7 +98,7 @@ const Translate = () => {
                 text: textToRead,
                 model: "tts_models/multilingual/multi-dataset/xtts_v2",
                 language: targetlanguage,
-                speaker: "Claribel Dervla",
+                speaker: speaker, // Use the selected speaker from state
             },
         }
 
@@ -291,6 +306,35 @@ const Translate = () => {
                     >
                         {readBlock ? "Stop" : "Read"}
                     </Button>
+                </Grid2>
+                {/* Speaker Selection */}
+                <Grid2
+                    size={{ xs: 12 }}
+                    sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                    <Typography variant="body2" sx={{ mr: 2, minWidth: "80px" }}>
+                        Speaker:
+                    </Typography>
+                    <Select
+                        value={speaker}
+                        onChange={(e) => setSpeaker(e.target.value as string)}
+                        size="small"
+                        sx={{ maxWidth: 180, minWidth: 150 }}
+                        aria-label="Speaker"
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    maxHeight: 300, // Makes the dropdown scrollable
+                                },
+                            },
+                        }}
+                    >
+                        {speakers.map((speakerName) => (
+                            <MenuItem key={speakerName} value={speakerName}>
+                                {speakerName}
+                            </MenuItem>
+                        ))}
+                    </Select>
                 </Grid2>
 
                 {/* Volume Control */}
