@@ -47,7 +47,7 @@
       <td>Optimize TTS Performance</td>
       <td>Ensure audio is generated within appropriate for text under 500 words.</td>
       <td>Performance benchmarks are achieved.</td>
-      <td>In Progress</td>
+      <td>Done</td>
       <td>JK</td>
       <td>1</td>
     </tr>
