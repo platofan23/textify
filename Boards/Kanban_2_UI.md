@@ -64,7 +64,7 @@
       <td>Add a loading indicator for translations.</td>
       <td>Progress indicator appears during API queries.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>3</td>
     </tr>
     <tr>
@@ -72,7 +72,7 @@
       <td>Add functionality to allow audio recording in the browser.</td>
       <td>Recordings are captured and played back correctly in the frontend.</td>
       <td>Done/td>
-      <td></td>
+      <td>CJ</td>
       <td>1</td>
     </tr>
     <tr>
@@ -80,7 +80,7 @@
       <td>Connect the recording functionality to the Speech-to-Text API.</td>
       <td>Text output based on audio input works correctly.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>2</td>
     </tr>
     <tr>
@@ -88,7 +88,7 @@
       <td>Develop robust error handling for invalid or missing audio inputs.</td>
       <td>Clear error messages are displayed.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>2</td>
     </tr>
     <tr>
@@ -120,7 +120,7 @@
       <td>Implement the connection to the OCR API.</td>
       <td>Text is extracted from images and displayed in the UI.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
@@ -128,7 +128,7 @@
       <td>Provide an option to edit detected text.</td>
       <td>Users can manually adjust detected text.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>4</td>
     </tr>
     <tr>
