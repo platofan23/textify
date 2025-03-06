@@ -128,7 +128,7 @@
       <td>Conduct performance testing</td>
       <td>Test the backend for performance under various loads.</td>
       <td>API responds within acceptable time limits under load.</td>
-      <td>In Proress</td>
+      <td>Done</td>
       <td>ALL</td>
       <td>3</td>
     </tr>
