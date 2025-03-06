@@ -7,7 +7,6 @@ from backend.app.utils.util_config_manager import ConfigManager
 from backend.app.utils import Logger
 from backend.app.utils.util_crypt import CryptoManager
 
-
 class MongoDBManager:
     """
     Singleton class for managing MongoDB operations with GridFS support.
@@ -15,22 +14,13 @@ class MongoDBManager:
     """
     _instance = None
 
-    def __new__(cls) -> "MongoDBManager":
+    def __new__(cls, crypto_manager: CryptoManager) -> "MongoDBManager":
         if cls._instance is None:
             cls._instance = super(MongoDBManager, cls).__new__(cls)
-            # Pass a Crypto_Manager instance during initialization if needed.
-            # For example, you could do:
-            # cls._instance._initialize(Crypto_Manager())
-            # For now, we'll assume it's set later.
+            cls._instance._initialize(crypto_manager)
         return cls._instance
 
-    def _initialize(self, crypto_manager:CryptoManager) -> None:
-        """
-        Initializes the MongoDB connection and GridFS storage.
-
-        Args:
-            crypto_manager (Crypto_Manager): An instance of the crypto manager.
-        """
+    def _initialize(self, crypto_manager: CryptoManager) -> None:
         self.config_manager = ConfigManager()
         self.connection_string: str = self.config_manager.get_config_value("MONGO_DB", "CONNECTION_STRING", str)
         self.database_name: str = self.config_manager.get_config_value("MONGO_DB", "MONGO_DATABASE", str)
@@ -45,8 +35,11 @@ class MongoDBManager:
         try:
             self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
             self.db = self.client[self.database_name]
-            # Initialize GridFS for TTS audio files (using a separate collection)
-            tts_files_collection = self.config_manager.get_config_value("MONGO_DB", "TTS_FILES_COLLECTION", str)
+            # Retrieve the TTS files collection name via configuration, providing a default if necessary.
+            tts_files_collection = self.config_manager.get_config_value("MONGO_DB", "TTS_FILES_COLLECTION", str,
+                                                                        default="tts_files")
+            # Ensure it is a proper string (e.g. remove extra spaces)
+            tts_files_collection = tts_files_collection.strip()
             self.fs = gridfs.GridFS(self.db, collection=tts_files_collection)
             self.client.admin.command("ping")
             Logger.info(f"Successfully connected to MongoDB database '{self.database_name}'.")
@@ -160,19 +153,6 @@ class MongoDBManager:
             title: str,
             user_files_collection: str
     ) -> Union[dict, list]:
-        """
-        Retrieves a document representing a page from a user file, decrypts it,
-        and returns the resulting data.
-
-        Args:
-            user (str): The username.
-            page (int): The page number.
-            title (str): The title associated with the file.
-            user_files_collection (str): The collection name.
-
-        Returns:
-            dict or list: The decrypted content of the page.
-        """
         query = {"user": user, "page": page, "title": title}
         Logger.info(f"Retrieving page with query={query} from collection '{user_files_collection}'.")
         doc = self._retrieve_single_document(user_files_collection, query)
@@ -189,19 +169,6 @@ class MongoDBManager:
             language: str,
             user_files_collection: str
     ) -> Union[str, None]:
-        """
-        Retrieves and decrypts a translated text from a document.
-
-        Args:
-            user (str): The username.
-            page (int): The page number.
-            title (str): The title associated with the file.
-            language (str): The target language for the translation.
-            user_files_collection (str): The collection name.
-
-        Returns:
-            str or None: The decrypted translation text if found; otherwise, None.
-        """
         query = {"user": user, "page": page, "title": title}
         Logger.info(f"Retrieving translation for language={language} from '{user_files_collection}' with query={query}.")
         doc = self._retrieve_single_document(user_files_collection, query)
