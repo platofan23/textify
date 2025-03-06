@@ -1,8 +1,37 @@
 import io
 from flask import request, send_file
 from flask_restful import Resource
-from backend.app.services.service_tts import TTSService
+
+from backend.app.services.tts import TTSService
 from backend.app.utils.util_logger import Logger
+
+
+def _extract_text_from_structure(text_data):
+    """
+    Extracts text from structured OCR data and concatenates it into a single string.
+
+    Args:
+        text_data (list): List containing nested OCR text data.
+
+    Returns:
+        str: Combined text for TTS synthesis.
+    """
+    extracted_text = []
+    try:
+        if isinstance(text_data, list):
+            for item in text_data:
+                block = item.get("Block", {})
+                for entry in block.get("Data", []):
+                    text_segment = entry.get("text")
+                    if isinstance(text_segment, list):
+                        extracted_text.append(" ".join(text_segment))
+        final_text = " ".join(extracted_text)
+        Logger.info(f"Extracted text (first 100 chars): {final_text[:100]}...")
+        return final_text
+    except Exception as e:
+        Logger.error(f"Error extracting text from structure: {e}")
+        return ""
+
 
 class TTSPage(Resource):
     """
@@ -74,7 +103,7 @@ class TTSPage(Resource):
                 Logger.warning("No source text available for TTS synthesis.")
                 return {"error": "No text available to synthesize."}, 404
 
-            text = self._extract_text_from_structure(source_data)
+            text = _extract_text_from_structure(source_data)
             Logger.info("Successfully extracted and formatted text for TTS synthesis.")
 
             # Generate new TTS audio.
@@ -95,32 +124,6 @@ class TTSPage(Resource):
         except Exception as e:
             Logger.error(f"Internal Server Error during TTS processing: {e}")
             return {"error": f"Internal Server Error: {e}"}, 500
-
-    def _extract_text_from_structure(self, text_data):
-        """
-        Extracts text from structured OCR data and concatenates it into a single string.
-
-        Args:
-            text_data (list): List containing nested OCR text data.
-
-        Returns:
-            str: Combined text for TTS synthesis.
-        """
-        extracted_text = []
-        try:
-            if isinstance(text_data, list):
-                for item in text_data:
-                    block = item.get("Block", {})
-                    for entry in block.get("Data", []):
-                        text_segment = entry.get("text")
-                        if isinstance(text_segment, list):
-                            extracted_text.append(" ".join(text_segment))
-            final_text = " ".join(extracted_text)
-            Logger.info(f"Extracted text (first 100 chars): {final_text[:100]}...")
-            return final_text
-        except Exception as e:
-            Logger.error(f"Error extracting text from structure: {e}")
-            return ""
 
     def _synthesize_audio(self, text, model, speaker, language):
         """

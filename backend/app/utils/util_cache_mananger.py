@@ -15,38 +15,74 @@ class CacheManager:
         return cls._instance
 
     def _initialize(self, cache_file, maxsize, clear_cache_on_start):
+        """
+        Initialize the persistent cache and in-memory TTS cache.
+
+        Args:
+            cache_file (str): File path for persistent cache storage.
+            maxsize (int): Maximum number of items for the LRU cache.
+            clear_cache_on_start (bool): If True, clear the cache file on startup.
+        """
         self.cache = LRUCache(maxsize=maxsize)
         self.tts_in_memory_cache = {}
         self.cache_file = cache_file
 
         if clear_cache_on_start and os.path.exists(self.cache_file):
             os.remove(self.cache_file)
-            Logger.info(f"🗑️ [CACHE] Cleared persistent cache file {self.cache_file} on start.")
+            Logger.info(f"[CACHE] Cleared persistent cache file {self.cache_file} on startup.")
         else:
             self._load_cache()
 
+    def is_available(self):
+        """
+        Check if the persistent cache is available.
+
+        Returns:
+            bool: True if the cache is initialized and available, otherwise False.
+        """
+        return self.cache is not None
+
     # General (Persistent) Cache Methods
     def get(self, key):
-        """Retrieves a value from the persistent cache."""
+        """
+        Retrieve a value from the persistent cache.
+
+        Args:
+            key (str): The key to look up in the cache.
+
+        Returns:
+            The cached value if present; otherwise, None.
+        """
         return self.cache.get(key)
 
     def set(self, key, value):
-        """Stores a key-value pair in the persistent cache and persists it."""
+        """
+        Store a key-value pair in the persistent cache and persist it.
+
+        Args:
+            key (str): The key for the cache entry.
+            value: The value to be cached.
+        """
         self.cache[key] = value
         self._save_cache()
 
     def _load_cache(self):
-        """Loads only pickleable cache items."""
+        """
+        Load only pickleable items from the persistent cache file.
+        """
         if not os.path.exists(self.cache_file):
             return
         try:
             with open(self.cache_file, "rb") as f:
                 self.cache.update(pickle.load(f))
         except Exception as e:
-            Logger.error(f"❌ [CACHE ERROR] Failed to load cache: {e}")
+            Logger.error(f"[CACHE ERROR] Failed to load cache: {e}")
 
     def _save_cache(self):
-        """Persists only pickleable cache items, skipping TTS models."""
+        """
+        Persist only pickleable cache items to the cache file,
+        skipping items related to TTS models.
+        """
         try:
             cache_to_save = {}
             for key, value in self.cache.items():
@@ -56,20 +92,22 @@ class CacheManager:
                     pickle.dumps(value)
                     cache_to_save[key] = value
                 except Exception:
-                    Logger.warning(f"⚠️ [CACHE] Skipping non-pickleable item: '{key}'")
-
+                    Logger.warning(f"[CACHE] Skipping non-pickleable item: '{key}'")
             with open(self.cache_file, "wb") as f:
                 pickle.dump(cache_to_save, f)
         except Exception as e:
-            Logger.error(f"❌ [CACHE ERROR] Failed to save cache: {e}")
+            Logger.error(f"[CACHE ERROR] Failed to save cache: {e}")
 
-    # ✅ Optimized TTS Model Caching (RAM-Only)
+    # Optimized TTS Model Caching (RAM-Only)
     def load_cached_tts_model(self, model_name: str):
         """
-        Retrieves the TTS model exclusively from in-memory cache.
+        Retrieve the TTS model exclusively from the in-memory cache.
 
-        :param model_name: Name or path of the TTS model.
-        :return: The cached TTS model or None if not found.
+        Args:
+            model_name (str): Name or identifier of the TTS model.
+
+        Returns:
+            The cached TTS model if found; otherwise, None.
         """
         cache_key = f"tts_model-{model_name}"
         model = self.tts_in_memory_cache.get(cache_key)
@@ -77,34 +115,35 @@ class CacheManager:
         if model is not None:
             if not self._dont_spam_model:
                 self._dont_spam_model = True
-                Logger.info(f" [CACHE] TTS model '{model_name}' retrieved from RAM cache.")
+                Logger.info(f"[CACHE] TTS model '{model_name}' retrieved from RAM cache.")
         else:
-            Logger.info(f"️ [CACHE] No cached TTS model found for '{model_name}'.")
+            Logger.info(f"[CACHE] No cached TTS model found for '{model_name}'.")
 
         return model
 
     def cache_tts_model(self, model_name: str, tts_model):
         """
-        Stores the TTS model exclusively in the in-memory cache.
+        Store the TTS model exclusively in the in-memory cache.
 
-        :param model_name: Name or path of the TTS model.
-        :param tts_model: The TTS model to be cached.
+        Args:
+            model_name (str): Name or identifier of the TTS model.
+            tts_model: The TTS model instance to be cached.
         """
         cache_key = f"tts_model-{model_name}"
 
-        #  Prevent redundant caching
+        # Prevent redundant caching.
         if cache_key in self.tts_in_memory_cache:
-            Logger.info(f" [CACHE] TTS model '{model_name}' is already in RAM.")
+            Logger.info(f"[CACHE] TTS model '{model_name}' is already cached in RAM.")
             return
 
-        #  Store model in RAM
+        # Store the model in RAM.
         self.tts_in_memory_cache[cache_key] = tts_model
-        Logger.info(f" [CACHE] TTS model '{model_name}' successfully stored in RAM.")
+        Logger.info(f"[CACHE] TTS model '{model_name}' successfully stored in RAM.")
 
     def clear_cache(self):
         """
-        Clears both the persistent and in-memory caches.
+        Clear both the persistent cache and the in-memory TTS model cache.
         """
         self.cache.clear()
         self.tts_in_memory_cache.clear()
-        Logger.info(" [CACHE] All caches have been cleared.")
+        Logger.info("[CACHE] All caches have been cleared.")

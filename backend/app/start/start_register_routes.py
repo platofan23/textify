@@ -1,9 +1,11 @@
-from backend.app.routes import DownloadFile, LoginUser, ModelTTS, ModelTranslation, ReadFile, RegisterUser, SpeakerTTS, \
-    TranslateFile, TranslateText, TTS, UploadFile, HealthCheck, TTSPage, TranslateAllPages
-from backend.app.routes.route_translate_page import TranslatePage
-from backend.app.routes.route_tts_languages import LanguageTTS
-from backend.app.utils.util_logger import Logger
-from backend.app.routes import GetBookInfo
+from backend.app.routes.docker import HealthCheck
+from backend.app.routes.file import DownloadFile, GetBookInfo, UploadFile, DeleteFile
+from backend.app.routes.ocr import ReadFile
+from backend.app.routes.translation import TranslatePage, TranslateAllPages, TranslateFile, TranslateText, \
+    ModelTranslation
+from backend.app.routes.tts import TTSPage, TTS, LanguageTTS, ModelTTS, SpeakerTTS
+from backend.app.routes.user import LoginUser, RegisterUser
+from backend.app.utils import Logger
 
 
 def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_manager):
@@ -21,8 +23,16 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
     api.add_resource(
         DownloadFile,
         '/download_file',
-        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager})
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
+    )
     Logger.info("Registered route: /download_file -> DownloadFile")
+
+    api.add_resource(
+        UploadFile,
+        '/upload_files',
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
+    )
+    Logger.info("Registered route: /upload_files -> UploadFile")
 
     api.add_resource(
         ReadFile,
@@ -30,6 +40,13 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager, 'crypto_manager':crypto_manager}
     )
     Logger.info("Registered route: /read_file -> ReadFile")
+
+    api.add_resource(
+        DeleteFile,
+        '/delete_file',
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager}
+    )
+    Logger.info("Registered route: /delete_file -> DeleteFile")
 
     # Book-related endpoints
     api.add_resource(
@@ -60,14 +77,6 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager, 'mongo_manager':mongo_manager, 'crypto_manager':crypto_manager}
     )
     Logger.info("Registered route: /tts/page -> TTSPage")
-
-    # Translation endpoints
-    api.add_resource(
-        UploadFile,
-        '/upload_files',
-        resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager}
-    )
-    Logger.info("Registered route: /upload_files -> UploadFile")
 
     # Translation Endpoints
     api.add_resource(

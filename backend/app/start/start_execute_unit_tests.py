@@ -9,7 +9,7 @@ def run_tests():
     """
     Logger.info("Starting unit tests before application launch...")
 
-    # Run pytest with concise tracebacks, verbose output, and no early termination on failures.
+    # Run pytest with short tracebacks, verbose output, and do not stop on first failure.
     exit_code = pytest.main([
         "--tb=short",  # Use short tracebacks for concise output.
         "-v",          # Verbose output for detailed test results.
@@ -18,6 +18,6 @@ def run_tests():
     ])
 
     if exit_code != 0:
-        Logger.error(f"❌ Unit tests failed (exit code: {exit_code}). Please review the test output above.")
+        Logger.error(f"Unit tests failed (exit code: {exit_code}). Please review the test output above.")
     else:
-        Logger.info("✅ All unit tests passed. Proceeding with application startup...")
+        Logger.info("All unit tests passed. Proceeding with application startup...")

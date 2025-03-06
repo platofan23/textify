@@ -4,6 +4,7 @@ import os
 import torch
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 
+
 class ConfigManager:
     _instance = None  # Singleton instance
     _CONFIG_PATH = './config/docker.ini' if os.getenv("IsDocker") else './config/config.ini'
@@ -14,7 +15,8 @@ class ConfigManager:
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, '_initialized'):  # Ensure __init__ runs only once
+        # Ensure __init__ runs only once for the singleton instance.
+        if not hasattr(self, '_initialized'):
             self.config = configparser.ConfigParser()
             self._config_cache = {}  # Cache for configuration values
             self._load_config()
@@ -23,7 +25,9 @@ class ConfigManager:
             Logger.info(f"ConfigManager initialized successfully. Loaded config file: {self._CONFIG_PATH}")
 
     def _load_config(self):
-        """Loads the configuration file from disk."""
+        """
+        Loads the configuration file from disk.
+        """
         if not os.path.exists(self._CONFIG_PATH):
             Logger.error(f"Configuration file not found at: {self._CONFIG_PATH}.")
             raise FileNotFoundError(f"Configuration file not found at {self._CONFIG_PATH}")
@@ -31,13 +35,15 @@ class ConfigManager:
         Logger.info(f"Configuration file loaded from: {self._CONFIG_PATH}")
 
     def _validate_config(self):
-        """Validates that all required sections and keys are present in the configuration."""
+        """
+        Validates that all required sections and keys are present in the configuration.
+        """
         required_sections = ['MONGO_DB', 'REST', 'TRANSLATE', 'TEXT', 'CACHE', 'TTS', 'DEVICE']
         for section in required_sections:
             if section not in self.config:
                 Logger.error(f"Missing required section '{section}' in configuration file.")
                 raise ValueError(f"Missing required section '{section}' in configuration file.")
-        # Validate required keys in each section
+        # Validate required keys in each section.
         self._validate_section_keys('CACHE', ['MAX_ENTRIES'])
         self._validate_section_keys('DEVICE', ['TORCH_CPU_DEVICE', 'TORCH_GPU_DEVICE'])
         self._validate_section_keys('MONGO_DB', [
@@ -52,7 +58,13 @@ class ConfigManager:
         Logger.info("Configuration validation completed successfully.")
 
     def _validate_section_keys(self, section: str, required_keys: list):
-        """Ensures that all keys in `required_keys` exist in the given section."""
+        """
+        Ensures that all keys in `required_keys` exist in the given section.
+
+        Args:
+            section (str): The configuration section.
+            required_keys (list): List of keys required in the section.
+        """
         for key in required_keys:
             if key not in self.config[section]:
                 Logger.error(f"Missing required key '{key}' in section '{section}'.")
@@ -67,6 +79,7 @@ class ConfigManager:
             key (str): The key within the section.
             value_type (type): The expected type of the value.
             default: A default value if the key is not found.
+
         Returns:
             The configuration value converted to the specified type.
         """
@@ -92,6 +105,9 @@ class ConfigManager:
     def get_torch_device(self) -> str:
         """
         Returns the appropriate torch device based on CUDA availability and config settings.
+
+        Returns:
+            str: The torch device (e.g., "cuda" or "cpu").
         """
         gpu_device = self.get_config_value('DEVICE', 'TORCH_GPU_DEVICE', str)
         cpu_device = self.get_config_value('DEVICE', 'TORCH_CPU_DEVICE', str)
@@ -102,6 +118,9 @@ class ConfigManager:
     def get_rest_config(self) -> dict:
         """
         Returns REST API configuration as a dictionary.
+
+        Returns:
+            dict: REST configuration with keys for host, port, max content length, etc.
         """
         config = {
             'host': self.get_config_value('REST', 'HOST', str),
@@ -117,6 +136,9 @@ class ConfigManager:
     def get_mongo_config(self) -> dict:
         """
         Returns MongoDB configuration as a dictionary.
+
+        Returns:
+            dict: MongoDB configuration with connection string, database, and collection names.
         """
         config = {
             'connection_string': self.get_config_value('MONGO_DB', 'CONNECTION_STRING', str),
@@ -130,6 +152,9 @@ class ConfigManager:
     def get_translation_models(self) -> list:
         """
         Returns a list of available translation model names.
+
+        Returns:
+            list: A list of translation model names.
         """
         models = self.get_config_value('TRANSLATE', 'AVAILABLE_MODELS', str)
         Logger.info("Translation models retrieved.")
@@ -138,26 +163,34 @@ class ConfigManager:
     def get_tts_models(self) -> list:
         """
         Returns a list of available TTS model names.
+
+        Returns:
+            list: A list of TTS model names.
         """
         models = self.get_config_value('TTS', 'AVAILABLE_MODELS', str)
         Logger.info("TTS models retrieved: " + models)
-        return [models.strip() for models in models.split(',') if models.strip()]
+        return [model.strip() for model in models.split(',') if model.strip()]
 
     def get_tts_languages(self) -> list:
         """
         Returns a list of available TTS languages.
+
+        Returns:
+            list: A list of TTS languages.
         """
         languages = self.get_config_value('TTS', 'AVAILABLE_LANGUAGES', str)
         Logger.info("TTS languages retrieved: " + languages)
-        return [languages.strip() for languages in languages.split(',') if languages.strip()]
+        return [lang.strip() for lang in languages.split(',') if lang.strip()]
 
     def get_tts_speakers(self) -> list:
         """
         Returns a list of available TTS speakers.
+
+        Returns:
+            list: A sorted list of TTS speakers.
         """
         speakers = self.get_config_value('TTS', 'AVAILABLE_SPEAKERS', str)
         Logger.info("TTS speakers retrieved: " + speakers)
-        speakers = [speakers.strip() for speakers in speakers.split(',') if speakers.strip()]
+        speakers = [speaker.strip() for speaker in speakers.split(',') if speaker.strip()]
         speakers.sort()
-
         return speakers

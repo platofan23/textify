@@ -1,16 +1,38 @@
 from flask import request, send_file
 from flask_restful import Resource
-from backend.app.services.service_tts import TTSService
+from backend.app.services.tts import TTSService
 from backend.app.utils.util_logger import Logger
 
-
-class TTS(Resource):  # ✅ Ensure it inherits from Resource
+class TTS(Resource):
+    """
+    Resource for Text-to-Speech (TTS) synthesis.
+    """
     def __init__(self, config_manager, cache_manager):
-        super().__init__()  # ✅ Ensure base class initialization
+        """
+        Initializes the TTS resource with required services.
+
+        Args:
+            config_manager: The configuration manager instance.
+            cache_manager: The cache manager instance.
+        """
+        super().__init__()
         self.tts_service = TTSService(config_manager, cache_manager)
         Logger.info("TTS instance initialized.")
 
     def post(self):
+        """
+        Handles POST requests for TTS synthesis.
+
+        Expects a JSON payload with a 'data' object containing:
+            - text: The text to be synthesized.
+            - model (optional): The TTS model to use.
+            - speaker (optional): The speaker identifier.
+            - language (optional): The language code (default is 'de').
+
+        Returns:
+            A downloadable audio file (WAV format) on success,
+            or a JSON error message with the appropriate HTTP status code.
+        """
         Logger.info("POST request received for TTS.")
 
         json_data = request.get_json()
@@ -31,13 +53,13 @@ class TTS(Resource):  # ✅ Ensure it inherits from Resource
 
         try:
             Logger.info(
-                f"Starting TTS with text='{text[:30]}...' (truncated for log), model='{model}', speaker='{speaker}', language='{language}'.")
+                f"Starting TTS with text='{text[:30]}...' (truncated), model='{model}', speaker='{speaker}', language='{language}'."
+            )
 
-            # ✅ Fix: Ensure all required parameters are passed
+            # Ensure all required parameters are passed to synthesize audio.
             audio_buffer = self.tts_service.synthesize_audio(text, model, speaker, language)
 
             Logger.info("TTS completed successfully. Returning audio file.")
-
             return send_file(
                 audio_buffer,
                 mimetype="audio/wav",
@@ -45,5 +67,5 @@ class TTS(Resource):  # ✅ Ensure it inherits from Resource
                 download_name="output.wav"
             )
         except Exception as e:
-            Logger.error(f"❌ Internal Server Error: {str(e)}")
+            Logger.error(f"Internal Server Error: {str(e)}")
             return {"error": f"Internal Server Error: {str(e)}"}, 500

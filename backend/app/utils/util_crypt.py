@@ -8,7 +8,6 @@ from Cryptodome.Hash import SHA256
 from Cryptodome.Protocol.KDF import HKDF
 from Cryptodome.PublicKey import ECC
 from Cryptodome.Random import get_random_bytes
-from PIL import Image
 from backend.app.utils import Logger
 
 
@@ -27,7 +26,7 @@ class Crypto_Manager:
     def __init__(self):
         if not hasattr(self, 'initialized'):
             try:
-                with open('./keys/private_keys.json', 'r') as f:
+                with open('./resources/keys/private_keys.json', 'r') as f:
                     self._private_ECC_keys_json = json.load(f)
             except Exception as e:
                 Logger.error(f"Failed to load private keys: {e}")
@@ -46,9 +45,9 @@ class Crypto_Manager:
             str: The generated public key in PEM format.
         """
         private_key = ECC.generate(curve='secp256r1')
-        Logger.info(f'Generated ECC keys for {username}')
+        Logger.info(f"Generated ECC keys for {username}")
 
-        private_keys_path = './keys/private_keys.json'
+        private_keys_path = './resources/keys/private_keys.json'
         try:
             with open(private_keys_path, 'r+') as f:
                 try:
@@ -87,7 +86,7 @@ class Crypto_Manager:
         nonce = get_random_bytes(16)
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
 
-        # Read and encrypt file content
+        # Read and encrypt file content.
         file.seek(0)
         ciphertext = cipher.encrypt(file.read())
         tag = cipher.digest()
@@ -112,7 +111,7 @@ class Crypto_Manager:
             bytes: The decrypted file content.
         """
         try:
-            with open('./keys/private_keys.json', 'r') as f:
+            with open('./resources/keys/private_keys.json', 'r') as f:
                 data = json.load(f)
                 private_key_str = [item for item in data if item['user'] == user][0]['private_key']
                 private_key = ECC.import_key(private_key_str)
@@ -144,10 +143,10 @@ class Crypto_Manager:
         Returns:
             dict: A dictionary containing the encrypted file components.
         """
-        # Falls der Benutzer als String übergeben wird, PublicKey aus der Datenbank oder Datei laden
+        # If the user is provided as a string, load the PublicKey from the database or file.
         if isinstance(user, str):
             try:
-                with open('./keys/private_keys.json', 'r') as f:
+                with open('./resources/keys/private_keys.json', 'r') as f:
                     data = json.load(f)
                     entry = next((item for item in data if item['user'] == user), None)
                     if entry is None:
@@ -163,13 +162,13 @@ class Crypto_Manager:
             raise ValueError("User must be a dictionary containing a 'PublicKey' field.")
 
         if isinstance(file, bytes):
-            file=io.BytesIO(file)
+            file = io.BytesIO(file)
         elif isinstance(file, str):
             with open(file, "rb") as f:
                 file = io.BytesIO(f.read())
 
         if not isinstance(file, io.BytesIO):
-            raise TypeError("Invaled file tpye. Must be bytes, or file path")
+            raise TypeError("Invalid file type. Must be bytes or file path.")
 
         file.seek(0)
 
@@ -182,7 +181,7 @@ class Crypto_Manager:
         nonce = get_random_bytes(16)
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
 
-        # Read and encrypt file content
+        # Read and encrypt file content.
         ciphertext = cipher.encrypt(file.read())
         tag = cipher.digest()
         ephemeral_public_key_der = ephemeral_public_key.export_key(format='DER')
@@ -206,8 +205,7 @@ class Crypto_Manager:
             io.BytesIO: A BytesIO stream containing the decrypted file content.
         """
         try:
-            # Load the private key for the user
-            with open('./keys/private_keys.json', 'r') as f:
+            with open('./resources/keys/private_keys.json', 'r') as f:
                 data = json.load(f)
                 private_key_str = [item for item in data if item['user'] == user][0]['private_key']
                 private_key = ECC.import_key(private_key_str)
@@ -216,32 +214,21 @@ class Crypto_Manager:
             raise
 
         try:
-            # Retrieve encryption components
             ephemeral_public_key_der = file["Ephemeral_public_key_der"]
             nonce = file["Nonce"]
             tag = file["Tag"]
             ciphertext = file["Ciphertext"]
 
-            # Import the ephemeral public key
             ephemeral_public_key = ECC.import_key(ephemeral_public_key_der)
-
-            # Compute the shared secret
             shared_secret = private_key.d * ephemeral_public_key.pointQ
             shared_secret_bytes = shared_secret.x.to_bytes(32, 'big')
-
-            # Derive the AES key
             aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
-
-            # Decrypt using AES-GCM
             cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
             plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-
             Logger.info("File decryption completed successfully.")
 
-            # Convert decrypted data into a BytesIO stream (for audio or file handling)
             decrypted_stream = io.BytesIO(plaintext)
-            decrypted_stream.seek(0)  # Reset the stream position
-
+            decrypted_stream.seek(0)
             return decrypted_stream
 
         except Exception as e:
@@ -262,9 +249,9 @@ class Crypto_Manager:
         if not isinstance(plaintext, str):
             plaintext = str(plaintext)
 
-        # Falls nur der Benutzername übergeben wurde oder kein PublicKey vorhanden ist, PublicKey laden
+        # If the user is provided as a string or does not contain a PublicKey, load it automatically.
         if isinstance(user, str) or "PublicKey" not in user:
-            user = self._get_user_with_public_key(user)  # Automatische PublicKey-Ladung
+            user = self._get_user_with_public_key(user)  # Automatic PublicKey loading
 
         if "PublicKey" not in user:
             raise ValueError(f"PublicKey for user '{user.get('Username', 'Unknown')}' could not be found.")
@@ -312,7 +299,7 @@ class Crypto_Manager:
             collection: The MongoDB collection object.
         """
         current_time = datetime.now()
-        Logger.info('Deleting expired authorization keys')
+        Logger.info("Deleting expired authorization keys.")
         collection.update_many(
             {},
             {'$pull': {'AuthorizationKeys': {'ExpiresAt': {'$lt': current_time}}}}
@@ -329,7 +316,7 @@ class Crypto_Manager:
             dict: A dictionary containing 'PublicKey'.
         """
         try:
-            with open('./keys/private_keys.json', 'r') as f:
+            with open('./resources/keys/private_keys.json', 'r') as f:
                 data = json.load(f)
                 user_data = next((item for item in data if item['user'] == username), None)
 
@@ -347,7 +334,7 @@ class Crypto_Manager:
             raise ValueError(f"Failed to retrieve PublicKey for user '{username}': {e}")
 
     @staticmethod
-    def get_encrypted_file_size_mb( encrypted_file_lib: dict) -> float:
+    def get_encrypted_file_size_mb(encrypted_file_lib: dict) -> float:
         """
         Calculates and returns the size of the encrypted file in megabytes.
 
@@ -358,9 +345,9 @@ class Crypto_Manager:
             float: Size of the encrypted file in MB.
         """
         total_size_bytes = (
-                len(encrypted_file_lib["Ephemeral_public_key_der"]) +
-                len(encrypted_file_lib["Nonce"]) +
-                len(encrypted_file_lib["Tag"]) +
-                len(encrypted_file_lib["Ciphertext"])
+            len(encrypted_file_lib["Ephemeral_public_key_der"]) +
+            len(encrypted_file_lib["Nonce"]) +
+            len(encrypted_file_lib["Tag"]) +
+            len(encrypted_file_lib["Ciphertext"])
         )
         return total_size_bytes / (1024 * 1024)
