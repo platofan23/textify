@@ -1,3 +1,5 @@
+import json
+
 from flask_restful import Resource, reqparse
 from backend.app.utils import Logger, MongoDBManager, ConfigManager, CryptoManager
 
@@ -39,7 +41,7 @@ class GetBookPage(Resource):
         try:
             # Retrieve books from MongoDB
             Logger.info(f'Retrieving books for user {user}')
-            books = self.mongo_manager.find_documents(self.user_text_collection, {'user': user, 'title': title, 'page': page}, use_GridFS=False)
+            books = self.mongo_manager.find_documents(self.user_text_collection, {'user': user, 'title': title, 'page': page})
             Logger.info(f'Book page retrieved successfully')
 
             # Decrypt text

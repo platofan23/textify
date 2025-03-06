@@ -1,5 +1,7 @@
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
+
+from backend.app.services.ocr import multi_reader
 from backend.app.utils import Logger, MongoDBManager, ConfigManager
 from backend.app.utils.util_crypt import CryptoManager
 
@@ -73,6 +75,7 @@ class UploadFile(Resource):
             return {'error': 'User not found'}, 404
         user = user_docs[0]
 
+        page = 1
         for file in files:
             if file.filename == '':
                 Logger.error("No selected file")
@@ -99,12 +102,29 @@ class UploadFile(Resource):
             size_mb = self.crypto_manager.get_encrypted_file_size_mb(encrypted_file_lib)
             Logger.info(f"Encrypted file size: {size_mb} MB")
 
+            # Perform OCR
+            file.seek(0)  # Reset file pointer to the beginning
+            text = multi_reader(file.read(), "doctr", language="en")
+            Logger.debug(f'Text: {type(text)}')
+
+            # Encrypt text
+            encrypted_text = self.crypto_manager.encrypt_orc_text(user, text)
+            Logger.debug(f'Encrypted text: {encrypted_text}')
+            # How to decrypt -> crypt.decrypt_ocr_text("Admin", encrypted_text)
+
+            user_text_collection = self.config_manager.get_mongo_config().get("user_text_collection", "user_texts")
+
             # Insert the encrypted file document into the file collection.
             file_id = self.mongo_manager.insert_document(
                 self.user_files_collection,
                 {'file_lib': encrypted_file_lib, 'filename': file.filename, 'user': username, 'title': title},
             )
+
+            self.mongo_manager.insert_document(user_text_collection,
+                                               {'text': {'source': encrypted_text}, 'user': username,
+                                                'title': title, 'file_id': file_id, 'page': page},)
             file_ids.append(file_id)
+            page += 1
             Logger.info(f"File '{file.filename}' uploaded successfully")
 
         Logger.info("Files uploaded successfully")

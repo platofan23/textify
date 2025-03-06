@@ -63,9 +63,9 @@ class TTS(Resource):
             Logger.info("TTS completed successfully. Returning audio file.")
             return send_file(
                 audio_buffer,
-                mimetype=self.config_manager.get_tts_config().get("mimetype"),
-                as_attachment=self.config_manager.get_tts_config().get("as_attachment"),
-                download_name=self.config_manager.get_tts_config().get("download_name")
+                mimetype=self.config_manager.get_tts_mimetype(),
+                as_attachment=self.config_manager.get_tts_as_attachment(),
+                download_name=self.config_manager.get_tts_output_filename()
             )
         except Exception as e:
             Logger.error(f"Internal Server Error: {str(e)}")
