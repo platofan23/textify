@@ -31,7 +31,7 @@
       <td>Choose the best STT model for Textify, focusing on accuracy in noisy environments.</td>
       <td>The selected model is documented with rationale.</td>
       <td>Done</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -39,7 +39,7 @@
       <td>Connect the application to the chosen STT API for transcribing speech to text.</td>
       <td>Audio inputs are successfully transcribed to text.</td>
       <td>Done</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -47,7 +47,7 @@
       <td>Add preprocessing steps to improve transcription accuracy in noisy environments.</td>
       <td>Transcription accuracy meets the target of 90%.</td>
       <td>To Do</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -55,7 +55,7 @@
       <td>Allow users to upload audio files for transcription.</td>
       <td>Files in MP3, WAV, and other standard formats are accepted.</td>
       <td>Done</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -63,7 +63,7 @@
       <td>Notify users of unsupported formats or poor audio quality.</td>
       <td>Clear error messages are displayed when needed.</td>
       <td>In Progress</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -71,7 +71,7 @@
       <td>Create tests for preprocessing, API integration, and transcription accuracy.</td>
       <td>All tests pass and meet accuracy targets.</td>
       <td>Done</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
     <tr>
@@ -79,7 +79,7 @@
       <td>Collect feedback on transcription accuracy and usability.</td>
       <td>Feedback is reviewed and used to make improvements.</td>
       <td>Done</td>
-      <td></td>
+      <td>JK</td>
       <td>1</td>
     </tr>
   </tbody>
