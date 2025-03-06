@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 
-from backend.app.services import TranslationService
+from backend.app.services.translation import TranslationService
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class TranslateText(Resource):
@@ -48,7 +48,6 @@ class TranslateText(Resource):
         data = json_data['data']
         model = data.get('model')
         text = data.get('text')
-        upload_id = data.get('upload_id')
 
         # Validate required parameters.
         if not model or not text:
@@ -61,11 +60,6 @@ class TranslateText(Resource):
             result = self.translation_service.translate_and_chunk_text(model, text)
             Logger.info("Text translation completed successfully.")
             response = {"translation": result}
-
-            # Include optional upload_id if provided.
-            if upload_id:
-                response['upload_id'] = upload_id
-
             return response, 200
         except ValueError as e:
             Logger.error(f"Invalid input: {str(e)}")

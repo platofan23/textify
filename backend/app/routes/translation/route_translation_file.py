@@ -1,8 +1,7 @@
 from flask import request
 from flask_restful import Resource
-
-from backend.app.services import TranslationService
-from backend.app.utils.util_logger import Logger  # Import the Logger class
+from backend.app.services.translation import TranslationService
+from backend.app.utils.util_logger import Logger
 
 class TranslateFile(Resource):
     """

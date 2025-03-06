@@ -4,6 +4,7 @@ import os
 import torch
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 
+
 class ConfigManager:
     _instance = None  # Singleton instance
     _CONFIG_PATH = './config/docker.ini' if os.getenv("IsDocker") else './config/config.ini'
@@ -14,7 +15,8 @@ class ConfigManager:
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, '_initialized'):  # Ensure __init__ runs only once
+        # Ensure __init__ runs only once for the singleton instance.
+        if not hasattr(self, '_initialized'):
             self.config = configparser.ConfigParser()
             self._config_cache = {}  # Cache for configuration values
             self._load_config()
@@ -23,7 +25,9 @@ class ConfigManager:
             Logger.info(f"ConfigManager initialized successfully. Loaded config file: {self._CONFIG_PATH}")
 
     def _load_config(self):
-        """Loads the configuration file from disk."""
+        """
+        Loads the configuration file from disk.
+        """
         if not os.path.exists(self._CONFIG_PATH):
             Logger.error(f"Configuration file not found at: {self._CONFIG_PATH}.")
             raise FileNotFoundError(f"Configuration file not found at {self._CONFIG_PATH}")
@@ -31,28 +35,38 @@ class ConfigManager:
         Logger.info(f"Configuration file loaded from: {self._CONFIG_PATH}")
 
     def _validate_config(self):
-        """Validates that all required sections and keys are present in the configuration."""
+        """
+        Validates that all required sections and keys are present in the configuration.
+        """
         required_sections = ['MONGO_DB', 'REST', 'TRANSLATE', 'TEXT', 'CACHE', 'TTS', 'DEVICE']
         for section in required_sections:
             if section not in self.config:
                 Logger.error(f"Missing required section '{section}' in configuration file.")
                 raise ValueError(f"Missing required section '{section}' in configuration file.")
-        # Validate required keys in each section
+        # Validate required keys in each section.
+        self._validate_section_keys('APP', ['CORS_URLS'])
         self._validate_section_keys('CACHE', ['MAX_ENTRIES'])
         self._validate_section_keys('DEVICE', ['TORCH_CPU_DEVICE', 'TORCH_GPU_DEVICE'])
+        self._validate_section_keys('FILES', ['PATH_PRIVATE_KEY'])
         self._validate_section_keys('MONGO_DB', [
-            'CONNECTION_STRING', 'MONGO_DATABASE', 'MONGO_USERS_COLLECTION', 'MONGO_USER_FILES_COLLECTION'
+            'CONNECTION_STRING', 'MONGO_DATABASE', 'MONGO_USERS_COLLECTION', 'MONGO_USER_FILES_COLLECTION', 'MONGO_TTS_FILES_COLLECTION'
         ])
         self._validate_section_keys('REST', [
             'ALLOWED_EXTENSIONS', 'HOST', 'MAX_CONTENT_LENGTH_MB', 'MAX_TOTAL_SIZE_GB', 'PORT', 'UPLOAD_FOLDER'
         ])
         self._validate_section_keys('TEXT', ['MAX_TOKEN'])
         self._validate_section_keys('TRANSLATE', ['AVAILABLE_MODELS'])
-        self._validate_section_keys('TTS', ['AVAILABLE_MODELS', 'AVAILABLE_SPEAKERS', 'AVAILABLE_LANGUAGES'])
+        self._validate_section_keys('TTS', ['AVAILABLE_MODELS', 'AVAILABLE_SPEAKERS', 'AVAILABLE_LANGUAGES', 'DEFAULT_OUTPUT_FILENAME', 'DEFAULT_SAMPLERATE', 'DEFAULT_MIMETYPE', 'DEFAULT_AS_ATTACHMENT'])
         Logger.info("Configuration validation completed successfully.")
 
     def _validate_section_keys(self, section: str, required_keys: list):
-        """Ensures that all keys in `required_keys` exist in the given section."""
+        """
+        Ensures that all keys in `required_keys` exist in the given section.
+
+        Args:
+            section (str): The configuration section.
+            required_keys (list): List of keys required in the section.
+        """
         for key in required_keys:
             if key not in self.config[section]:
                 Logger.error(f"Missing required key '{key}' in section '{section}'.")
@@ -67,6 +81,7 @@ class ConfigManager:
             key (str): The key within the section.
             value_type (type): The expected type of the value.
             default: A default value if the key is not found.
+
         Returns:
             The configuration value converted to the specified type.
         """
@@ -89,9 +104,27 @@ class ConfigManager:
             Logger.error(f"Failed to retrieve config value '{section}.{key}': {str(e)}")
             raise ValueError(f"Failed to retrieve configuration value for '{section}.{key}': {str(e)}")
 
+    def get_cors_urls(self) -> list:
+        """
+        Retrieves the allowed CORS URLs from the configuration.
+
+        Expects the configuration file to have an [APP] section with a key 'CORS_URLS'
+        containing a comma-separated list of allowed origins.
+
+        Returns:
+            list: A list of allowed CORS URLs.
+        """
+        cors_str = self.get_config_value('APP', 'CORS_URLS', str, default='')
+        cors_urls = [url.strip() for url in cors_str.split(',') if url.strip()]
+        Logger.info(f"CORS URLs retrieved: {cors_urls}")
+        return cors_urls
+
     def get_torch_device(self) -> str:
         """
         Returns the appropriate torch device based on CUDA availability and config settings.
+
+        Returns:
+            str: The torch device (e.g., "cuda" or "cpu").
         """
         gpu_device = self.get_config_value('DEVICE', 'TORCH_GPU_DEVICE', str)
         cpu_device = self.get_config_value('DEVICE', 'TORCH_CPU_DEVICE', str)
@@ -102,6 +135,9 @@ class ConfigManager:
     def get_rest_config(self) -> dict:
         """
         Returns REST API configuration as a dictionary.
+
+        Returns:
+            dict: REST configuration with keys for host, port, max content length, etc.
         """
         config = {
             'host': self.get_config_value('REST', 'HOST', str),
@@ -117,19 +153,38 @@ class ConfigManager:
     def get_mongo_config(self) -> dict:
         """
         Returns MongoDB configuration as a dictionary.
+
+        Returns:
+            dict: MongoDB configuration with connection string, database, and collection names.
         """
         config = {
             'connection_string': self.get_config_value('MONGO_DB', 'CONNECTION_STRING', str),
             'database': self.get_config_value('MONGO_DB', 'MONGO_DATABASE', str),
             'users_collection': self.get_config_value('MONGO_DB', 'MONGO_USERS_COLLECTION', str),
-            'user_files_collection': self.get_config_value('MONGO_DB', 'MONGO_USER_FILES_COLLECTION', str)
+            'user_files_collection': self.get_config_value('MONGO_DB', 'MONGO_USER_FILES_COLLECTION', str),
+            'tts_files_collection': self.get_config_value('MONGO_DB', 'MONGO_TTS_FILES_COLLECTION', str)
         }
         Logger.info("MongoDB configuration retrieved.")
         return config
 
+    def get_private_key_path(self) -> str:
+        """
+        Retrieves the path to the private keys JSON file from the configuration.
+
+        Expects the configuration file to have a [FILES] section with a key 'PATH_PRIVATE_KEY'
+        that specifies the path to the private keys file.
+
+        Returns:
+            str: The file path for the private keys.
+        """
+        return self.get_config_value('FILES', 'PATH_PRIVATE_KEY', str, default="./resources/keys/private_keys.json")
+
     def get_translation_models(self) -> list:
         """
         Returns a list of available translation model names.
+
+        Returns:
+            list: A list of translation model names.
         """
         models = self.get_config_value('TRANSLATE', 'AVAILABLE_MODELS', str)
         Logger.info("Translation models retrieved.")
@@ -138,26 +193,81 @@ class ConfigManager:
     def get_tts_models(self) -> list:
         """
         Returns a list of available TTS model names.
+
+        Returns:
+            list: A list of TTS model names.
         """
         models = self.get_config_value('TTS', 'AVAILABLE_MODELS', str)
         Logger.info("TTS models retrieved: " + models)
-        return [models.strip() for models in models.split(',') if models.strip()]
+        return [model.strip() for model in models.split(',') if model.strip()]
 
     def get_tts_languages(self) -> list:
         """
         Returns a list of available TTS languages.
+
+        Returns:
+            list: A list of TTS languages.
         """
         languages = self.get_config_value('TTS', 'AVAILABLE_LANGUAGES', str)
         Logger.info("TTS languages retrieved: " + languages)
-        return [languages.strip() for languages in languages.split(',') if languages.strip()]
+        return [lang.strip() for lang in languages.split(',') if lang.strip()]
 
     def get_tts_speakers(self) -> list:
         """
         Returns a list of available TTS speakers.
+
+        Returns:
+            list: A sorted list of TTS speakers.
         """
         speakers = self.get_config_value('TTS', 'AVAILABLE_SPEAKERS', str)
         Logger.info("TTS speakers retrieved: " + speakers)
-        speakers = [speakers.strip() for speakers in speakers.split(',') if speakers.strip()]
+        speakers = [speaker.strip() for speaker in speakers.split(',') if speaker.strip()]
         speakers.sort()
-
         return speakers
+
+    def get_tts_mimetype(self) -> str:
+        """
+        Retrieves the default MIME type for TTS output.
+
+        Expects a key 'DEFAULT_MIMETYPE' in the 'TTS' section.
+
+        Returns:
+            str: The MIME type (default: "audio/wav").
+        """
+        return self.get_config_value('TTS', 'DEFAULT_MIMETYPE', str, default="audio/wav")
+
+    def get_tts_as_attachment(self) -> bool:
+        """
+        Retrieves the default attachment flag for TTS output.
+
+        Expects a key 'DEFAULT_AS_ATTACHMENT' in the 'TTS' section.
+
+        Returns:
+            bool: True if the TTS output should be sent as an attachment (default: True).
+        """
+        # Note: if your configuration stores booleans as strings ("True" / "False"),
+        # you may need to convert it appropriately.
+        return self.get_config_value('TTS', 'DEFAULT_AS_ATTACHMENT', bool, default=True)
+
+    def get_tts_output_filename(self) -> str:
+        """
+        Retrieves the default output filename for TTS synthesis.
+
+        Expects a key 'DEFAULT_OUTPUT_FILENAME' in the 'TTS' section.
+
+        Returns:
+            str: The default output filename (default: "output.wav").
+        """
+        return self.get_config_value('TTS', 'DEFAULT_OUTPUT_FILENAME', str, default="output.wav")
+
+    def get_tts_samplerate(self) -> int:
+        """
+        Retrieves the default sample rate for TTS output.
+
+        Expects a key 'DEFAULT_SAMPLERATE' in the 'TTS' section.
+
+        Returns:
+            int: The sample rate in Hz (default: 22050).
+        """
+        return self.get_config_value('TTS', 'DEFAULT_SAMPLERATE', int, default=22050)
+

@@ -15,7 +15,7 @@ def _preload_translation_model(model_name: str, device: str, cache_manager):
     """
     model_key = model_name.strip()
     if cache_manager.get(f"model-{model_key}") is not None and \
-            cache_manager.get(f"tokenizer-{model_key}") is not None:
+       cache_manager.get(f"tokenizer-{model_key}") is not None:
         Logger.info(f"[OpusMT] Model '{model_name}' is already preloaded and cached.")
         return
 
@@ -43,19 +43,18 @@ def _preload_tts_model(tts_model_name: str, device: str, cache_manager):
     tts_model_name = tts_model_name.strip()
 
     try:
-        Logger.info(f"🔍 [Preloading] Loading TTS model '{tts_model_name}' into RAM...")
+        Logger.info(f"[Preloading] Loading TTS model '{tts_model_name}' into RAM...")
         tts_model = TTS(tts_model_name)
         tts_model.to(device)
 
-        # Store model in memory cache
+        # Store model in memory cache.
         cache_manager.cache_tts_model(tts_model_name, tts_model)
 
-        #  Verify the model was stored
+        # Verify that the model was successfully cached.
         if cache_manager.load_cached_tts_model(tts_model_name):
             Logger.info(f"[Preloading] Successfully cached TTS model '{tts_model_name}' in RAM.")
         else:
             Logger.error(f"[Preloading] Failed to cache TTS model '{tts_model_name}' in RAM!")
-
     except Exception as e:
         Logger.error(f"[Preloading] Failed to preload TTS model '{tts_model_name}': {str(e)}")
 
@@ -72,7 +71,7 @@ def preload_models(config_manager, cache_manager):
     device = config_manager.get_torch_device()
 
     # Preload translation models using the configured translation models list.
-    models_to_preload = config_manager.get_translation_models()  # Returns list of model names
+    models_to_preload = config_manager.get_translation_models()  # Returns list of model names.
     for model_name in models_to_preload:
         _preload_translation_model(model_name, device, cache_manager)
 

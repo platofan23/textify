@@ -1,8 +1,7 @@
 import base64
 import hashlib
-
 from backend.app.translators import OpusMTTranslator
-from backend.app.utils import PDFProcessor, preprocess_text, split_text_into_chunks, join_and_split_translations
+from backend.app.utils import preprocess_text, split_text_into_chunks, join_and_split_translations, PDFProcessor
 from backend.app.utils.util_logger import Logger  # Import the Logger class
 
 class TranslationService:
@@ -38,7 +37,8 @@ class TranslationService:
             model (str): Full translation model name (e.g., "Helsinki-NLP/opus-mt-en-de").
 
         Returns:
-            list or dict: List of translated pages, or error message if extraction fails.
+            list: List of translated pages if successful.
+            dict: Error message and HTTP status code if text extraction fails.
         """
         file_hash = hashlib.md5(file.encode()).hexdigest()
         cache_key = f"{model}-{file_hash}"
@@ -72,7 +72,7 @@ class TranslationService:
         """
         Translates plain text using the specified translation model.
 
-        Text is tokenized and processed in chunks if necessary to fit within model constraints.
+        Text is preprocessed and then split into chunks if necessary to fit within model constraints.
         Caching is used to optimize performance by storing previous translations.
 
         Args:
@@ -80,7 +80,7 @@ class TranslationService:
             text (str): Text to be translated.
 
         Returns:
-            list or str: Translated text or error message if translation fails.
+            list or str: Translated text if successful; otherwise, an error message.
         """
         text = preprocess_text(text)
         text_hash = hashlib.md5(text.encode()).hexdigest()
@@ -93,13 +93,14 @@ class TranslationService:
         else:
             Logger.info(f"[CACHE MISS] No cache entry for: {cache_key}")
 
-        # Use the model string directly as the full model name.
+        # Load the tokenizer using the provided model.
         tokenizer = OpusMTTranslator.load_tokenizer(model)
-        chunks = split_text_into_chunks(tokenizer, text, self.config_manager.get_config_value('TEXT', 'MAX_TOKEN', int))
+        max_token = self.config_manager.get_config_value('TEXT', 'MAX_TOKEN', int)
+        chunks = split_text_into_chunks(tokenizer, text, max_token)
 
         translated_chunks = []
         for chunk in chunks:
-            Logger.debug(f"Translating chunk: {chunk[:50]}...")
+            Logger.debug(f"Translating chunk: {chunk[:50]}...")  # Log first 50 characters of the chunk.
             translated_chunk = self.translate_text(model, chunk)
             translated_chunks.append(translated_chunk)
 
@@ -111,7 +112,7 @@ class TranslationService:
 
     def translate_text(self, model, text):
         """
-        Helper method to perform actual text translation using the specified model.
+        Helper method to perform the actual text translation using the specified model.
 
         Args:
             model (str): Full translation model name (e.g., "Helsinki-NLP/opus-mt-en-de").
@@ -120,6 +121,6 @@ class TranslationService:
         Returns:
             list or str: Translated text.
         """
-        # Instantiate translator using the full model name.
+        # Instantiate the translator using the full model name.
         translator = OpusMTTranslator(model, self.cache_manager, self.config_manager.get_torch_device())
         return translator.translate(text)
