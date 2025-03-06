@@ -78,7 +78,7 @@
       <td>Conduct User Acceptance Testing (UAT)</td>
       <td>Collect feedback on transcription accuracy and usability.</td>
       <td>Feedback is reviewed and used to make improvements.</td>
-      <td>Done</td>
+      <td>In Progress</td>
       <td>JK</td>
       <td>1</td>
     </tr>
