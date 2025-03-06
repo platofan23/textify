@@ -54,7 +54,7 @@
       <td>Create Audio Upload Feature</td>
       <td>Allow users to upload audio files for transcription.</td>
       <td>Files in MP3, WAV, and other standard formats are accepted.</td>
-      <td>Dpme</td>
+      <td>Done</td>
       <td></td>
       <td>1</td>
     </tr>
@@ -62,7 +62,7 @@
       <td>Add Error Messaging for Invalid Audio</td>
       <td>Notify users of unsupported formats or poor audio quality.</td>
       <td>Clear error messages are displayed when needed.</td>
-      <td>To Do</td>
+      <td>In Progress</td>
       <td></td>
       <td>1</td>
     </tr>
