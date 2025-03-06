@@ -48,7 +48,7 @@
       <td>Implement preprocessing (e.g., de-skewing, noise reduction) to improve OCR accuracy.</td>
       <td>Preprocessed images yield improved results.</td>
       <td>To Do</td>
-      <td></td>
+      <td>CJ</td>
       <td>4</td>
     </tr>
     <tr>
@@ -64,7 +64,7 @@
       <td>Create tests for image processing, OCR accuracy, and text extraction.</td>
       <td>Tests pass and ensure high accuracy.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
@@ -72,7 +72,7 @@
       <td>Gather feedback on OCR performance and accuracy.</td>
       <td>Feedback is reviewed and used to make improvements.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>4</td>
     </tr>
   </tbody>
