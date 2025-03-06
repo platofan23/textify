@@ -72,7 +72,7 @@
       <td>Collect feedback on TTS quality and UI functionality.</td>
       <td>Issues identified during testing are resolved.</td>
       <td>Done</td>
-      <td></td>
+      <td>All</td>
       <td>2</td>
     </tr>
   </tbody>
