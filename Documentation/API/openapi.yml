@@ -1,23 +1,607 @@
 openapi: 3.0.0
 info:
-  title: API Documentation
-  description: This is an OpenAPI documentation template.
+  title: Backend API
+  description: API zur Verwaltung von Sprachverarbeitung, Übersetzung, Dateioperationen, OCR und Benutzerverwaltung.
   version: 1.0.0
 servers:
-  - url: https://api.example.com/v1
-    description: Production server
-  - url: https://staging-api.example.com/v1
-    description: Staging server
-paths: {}
+  - url: http://localhost:5000
+    description: Lokaler Server
+
+paths:
+  /book/info:
+    get:
+      summary: Retrieve Book Information
+      description: Returns information about books for a given user, such as titles and page counts.
+      parameters:
+        - name: user
+          in: header
+          required: true
+          schema:
+            type: string
+          description: User identifier.
+      responses:
+        200:
+          description: Book information retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      description: Title of the book.
+                    page_count:
+                      type: integer
+                      description: Number of pages.
+        500:
+          description: Internal server error.
+
+  /docker/healthcheck:
+    get:
+      summary: Docker Health Status
+      description: Checks the health status of the application.
+      responses:
+        200:
+          description: Application is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                    description: Health status.
+        500:
+          description: Application error.
+
+  /files/delete:
+    delete:
+      summary: Delete File
+      description: Deletes a file from the database.
+      parameters:
+        - name: user
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Owner's username.
+        - name: title
+          in: header
+          required: false
+          schema:
+            type: string
+          description: File title.
+        - name: filename
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Name of the file to delete.
+        - name: page
+          in: header
+          required: false
+          schema:
+            type: integer
+          description: Page number.
+      responses:
+        200:
+          description: File successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: File successfully deleted.
+        404:
+          description: File not found.
+        500:
+          description: Internal server error.
+
+  /files/download:
+    get:
+      summary: Download File
+      description: Downloads a file from the database.
+      parameters:
+        - name: user
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Owner's username.
+        - name: title
+          in: header
+          required: true
+          schema:
+            type: string
+          description: File title.
+        - name: filename
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Name of the file.
+      responses:
+        200:
+          description: File downloaded successfully.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: File not found.
+        500:
+          description: Internal server error.
+
+  /files/upload:
+    post:
+      summary: Upload File(s)
+      description: Uploads one or more files.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Files to upload.
+      responses:
+        201:
+          description: Files uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploaded_files:
+                    type: array
+                    items:
+                      type: string
+                    description: List of uploaded file IDs.
+        413:
+          description: File too large.
+        415:
+          description: Unsupported media type.
+
+  /ocr:
+    post:
+      summary: Perform OCR on an Image
+      description: Accepts an image file and returns the extracted text.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image_file:
+                  type: string
+                  format: binary
+                  description: Image file for OCR.
+      responses:
+        200:
+          description: OCR performed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Extracted text.
+        400:
+          description: Bad request.
+        500:
+          description: Internal server error.
+
+  /stt:
+    post:
+      summary: Speech-to-Text Conversion
+      description: Accepts a WAV audio file and returns the transcribed text.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: WAV audio file for transcription.
+      responses:
+        200:
+          description: Transcription successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Transcribed text.
+        500:
+          description: Internal server error.
+
+  /translate/file:
+    post:
+      summary: File Translation
+      description: Translates a PDF file.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    file:
+                      type: string
+                      description: Base64-encoded file.
+                    model:
+                      type: string
+                      description: Translation model.
+      responses:
+        200:
+          description: File translation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  translated_file:
+                    type: string
+                    description: Translated file as Base64-encoded data or URL.
+        400:
+          description: Bad input.
+        500:
+          description: Internal server error.
+
+  /translate/page:
+    post:
+      summary: Page Translation
+      description: Translates OCR data for a specific page by retrieving the encrypted source text,
+        extracting and translating text blocks, updating the document with the encrypted translation,
+        and returning the decrypted translated text.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      description: User identifier.
+                    page:
+                      type: integer
+                      description: Page number.
+                    title:
+                      type: string
+                      description: Document title.
+                    model:
+                      type: string
+                      description: Translation model.
+      responses:
+        200:
+          description: Page translation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  translation:
+                    type: object
+                    description: Decrypted translated OCR data.
+        400:
+          description: Missing or invalid parameters.
+        500:
+          description: Internal server error.
+
+  /translate/page_all:
+    post:
+      summary: Bulk Page Translation
+      description: Processes translation for all pages of a given title. For pages without an existing translation,
+        the source text is retrieved, translated, encrypted and stored. Only a success message is returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      description: User identifier.
+                    title:
+                      type: string
+                      description: Document title.
+                    model:
+                      type: string
+                      description: Translation model.
+      responses:
+        200:
+          description: All pages translated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All pages translated successfully.
+        400:
+          description: Bad request.
+        500:
+          description: Internal server error.
+
+  /translate/text:
+    post:
+      summary: Text Translation
+      description: Translates provided text into the target language.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      description: Text to translate.
+                    model:
+                      type: string
+                      description: Translation model.
+      responses:
+        200:
+          description: Text translation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  translated_text:
+                    type: string
+                    description: The translated text.
+        400:
+          description: Missing parameters.
+        500:
+          description: Internal server error.
+
+  /tts:
+    post:
+      summary: Text-to-Speech Conversion
+      description: Generates audio from provided text.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      description: Text for speech synthesis.
+                    model:
+                      type: string
+                      description: Optional TTS model.
+                    speaker:
+                      type: string
+                      description: Speaker identifier.
+                    language:
+                      type: string
+                      default: de
+                      description: Language code.
+      responses:
+        200:
+          description: TTS audio generated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audio_file:
+                    type: string
+                    format: binary
+                    description: Generated audio file (Base64 encoded or URL).
+        400:
+          description: Bad request.
+        500:
+          description: Internal server error.
+
+  /tts/page:
+    post:
+      summary: Page-based TTS Conversion
+      description: Retrieves source text for a page, synthesizes TTS audio, encrypts and stores it in GridFS,
+        and returns the decrypted audio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      description: User identifier.
+                    page:
+                      type: integer
+                      description: Page number.
+                    title:
+                      type: string
+                      description: Document title.
+                    language:
+                      type: string
+                      default: de
+                      description: Language code.
+                    model:
+                      type: string
+                      description: TTS model identifier.
+                    speaker:
+                      type: string
+                      description: Speaker identifier.
+      responses:
+        200:
+          description: Page-based TTS audio generated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audio_file:
+                    type: string
+                    format: binary
+                    description: Generated audio file (Base64 encoded or URL).
+        400:
+          description: Invalid input.
+        500:
+          description: Internal server error.
+
+  /tts/languages:
+    get:
+      summary: Supported TTS Languages
+      description: Returns a list of supported TTS language codes.
+      responses:
+        200:
+          description: List of supported TTS languages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        500:
+          description: Error retrieving languages.
+
+  /tts/models:
+    get:
+      summary: Supported TTS Models
+      description: Returns a list of available TTS models.
+      responses:
+        200:
+          description: List of available TTS models.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        500:
+          description: Error retrieving models.
+
+  /tts/speakers:
+    get:
+      summary: Supported TTS Speakers
+      description: Returns a list of supported TTS speakers.
+      responses:
+        200:
+          description: List of supported TTS speakers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        500:
+          description: Error retrieving speakers.
+
+  /user/login:
+    post:
+      summary: User Login
+      description: Authenticates the user and returns an authorization token.
+      parameters:
+        - name: Username
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The user's username.
+        - name: Password
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The user's password.
+      responses:
+        200:
+          description: User successfully logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: string
+                    description: Authorization token.
+        401:
+          description: Invalid username or password.
+        500:
+          description: Internal server error.
+
+  /user/register:
+    post:
+      summary: User Registration
+      description: Registers a new user with ECC key generation and password hashing.
+      parameters:
+        - name: Username
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Desired username.
+        - name: Password
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Password for the account.
+      responses:
+        200:
+          description: User successfully registered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User successfully registered.
+        409:
+          description: Username already exists.
+        500:
+          description: Registration error.
+
 components:
-  schemas: {}
-  responses: {}
-  parameters: {}
-  examples: {}
-  requestBodies: {}
-  headers: {}
-  securitySchemes: {}
-  links: {}
-  callbacks: {}
-security: []
-tags: []
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
