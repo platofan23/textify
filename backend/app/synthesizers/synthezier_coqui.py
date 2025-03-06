@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 from io import BytesIO
 from TTS.api import TTS
