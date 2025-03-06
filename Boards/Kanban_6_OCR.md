@@ -56,7 +56,7 @@
       <td>Allow users to upload images for text recognition.</td>
       <td>Images in PNG, JPEG, and other common formats are accepted.</td>
       <td>Done</td>
-      <td></td>
+      <td>CJ</td>
       <td>5</td>
     </tr>
     <tr>
