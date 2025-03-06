@@ -71,7 +71,7 @@
       <td>Conduct User Acceptance Testing (UAT)</td>
       <td>Gather feedback from test users to verify the usability and reliability of the translation feature.</td>
       <td>Feedback is reviewed and necessary adjustments are implemented.</td>
-      <td>Done</td>
+      <td>In Progress</td>
       <td>JK</td>
       <td>3</td>
     </tr>
