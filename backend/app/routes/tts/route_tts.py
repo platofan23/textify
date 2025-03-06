@@ -16,6 +16,7 @@ class TTS(Resource):
             cache_manager: The cache manager instance.
         """
         super().__init__()
+        self.config_manager = config_manager
         self.tts_service = TTSService(config_manager, cache_manager)
         Logger.info("TTS instance initialized.")
 
@@ -62,9 +63,9 @@ class TTS(Resource):
             Logger.info("TTS completed successfully. Returning audio file.")
             return send_file(
                 audio_buffer,
-                mimetype="audio/wav",
-                as_attachment=True,
-                download_name="output.wav"
+                mimetype=self.config_manager.get_tts_config().get("mimetype"),
+                as_attachment=self.config_manager.get_tts_config().get("as_attachment"),
+                download_name=self.config_manager.get_tts_config().get("download_name")
             )
         except Exception as e:
             Logger.error(f"Internal Server Error: {str(e)}")

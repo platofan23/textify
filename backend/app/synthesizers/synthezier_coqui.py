@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import torch
 from io import BytesIO
@@ -23,7 +23,7 @@ class TTSSynthesizer:
         self.dont_spam_model = False
         self.config_manager = config_manager
         self.cache_manager = cache_manager
-        self.device = "cuda" if self.config_manager.get_torch_device() == "cuda" else "cpu"
+        self.device = self.config_manager.get_torch_device()
         Logger.info(f"TTSSynthesizer initialized. Running on {self.device.upper()}.")
 
     def get_model(self, model_name: str):
@@ -102,7 +102,8 @@ class TTSSynthesizer:
             Logger.error(f"Error during synthesis: {str(e)}")
             raise
 
-    def _chunk_text(self, text: str) -> List[str]:
+    @staticmethod
+    def _chunk_text(text: str) -> List[str]:
         """
         Splits text into smaller segments for synthesis based on a character limit.
 
@@ -148,13 +149,14 @@ class TTSSynthesizer:
                 raise ValueError("TTS returned an empty audio array.")
             # Convert synthesized audio array to a WAV file in memory.
             audio_buffer = BytesIO()
-            sf.write(audio_buffer, np.array(audio_array), samplerate=22050, format='WAV')
+            sf.write(audio_buffer, np.array(audio_array), samplerate=self.config_manager.get_tts_samplerate(), format='WAV')
             audio_buffer.seek(0)
             return audio_buffer
         except Exception as e:
             Logger.error(f"Error during synthesis for text: '{text_sentence[:30]}...' - {str(e)}")
             return None
 
+    @staticmethod
     def _combine_audio_buffers(self, audio_buffers: List[BytesIO]) -> BytesIO:
         """
         Combines multiple audio buffers into a single WAV file.

@@ -2,16 +2,17 @@ import io
 import json
 import secrets
 import typing
+from configparser import ConfigParser
 from datetime import datetime, timedelta
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from Cryptodome.Protocol.KDF import HKDF
 from Cryptodome.PublicKey import ECC
 from Cryptodome.Random import get_random_bytes
-from backend.app.utils import Logger
+from backend.app.utils import Logger, ConfigManager
 
 
-class Crypto_Manager:
+class CryptoManager:
     """
     Singleton class for performing cryptographic operations including ECC key generation,
     file encryption/decryption, and authorization key management.
@@ -20,21 +21,25 @@ class Crypto_Manager:
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(Crypto_Manager, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(CryptoManager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, config_manager: ConfigManager):
+        self.config_manager = config_manager
         if not hasattr(self, 'initialized'):
+            # Use the ConfigManager method to retrieve the private keys path.
+            private_keys_path = self.config_manager.get_private_key_path()
             try:
-                with open('./resources/keys/private_keys.json', 'r') as f:
+                with open(private_keys_path, 'r') as f:
                     self._private_ECC_keys_json = json.load(f)
             except Exception as e:
-                Logger.error(f"Failed to load private keys: {e}")
+                Logger.error(f"Failed to load private keys from {private_keys_path}: {e}")
                 self._private_ECC_keys_json = None
             self.initialized = True
-            Logger.info("Crypto_Manager initialized successfully.")
+            Logger.info("CryptoManager initialized successfully.")
 
-    def generate_ecc_keys(self, username: str) -> str:
+    @staticmethod
+    def generate_ecc_keys(username: str) -> str:
         """
         Generates an ECC key pair and stores the private key securely.
 
@@ -47,7 +52,8 @@ class Crypto_Manager:
         private_key = ECC.generate(curve='secp256r1')
         Logger.info(f"Generated ECC keys for {username}")
 
-        private_keys_path = './resources/keys/private_keys.json'
+        # Retrieve private key file path via ConfigManager singleton.
+        private_keys_path = ConfigManager().get_private_key_path()
         try:
             with open(private_keys_path, 'r+') as f:
                 try:
@@ -66,7 +72,8 @@ class Crypto_Manager:
 
         return private_key.public_key().export_key(format='PEM')
 
-    def encrypt_file(self, user: dict, file: typing.IO) -> dict:
+    @staticmethod
+    def encrypt_file(user: dict, file: typing.IO) -> dict:
         """
         Encrypts a given file or buffer using ECC and AES-GCM.
 
@@ -86,7 +93,6 @@ class Crypto_Manager:
         nonce = get_random_bytes(16)
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
 
-        # Read and encrypt file content.
         file.seek(0)
         ciphertext = cipher.encrypt(file.read())
         tag = cipher.digest()
@@ -99,7 +105,8 @@ class Crypto_Manager:
             "Ciphertext": ciphertext
         }
 
-    def decrypt_file(self, user: str, file: dict) -> bytes:
+    @staticmethod
+    def decrypt_file(user: str, file: dict) -> bytes:
         """
         Decrypts an encrypted file using the private key corresponding to the user.
 
@@ -111,7 +118,9 @@ class Crypto_Manager:
             bytes: The decrypted file content.
         """
         try:
-            with open('./resources/keys/private_keys.json', 'r') as f:
+            # Use ConfigManager to retrieve the private keys file path.
+            private_keys_path = ConfigManager().get_private_key_path()
+            with open(private_keys_path, 'r') as f:
                 data = json.load(f)
                 private_key_str = [item for item in data if item['user'] == user][0]['private_key']
                 private_key = ECC.import_key(private_key_str)
@@ -132,7 +141,8 @@ class Crypto_Manager:
         Logger.info("File decryption completed successfully.")
         return plaintext
 
-    def encrypt_audio(self, user: typing.Union[dict, str], file: typing.IO) -> dict:
+    @staticmethod
+    def encrypt_audio(user: typing.Union[dict, str], file: typing.IO) -> dict:
         """
         Encrypts a given file or buffer using ECC and AES-GCM.
 
@@ -143,10 +153,10 @@ class Crypto_Manager:
         Returns:
             dict: A dictionary containing the encrypted file components.
         """
-        # If the user is provided as a string, load the PublicKey from the database or file.
         if isinstance(user, str):
             try:
-                with open('./resources/keys/private_keys.json', 'r') as f:
+                private_keys_path = ConfigManager().get_private_key_path()
+                with open(private_keys_path, 'r') as f:
                     data = json.load(f)
                     entry = next((item for item in data if item['user'] == user), None)
                     if entry is None:
@@ -157,7 +167,6 @@ class Crypto_Manager:
             except Exception as e:
                 Logger.error(f"Failed to retrieve key for user {user}: {e}")
                 raise ValueError(f"Failed to retrieve key for user {user}: {e}")
-
         elif "PublicKey" not in user:
             raise ValueError("User must be a dictionary containing a 'PublicKey' field.")
 
@@ -171,7 +180,6 @@ class Crypto_Manager:
             raise TypeError("Invalid file type. Must be bytes or file path.")
 
         file.seek(0)
-
         public_key = ECC.import_key(user['PublicKey'])
         ephemeral_key = ECC.generate(curve='secp256r1')
         ephemeral_public_key = ephemeral_key.public_key()
@@ -180,8 +188,6 @@ class Crypto_Manager:
         aes_key = HKDF(shared_secret_bytes, 32, b'', SHA256, 1)
         nonce = get_random_bytes(16)
         cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
-
-        # Read and encrypt file content.
         ciphertext = cipher.encrypt(file.read())
         tag = cipher.digest()
         ephemeral_public_key_der = ephemeral_public_key.export_key(format='DER')
@@ -193,7 +199,8 @@ class Crypto_Manager:
             "Ciphertext": ciphertext
         }
 
-    def decrypt_audio(self, user: str, file: dict) -> io.BytesIO:
+    @staticmethod
+    def decrypt_audio(user: str, file: dict) -> io.BytesIO:
         """
         Decrypts an encrypted file or audio buffer using the private key corresponding to the user.
 
@@ -205,7 +212,8 @@ class Crypto_Manager:
             io.BytesIO: A BytesIO stream containing the decrypted file content.
         """
         try:
-            with open('./resources/keys/private_keys.json', 'r') as f:
+            private_keys_path = ConfigManager().get_private_key_path()
+            with open(private_keys_path, 'r') as f:
                 data = json.load(f)
                 private_key_str = [item for item in data if item['user'] == user][0]['private_key']
                 private_key = ECC.import_key(private_key_str)
@@ -230,7 +238,6 @@ class Crypto_Manager:
             decrypted_stream = io.BytesIO(plaintext)
             decrypted_stream.seek(0)
             return decrypted_stream
-
         except Exception as e:
             Logger.error(f"Decryption error: {e}")
             raise ValueError("Failed to decrypt the file") from e
@@ -249,7 +256,6 @@ class Crypto_Manager:
         if not isinstance(plaintext, str):
             plaintext = str(plaintext)
 
-        # If the user is provided as a string or does not contain a PublicKey, load it automatically.
         if isinstance(user, str) or "PublicKey" not in user:
             user = self._get_user_with_public_key(user)  # Automatic PublicKey loading
 
@@ -272,7 +278,8 @@ class Crypto_Manager:
         plaintext_bytes = self.decrypt_file(user, encrypted_data)
         return plaintext_bytes.decode('utf-8')
 
-    def add_key(self, username: str, collection) -> str:
+    @staticmethod
+    def add_key(username: str, collection) -> str:
         """
         Generates an authorization key valid for 7 days and stores it in the user's record.
 
@@ -305,7 +312,8 @@ class Crypto_Manager:
             {'$pull': {'AuthorizationKeys': {'ExpiresAt': {'$lt': current_time}}}}
         )
 
-    def _get_user_with_public_key(self, username: str) -> dict:
+    @staticmethod
+    def _get_user_with_public_key(username: str) -> dict:
         """
         Retrieves the public key for a given username.
 
@@ -313,21 +321,21 @@ class Crypto_Manager:
             username (str): The username whose public key is needed.
 
         Returns:
-            dict: A dictionary containing 'PublicKey'.
+            dict: A dictionary containing 'Username' and 'PublicKey'.
+
+        Raises:
+            ValueError: If the key file is not found or no key exists for the given user.
         """
         try:
-            with open('./resources/keys/private_keys.json', 'r') as f:
+            private_keys_path = ConfigManager().get_private_key_path()
+            with open(private_keys_path, 'r') as f:
                 data = json.load(f)
                 user_data = next((item for item in data if item['user'] == username), None)
-
                 if user_data is None:
                     raise ValueError(f"No key found for user '{username}'.")
-
                 private_key = ECC.import_key(user_data['private_key'])
                 public_key = private_key.public_key().export_key(format='PEM')
-
                 return {"Username": username, "PublicKey": public_key}
-
         except FileNotFoundError:
             raise ValueError(f"Key file not found for user '{username}'.")
         except Exception as e:
@@ -342,7 +350,7 @@ class Crypto_Manager:
             encrypted_file_lib (dict): Dictionary containing encrypted file components.
 
         Returns:
-            float: Size of the encrypted file in MB.
+            float: The size of the encrypted file in MB.
         """
         total_size_bytes = (
             len(encrypted_file_lib["Ephemeral_public_key_der"]) +

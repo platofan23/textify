@@ -1,4 +1,3 @@
-import secrets
 from threading import Thread
 from random import random
 from flask import make_response
@@ -8,13 +7,13 @@ from argon2 import PasswordHasher
 from backend.app.utils import Logger
 from backend.app.utils.util_mongo_manager import MongoDBManager
 from backend.app.utils.util_config_manager import ConfigManager
-from backend.app.utils.util_crypt import Crypto_Manager
+from backend.app.utils.util_crypt import CryptoManager
 
 class LoginUser(Resource):
     """
     Resource for handling user authentication and authorization key generation.
     """
-    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: Crypto_Manager):
+    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: CryptoManager):
         """
         Initializes the LoginUser resource with MongoDB manager, configuration manager, and crypto manager.
 

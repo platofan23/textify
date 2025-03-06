@@ -1,13 +1,13 @@
 from flask_restful import Resource, reqparse
 from werkzeug.datastructures import FileStorage
 from backend.app.utils import Logger, MongoDBManager, ConfigManager
-from backend.app.utils.util_crypt import Crypto_Manager
+from backend.app.utils.util_crypt import CryptoManager
 
 class UploadFile(Resource):
     """
     Resource for uploading files.
     """
-    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: Crypto_Manager):
+    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: CryptoManager):
         """
         Constructor that injects MongoDBManager, ConfigManager, and Crypto_Manager for file uploads.
 

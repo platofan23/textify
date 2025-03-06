@@ -5,13 +5,13 @@ from argon2 import PasswordHasher
 from backend.app.utils import Logger
 from backend.app.utils.util_mongo_manager import MongoDBManager
 from backend.app.utils.util_config_manager import ConfigManager
-from backend.app.utils.util_crypt import Crypto_Manager
+from backend.app.utils.util_crypt import CryptoManager
 
 class RegisterUser(Resource):
     """
     Resource for handling user registration, ECC key generation, and password hashing.
     """
-    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: Crypto_Manager):
+    def __init__(self, mongo_manager: MongoDBManager, config_manager: ConfigManager, crypto_manager: CryptoManager):
         """
         Initializes the RegisterUser resource with MongoDB, configuration, and crypto managers.
 
