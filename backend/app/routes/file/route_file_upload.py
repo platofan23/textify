@@ -59,11 +59,13 @@ class UploadFile(Resource):
         parser.add_argument('User', location='headers', required=True, help="User header is required")
         parser.add_argument('Title', location='headers', required=True, help="Title header is required")
         parser.add_argument('Files', type=FileStorage, location="files", action='append', required=True)
+        parser.add_argument('Language', location='headers', required=True, help="Language header is required")
         args = parser.parse_args()
 
         files = args['Files']
         username = args['User']
         title = args['Title']
+        language = args['Language']
 
         total_size = 0
         file_ids = []
@@ -104,7 +106,7 @@ class UploadFile(Resource):
 
             # Perform OCR
             file.seek(0)  # Reset file pointer to the beginning
-            text = multi_reader(file.read(), "doctr", language="en")
+            text = multi_reader(file.read(), "doctr", language=language)
             Logger.debug(f'Text: {type(text)}')
 
             # Encrypt text
@@ -121,7 +123,7 @@ class UploadFile(Resource):
             )
 
             self.mongo_manager.insert_document(user_text_collection,
-                                               {'text': {'source': encrypted_text}, 'user': username,
+                                               {'text': {'source': encrypted_text, "language": language}, 'user': username,
                                                 'title': title, 'file_id': file_id, 'page': page},)
             file_ids.append(file_id)
             page += 1

@@ -3,13 +3,40 @@ import { Box, Grid2 } from "@mui/material"
 import { Button, Typography, TextField, Grid, Paper, Alert, IconButton } from "@mui/material"
 import { CloudUpload, Delete } from "@mui/icons-material"
 import { useDropzone, FileWithPath } from "react-dropzone"
+import { MenuItem, FormControl, InputLabel, Select, SelectChangeEvent } from "@mui/material"
 import { User } from "../main.tsx"
 type FileWithPreview = FileWithPath & { preview: string }
 
+interface LanguageOption {
+    code: string
+    name: string
+}
+
 const FileUploadPage = ({ user }: { user: User | null }) => {
     const [title, setTitle] = useState<string>("")
+    const [language, setLanguage] = useState<string>("en")
     const [files, setFiles] = useState<FileWithPreview[]>([])
     const [error, setError] = useState<string>("")
+
+    const languageOptions: LanguageOption[] = [
+        { code: "en", name: "English" },
+        { code: "es", name: "Spanish" },
+        { code: "fr", name: "French" },
+        { code: "de", name: "German" },
+        { code: "it", name: "Italian" },
+        { code: "pt", name: "Portuguese" },
+        { code: "zh", name: "Chinese" },
+        { code: "ja", name: "Japanese" },
+        { code: "ko", name: "Korean" },
+        { code: "ru", name: "Russian" },
+        { code: "ar", name: "Arabic" },
+        { code: "hi", name: "Hindi" },
+        { code: "nl", name: "Dutch" },
+    ]
+
+    const handleLanguageChange = (event: SelectChangeEvent) => {
+        setLanguage(event.target.value)
+    }
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         accept: {
@@ -61,6 +88,7 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
                 // "Content-Type": "multipart/form-data",
                 User: user?.Username ?? "",
                 Title: title,
+                Language: language,
             },
             body: formData,
         })
@@ -73,6 +101,12 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
 
     const removeFile = (fileName: string) => {
         setFiles((prev) => prev.filter((file) => file.name !== fileName))
+    }
+
+    // Helper function to get language name from code
+    const getLanguageName = (code: string): string => {
+        const option = languageOptions.find((lang) => lang.code === code)
+        return option ? option.name : code
     }
 
     return (
@@ -90,6 +124,23 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
                     margin="normal"
                     required
                 />
+
+                <FormControl fullWidth margin="normal" required>
+                    <InputLabel id="language-select-label">Language</InputLabel>
+                    <Select
+                        labelId="language-select-label"
+                        id="language-select"
+                        value={language}
+                        label="Language"
+                        onChange={handleLanguageChange}
+                    >
+                        {languageOptions.map((lang) => (
+                            <MenuItem key={lang.code} value={lang.code}>
+                                {lang.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
 
                 <Paper
                     variant="outlined"

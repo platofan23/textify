@@ -1,5 +1,6 @@
 from backend.app.routes.docker import HealthCheck
-from backend.app.routes.file import DownloadFile, GetBookInfo, UploadFile, DeleteFile, GetBookPage, GetBookTranslations
+from backend.app.routes.file import DownloadFile, GetBookInfo, UploadFile, DeleteFile, GetBookPage, GetBookTranslations, \
+    GetBookLanguage, DeleteBook
 from backend.app.routes.ocr import ReadFile
 from backend.app.routes.stt import SpeechToText
 from backend.app.routes.translation import TranslatePage, TranslateAllPages, TranslateFile, TranslateText, \
@@ -50,10 +51,25 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
     Logger.info("Registered route: /delete_file -> DeleteFile")
 
     api.add_resource(
+        DeleteBook,
+        '/delete_book',
+        resource_class_kwargs={'config_manager': config_manager, 'mongo_manager': mongo_manager}
+    )
+    Logger.info("Registered route: /delete_book -> DeleteBook")
+
+    api.add_resource(
         GetBookTranslations,
         '/get_book_translations',
         resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager }
     )
+    Logger.info("Registered route: /get_book_translations -> GetBookTranslations")
+
+    api.add_resource(
+        GetBookLanguage,
+        '/get_book_language',
+        resource_class_kwargs = {'config_manager': config_manager, 'mongo_manager': mongo_manager }
+    )
+    Logger.info("Registered route: /get_book_language -> GetBookLanguage")
 
     # Book-related endpoints
     api.add_resource(

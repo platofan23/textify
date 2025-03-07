@@ -4,6 +4,8 @@ from .route_file_download import DownloadFile
 from .route_file_get_book_translations import GetBookTranslations
 from .route_file_upload import UploadFile
 from .route_file_bookpage import GetBookPage
+from .route_file_get_book_lang import GetBookLanguage
+from .route_delete_book import DeleteBook
 
 __all__ = [
     "GetBookInfo",
@@ -11,5 +13,7 @@ __all__ = [
     "DownloadFile",
     "UploadFile",
     "GetBookPage",
-    "GetBookTranslations"
+    "GetBookTranslations",
+    "GetBookLanguage",
+    "DeleteBook"
 ]
