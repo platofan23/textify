@@ -297,14 +297,14 @@ const Translate = () => {
                         onClick={handleRecordButtonClick}
                         variant="contained"
                         size="large"
-                        color={isRecording ? "error" : "primary"}
+                        color={isRecording ? "error" : "secondary"}
                         sx={{
                             minWidth: 150,
                             fontWeight: 600,
                             textTransform: "none",
                         }}
                     >
-                        {isRecording ? `Recording (${recordingTime}s)` : "Record Voice"}
+                        {isRecording ? `Recording (${recordingTime}s)` : " Record Voice WIP"}
                     </Button>
                     <Button
                         onClick={translateText}
