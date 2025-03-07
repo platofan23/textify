@@ -15,6 +15,8 @@ services:
 #              capabilities: [gpu]
     environment:
       - IsDocker=True
+      - COQUI_ACCEPT_LICENSE=True
+      - COQUI_TOS_AGREED=1
     healthcheck:
       test: [ "CMD", "curl", "-f", "https://localhost:5555/health" ]
       interval: 30s
@@ -30,6 +32,9 @@ services:
         ipv4_address: 172.142.3.4
     ports:
       - "5555:5555"
+    volumes:
+      - stt_cache:/root/.cache/whisper
+      - tts_cache:/root/.cache/huggingface/
     restart: unless-stopped
 
   mongo:
