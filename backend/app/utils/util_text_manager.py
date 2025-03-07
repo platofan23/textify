@@ -1,52 +1,87 @@
+import re
+import unicodedata
 from typing import Union, List
 from itertools import chain
-from backend.app.utils.util_logger import Logger  # Import the Logger class
+from backend.app.utils.util_logger import Logger
 
 def preprocess_text(text: Union[str, List[str]]) -> str:
     """
-    Preprocesses text by converting lists of strings into a single string.
+    Preprocesses the input text by normalizing Unicode characters, removing extra whitespace,
+    and converting a list of strings to a single string if needed. Also filters out duplicate
+    punctuation (e.g. multiple dots become an ellipsis).
 
     Args:
-        text (Union[str, List[str]]): Text to preprocess, either as a string or a list of strings.
+        text (Union[str, List[str]]): The raw input text.
 
     Returns:
-        str: A single concatenated string if a list is provided, otherwise the original string.
+        str: A normalized, single string.
     """
     if isinstance(text, list):
-        Logger.debug("Preprocessing text: Joining list of strings into a single string.")
-        return ' '.join(text)
-    Logger.debug("Preprocessing text: Returning original string.")
+        Logger.info("Preprocessing: Joining list of strings.")
+        text = ' '.join(text)
+    # Normalize Unicode (e.g., combine accented characters)
+    text = unicodedata.normalize('NFKC', text)
+    # Collapse multiple whitespaces
+    text = ' '.join(text.split())
+    # Replace multiple dots with an ellipsis
+    text = re.sub(r'\.{2,}', '...', text)
+    # Collapse repeated punctuation (e.g., !!! becomes !)
+    text = re.sub(r'([!?,;:])\1+', r'\1', text)
+    Logger.info("Preprocessing: Completed normalization and punctuation cleanup.")
     return text
 
 def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 250) -> List[str]:
     """
-    Splits text into smaller chunks based on a specified maximum token limit.
+    Splits the preprocessed text into chunks that do not exceed the specified token limit.
+    The splitting is done in a sentence-aware manner so that sentences are not arbitrarily cut.
 
     Args:
-        tokenizer: The tokenizer used to tokenize and detokenize text.
+        tokenizer: A tokenizer with 'tokenize' and 'convert_tokens_to_string' methods.
         text (str): The input text to be split.
-        max_tokens (int): The maximum number of tokens per chunk (default: 150).
+        max_tokens (int): Maximum number of tokens per chunk (default is 150).
 
     Returns:
-        List[str]: A list of text chunks, each within the specified token limit.
-
-    Raises:
-        ValueError: If the input text is empty or tokenization fails.
+        List[str]: A list of text chunks.
     """
     if not text:
-        Logger.error("Input text is empty. Cannot split into chunks.")
+        Logger.error("Input text is empty; cannot split into chunks.")
         raise ValueError("Input text cannot be empty.")
 
-    tokens = tokenizer.tokenize(text)
-    if not tokens:
-        Logger.error("Tokenization failed or produced empty tokens.")
-        raise ValueError("Tokenization failed or produced empty tokens.")
+    # Preprocess the text first
+    text = preprocess_text(text)
 
-    Logger.info(f"Splitting text into chunks with max token limit: {max_tokens}.")
-    return [
-        tokenizer.convert_tokens_to_string(tokens[i:i + max_tokens])
-        for i in range(0, len(tokens), max_tokens)
-    ]
+    # Split text into sentences (split on punctuation followed by whitespace)
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    Logger.info(f"Split text into {len(sentences)} sentences.")
+    chunks = []
+    current_chunk = []
+    current_token_count = 0
+
+    for sentence in sentences:
+        tokens = tokenizer.tokenize(sentence)
+        num_tokens = len(tokens)
+        # If a sentence exceeds the token limit, add it as its own chunk.
+        if num_tokens > max_tokens:
+            if current_chunk:
+                chunks.append(" ".join(current_chunk))
+                current_chunk = []
+                current_token_count = 0
+            chunks.append(sentence)
+            continue
+
+        if current_token_count + num_tokens > max_tokens:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = [sentence]
+            current_token_count = num_tokens
+        else:
+            current_chunk.append(sentence)
+            current_token_count += num_tokens
+
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+
+    Logger.info(f"Text split into {len(chunks)} chunks (max {max_tokens} tokens each).")
+    return chunks
 
 def flatten_list(nested_list: List) -> List[str]:
     """
@@ -58,7 +93,7 @@ def flatten_list(nested_list: List) -> List[str]:
     Returns:
         List[str]: A flat list of strings.
     """
-    Logger.debug("Flattening nested list.")
+    Logger.info("Flattening nested list.")
     return list(chain.from_iterable(
         [str(item)] if not isinstance(item, list) else [str(sub_item) for sub_item in item if sub_item]
         for item in nested_list
@@ -66,37 +101,42 @@ def flatten_list(nested_list: List) -> List[str]:
 
 def join_and_split_translations(translated_chunks: List[str], split_into_sentences: bool = False) -> List[str]:
     """
-    Joins translated text chunks into a single string and optionally splits it into individual sentences.
+    Joins a list of translated text chunks into a single string and optionally splits it into sentences.
 
     Args:
         translated_chunks (List[str]): List of translated text chunks.
         split_into_sentences (bool): Whether to split the joined text into sentences.
 
     Returns:
-        List[str]: A list containing either the full translated text as a single element or individual sentences.
+        List[str]: Either a list containing the full joined text or a list of sentences.
     """
-    Logger.info("Joining and optionally splitting translated text.")
-
-    # Flatten nested chunks and filter out empty items.
+    Logger.info("Joining translated text chunks.")
     flat_chunks = flatten_list(translated_chunks)
     if not flat_chunks:
-        Logger.warning("No text available to join or split.")
-        return []  # Return an empty list if no text is available
-
-    # Join the flat list into a single string.
-    translated_text = ' '.join(flat_chunks)
-
+        Logger.warning("No text available to join.")
+        return []
+    joined_text = " ".join(flat_chunks)
     if split_into_sentences:
         Logger.info("Splitting joined text into sentences.")
-        sentences = []
-        current_sentence = []
-        for token in translated_text.split():
-            current_sentence.append(token)
-            if token.endswith(('.', '!', '?')):
-                sentences.append(' '.join(current_sentence))
-                current_sentence = []
-        if current_sentence:
-            sentences.append(' '.join(current_sentence))
+        sentences = re.split(r'(?<=[.!?])\s+', joined_text)
         return sentences
+    return [joined_text]
 
-    return [translated_text]
+def clean_translated_text(text: str) -> str:
+    """
+    Cleans the translated text by removing duplicate punctuation and extraneous characters.
+
+    Args:
+        text (str): The translated text.
+
+    Returns:
+        str: The cleaned text.
+    """
+    # Replace multiple dots with an ellipsis.
+    text = re.sub(r'\.{2,}', '...', text)
+    # Collapse repeated punctuation.
+    text = re.sub(r'([!?,;:])\1+', r'\1', text)
+    # Normalize whitespace.
+    text = " ".join(text.split())
+    Logger.info("Cleaned translated text.")
+    return text

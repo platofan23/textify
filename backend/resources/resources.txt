@@ -38,3 +38,5 @@ pillow==10.4.0
 pycryptodome==3.21.0
 pycryptodomex==3.21.0
 coqui-tts==0.25.3
+openai-whisper==20240930
+noisereduce==3.0.3

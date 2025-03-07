@@ -67,7 +67,7 @@ class TTSPage(Resource):
                 }
                 decrypted_audio = self.crypto_manager.decrypt_audio(user, encryption_dict)
                 # Return the decrypted audio stream directly
-                return send_file(decrypted_audio, mimetype="audio/wav", as_attachment=True, download_name="tts_output.wav")
+                return send_file(decrypted_audio, mimetype=self.config_manager.get_tts_mimetype(), as_attachment=self.config_manager.get_tts_as_attachment(), download_name=self.config_manager.get_tts_download_name())
 
             Logger.info("No existing TTS audio found. Retrieving source text from the database.")
             user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")

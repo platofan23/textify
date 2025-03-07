@@ -1,6 +1,7 @@
 from backend.app.routes.docker import HealthCheck
 from backend.app.routes.file import DownloadFile, GetBookInfo, UploadFile, DeleteFile, GetBookPage
 from backend.app.routes.ocr import ReadFile
+from backend.app.routes.stt import SpeechToText
 from backend.app.routes.translation import TranslatePage, TranslateAllPages, TranslateFile, TranslateText, \
     ModelTranslation
 from backend.app.routes.tts import TTSPage, TTS, LanguageTTS, ModelTTS, SpeakerTTS
@@ -133,6 +134,14 @@ def register_routes(api, config_manager, cache_manager, mongo_manager, crypto_ma
         resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager}
     )
     Logger.info("Registered route: /tts/speakers -> SpeakerTTS")
+
+    ## STT Endpoint
+    api.add_resource(
+        SpeechToText,
+        '/stt',
+        resource_class_kwargs={'config_manager': config_manager, 'cache_manager': cache_manager}
+    )
+    Logger.info("Registered route: /stt -> SpeechToText")
 
     # Docker Healthcheck Endpoint
     api.add_resource(
