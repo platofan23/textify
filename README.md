@@ -89,8 +89,8 @@ cd textify
 ### Run the Application Locally:
 
 1. Ensure both backend and frontend are running.
-2. Access the frontend at: http://localhost:5173.
-3. Access the backend API at: http://localhost:5555
+2. Access the frontend at: http://localhost:5173 in docker with https
+3. Access the backend API at: http://localhost:5555 in docker with https
 
 ###  :file_folder: File Structure
 ```
