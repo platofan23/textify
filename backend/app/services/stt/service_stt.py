@@ -19,7 +19,7 @@ class SpeechToTextService:
         self.config_manager = config_manager
         self.cache_manager = cache_manager
         # Create a new instance of the Whisper synthesizer (pretrained model will be downloaded and cached locally)
-        self.synthesizer = STTSynthesizer(self.config_manager.get_stt_models())
+        self.synthesizer = STTSynthesizer(self.config_manager.get_stt_models(), self.config_manager)
         Logger.info("SpeechToTextService initialized.")
 
     def transcribe_audio(self, audio_file) -> str:
