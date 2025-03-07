@@ -1,11 +1,14 @@
 import torch
 from transformers import MarianMTModel, MarianTokenizer
-from backend.app.utils.util_logger import Logger  # Import the Logger class
+
+from backend.app.utils import preprocess_text
+from backend.app.utils.util_logger import Logger
+from backend.app.utils.util_text_manager import clean_translated_text
+
 
 class OpusMTTranslator:
     """
     OpusMTTranslator uses Helsinki-NLP's MarianMT models to translate text.
-
     This class handles text translation by loading the specified MarianMT model.
     It utilizes caching to optimize performance and avoid redundant loading of models
     and tokenizers.
@@ -65,24 +68,27 @@ class OpusMTTranslator:
     def translate(self, text: str) -> list:
         """
         Translates the given text using the loaded MarianMT model.
+        The text is preprocessed and cleaned before translation.
 
         Args:
             text (str): The text to translate.
 
         Returns:
             list: A list of translated strings.
-
-        If an error occurs during translation, logs the error and returns the original text in a list.
         """
-        Logger.info(f"Translating text (first 50 characters): {text[:50]}...")
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True)
+        Logger.info("Preprocessing text before translation.")
+        preprocessed_text = preprocess_text(text)
+        Logger.info(f"Translating text (first 50 characters): {preprocessed_text[:preprocessed_text.__sizeof__()-1]}...")
+        inputs = self.tokenizer(preprocessed_text, return_tensors="pt", padding=True)
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
         try:
             with torch.no_grad():
                 translated = self.model.generate(**inputs)
             result = self.tokenizer.batch_decode(translated, skip_special_tokens=True)
-            Logger.info(f"Translation successful for text (first 50 characters): {text[:50]}...")
-            return result
+            # Clean the translated text to remove extra punctuation etc.
+            cleaned_result = [clean_translated_text(r) for r in result]
+            Logger.info(f"Translating text (first 50 characters): {preprocessed_text[:preprocessed_text.__sizeof__()-1]}...")
+            return cleaned_result
         except Exception as e:
             Logger.error(f"Error during translation: {str(e)}")
             return [text]

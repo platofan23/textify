@@ -44,7 +44,7 @@ class TTS(Resource):
 
         data = json_data['data']
         text = data.get('text')
-        model = data.get('model', "tts_models/de/thorsten/tacotron2-DCA")  # Default model
+        model = data.get('model')  # Default model
         speaker = data.get('speaker', None)
         language = data.get('language', "de")
 

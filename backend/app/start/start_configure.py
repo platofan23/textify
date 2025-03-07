@@ -21,8 +21,8 @@ def create_app(config_path='./config/config.ini'):
                 MongoDBManager instance, Crypto_Manager instance)
     """
     # Configure Torch threading options.
-    torch.set_num_threads(4)         # Use up to 4 threads for intra-op parallelism
-    torch.set_num_interop_threads(2)   # Use 2 threads for inter-op parallelism
+    #torch.set_num_threads(4)         # Use up to 4 threads for intra-op parallelism
+    #torch.set_num_interop_threads(2)   # Use 2 threads for inter-op parallelism
 
     Logger.info(f"Running in Docker: {os.getenv('IsDocker')}")
 

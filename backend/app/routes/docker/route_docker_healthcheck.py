@@ -1,6 +1,6 @@
 from flask_restful import Resource
 
-from backend.app.utils import MongoDBManager
+from backend.app.utils import MongoDBManager, CryptoManager, ConfigManager
 from backend.app.utils.util_logger import Logger
 
 
@@ -56,7 +56,9 @@ class HealthCheck(Resource):
             str: The database status, either 'unknown', 'error', or the healthy status.
         """
         try:
-            db_manager = MongoDBManager()
+            config_manager = ConfigManager()
+            crypto_manager = CryptoManager(config_manager)
+            db_manager = MongoDBManager(crypto_manager)
             db_health = db_manager.check_health()
             return db_health.get("database", "unknown")
         except Exception as db_error:
@@ -86,8 +88,6 @@ class HealthCheck(Resource):
 
                 cache_result["cache_read_write"] = "working" if cached_value == test_value else "error"
 
-                # Remove test key from cache
-                self.cache_manager.clear_cache()
         except Exception as cache_error:
             cache_result["cache"] = "error"
             cache_result["cache_read_write"] = "error"
