@@ -15,7 +15,7 @@ export default defineConfig({
         port: 5173,       // Optional: Use the standard HTTPS port
         proxy: {
             "/translate": {
-                target: "https://localhost:5555", // Backend container name
+                target: "https://localhost:5558", // Backend container name
                 changeOrigin: true,
                 secure: false, // For self-signed certificates
             },

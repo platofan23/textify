@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react"
-import Editor from "./component_editor_translate"
+import { Alert, Box, Button, Grid2, MenuItem, Select, Typography, Slider } from "@mui/material"
+import Editor from "../components/component_editor_translate"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
-import streamText from "./text_stream"
-import { Alert, Box, Button, Grid2, MenuItem, Modal, Select, Typography } from "@mui/material"
+import streamText from "../components/text_stream"
+import { useRecorder } from "../components/recording/Recorder"
 
 const Delta = Quill.import("delta")
 
@@ -14,14 +15,27 @@ const Translate = () => {
     // Use a ref to access the quill instance directly
     const quillRefInput = useRef<Quill | null>(null)
     const quillRefOutput = useRef<Quill | null>(null)
-
+    const audioRef = useRef<HTMLAudioElement | null>(null) // Add ref to track audio element
+    const [readBlock, setReadBlock] = useState<boolean>(false)
     const [text, setText] = useState<string>("")
     const [LanguageError, setLanguageError] = useState<boolean>(false)
     const [sourcelanguage, setSourcelanguage] = useState<string>("de")
     const [targetlanguage, setTargetlanguage] = useState<string>("en")
+    const [volume, setVolume] = useState<number>(1.0)
     const [readButton, setReadButton] = useState<
         "inherit" | "error" | "primary" | "secondary" | "info" | "success" | "warning"
     >("primary")
+
+    // TTS States
+    const [speaker, setSpeaker] = useState<string>("Claribel Dervla")
+    const [speakers, setSpeakers] = useState<string[]>([])
+
+    // Recorder
+    const { isRecording, recordingTime, recordedAudio, handleRecordButtonClick } = useRecorder({
+        quillRefInput,
+        sourcelanguage,
+    })
+
     const Language = [
         { value: "de", label: "German" },
         { value: "en", label: "English" },
@@ -40,31 +54,104 @@ const Translate = () => {
     const appendText = (newText: string | undefined) => {
         if (newText === undefined) {
             setLanguageError(true)
-
             return
         }
         setText((prevText) => prevText + newText)
     }
 
+    // TTS
+    useEffect(() => {
+        fetch("http://localhost:5558/tts/speakers")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.speakers && Array.isArray(data.speakers)) {
+                    setSpeakers(data.speakers)
+                }
+            })
+            .catch((error) => {
+                console.error("Failed to fetch speakers:", error)
+            })
+    }, [])
+
     useEffect(() => {
         quillRefOutput.current?.setText(text)
     }, [text])
 
+    // Read translated text using TTS
     function readTranslatedText() {
-        if (quillRefOutput.current?.getText() !== null) {
+        // If audio is currently playing, stop it
+        if (readBlock) {
+            if (audioRef.current) {
+                audioRef.current.pause()
+                audioRef.current.remove()
+            }
+            setReadButton("primary")
+            setReadBlock(false)
+            return
+        }
+
+        if (quillRefOutput.current?.getText() == null) {
             setReadButton("error")
             setTimeout(() => {
                 setReadButton("primary")
             }, 1000)
+            return
         }
 
-        let textToRead = quillRefOutput.current?.getText()
+        if (quillRefOutput.current?.getText() !== null) {
+            setReadButton("secondary")
+            setReadBlock(true)
+        }
+
+        const textToRead = quillRefOutput.current?.getText().slice(0, -1)
+        const requestData = {
+            data: {
+                text: textToRead,
+                model: "tts_models/multilingual/multi-dataset/xtts_v2",
+                language: targetlanguage,
+                speaker: speaker, // Use the selected speaker from state
+            },
+        }
+
+        fetch("http://localhost:5558/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+        })
+            .then((res) => res.blob())
+            .then((blob) => {
+                const audioURL = URL.createObjectURL(blob)
+                const audio = new Audio(audioURL)
+                audioRef.current = audio // Store reference to audio element
+                audio.volume = volume
+                audio.play()
+                audio.onended = () => {
+                    setReadButton("primary")
+                    setReadBlock(false)
+                    audioRef.current = null
+                }
+            })
+            .catch((error) => {
+                console.error("TTS request failed:", error)
+                setReadButton("primary")
+                setReadBlock(false)
+            })
     }
 
     async function translateText() {
         setText("")
         streamText(appendText, quillRefInput.current?.getText().split("\n"), sourcelanguage, targetlanguage)
     }
+
+    // Clean up audio on component unmount
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause()
+                audioRef.current = null
+            }
+        }
+    }, [])
 
     return (
         <Box
@@ -205,6 +292,20 @@ const Translate = () => {
                     columnSpacing={1}
                     sx={{ mt: 2, display: "flex", justifyContent: "center" }}
                 >
+                    {/*Record button */}
+                    <Button
+                        onClick={handleRecordButtonClick}
+                        variant="contained"
+                        size="large"
+                        color={isRecording ? "error" : "secondary"}
+                        sx={{
+                            minWidth: 150,
+                            fontWeight: 600,
+                            textTransform: "none",
+                        }}
+                    >
+                        {isRecording ? `Recording (${recordingTime}s)` : " Record Voice WIP"}
+                    </Button>
                     <Button
                         onClick={translateText}
                         variant="contained"
@@ -228,11 +329,60 @@ const Translate = () => {
                         }}
                         color={readButton}
                     >
-                        Read
+                        {readBlock ? "Stop" : "Read"}
                     </Button>
+                </Grid2>
+                {/* Speaker Selection */}
+                <Grid2
+                    size={{ xs: 12 }}
+                    sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                    <Typography variant="body2" sx={{ mr: 2, minWidth: "80px" }}>
+                        Speaker:
+                    </Typography>
+                    <Select
+                        value={speaker}
+                        onChange={(e) => setSpeaker(e.target.value as string)}
+                        size="small"
+                        sx={{ maxWidth: 180, minWidth: 150 }}
+                        aria-label="Speaker"
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    maxHeight: 300, // Makes the dropdown scrollable
+                                },
+                            },
+                        }}
+                    >
+                        {speakers.map((speakerName) => (
+                            <MenuItem key={speakerName} value={speakerName}>
+                                {speakerName}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </Grid2>
+
+                {/* Volume Control */}
+                <Grid2
+                    size={{ xs: 12 }}
+                    sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                    <Typography variant="body2" sx={{ mr: 2, minWidth: "60px" }}>
+                        Volume: {Math.round(volume * 100)}%
+                    </Typography>
+                    <Slider
+                        value={volume}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onChange={(_, newValue) => setVolume(newValue as number)}
+                        sx={{ maxWidth: 250 }}
+                        aria-label="Volume"
+                    />
                 </Grid2>
             </Grid2>
         </Box>
     )
 }
+
 export default Translate

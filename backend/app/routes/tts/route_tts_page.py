@@ -89,7 +89,7 @@ class TTSPage(Resource):
 
             # Return the newly synthesized TTS audio.
             audio_buffer.seek(0)
-            return send_file(audio_buffer, mimetype=self.config_manager.get_tts_mimetype(),as_attachment=self.config_manager.get_tts_as_attachment(), download_name=self.config_manager.get_tts_download_name())
+            return send_file(audio_buffer, mimetype=self.config_manager.get_tts_mimetype(), as_attachment=self.config_manager.get_tts_as_attachment(), download_name=self.config_manager.get_tts_download_name())
 
         except ValueError as ve:
             Logger.error(f"Invalid input: {ve}")

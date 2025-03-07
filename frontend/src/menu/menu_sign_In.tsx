@@ -36,7 +36,7 @@ function SignIn({ setUser, user }: SignInProps) {
     }
 
     const loginUser = (username: string, password: string): void => {
-        const request = fetch("http://localhost:5555/login", {
+        const request = fetch("http://localhost:5558/login", {
             method: "POST",
             headers: {
                 Password: password,
@@ -117,7 +117,9 @@ function SignIn({ setUser, user }: SignInProps) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Submit</Button>
+                    <Button variant="contained" type="submit">
+                        Submit
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Container>

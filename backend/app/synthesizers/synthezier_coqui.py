@@ -5,9 +5,10 @@ from io import BytesIO
 from TTS.api import TTS
 import soundfile as sf
 import numpy as np
-import wave
+from debugpy.launcher import channel
 
-from backend.app.utils import preprocess_text
+from backend.app.utils.util_logger import Logger
+import wave
 from backend.app.utils.util_logger import Logger
 
 class TTSSynthesizer:
@@ -73,31 +74,49 @@ class TTSSynthesizer:
         """
         try:
             Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
-            text = preprocess_text(text)
-            # Split text into manageable chunks.
-            text_segments = self._chunk_text(text)
-            if not text_segments:
-                Logger.error("No valid text segments to synthesize. Aborting.")
-                raise ValueError("No valid text segments to synthesize.")
 
-            Logger.info(f"Text split into {len(text_segments)} chunk(s) for synthesis.")
+            Logger.info("Audio synthesis running")
 
+            # Split the text into chunks of 252 characters
+            char_count = 0
             audio_buffers = []
-            for i, segment in enumerate(text_segments):
-                Logger.debug(f"Synthesizing chunk {i + 1}/{len(text_segments)}: '{segment[:30]}...'")
-                buffer = self._tts_for_synthesize(segment, model, speaker, language)
-                if buffer and buffer.getbuffer().nbytes > 0:
-                    Logger.info(f"Chunk {i + 1} synthesized successfully. Buffer size: {buffer.getbuffer().nbytes} bytes.")
-                    audio_buffers.append(buffer)
-                else:
-                    Logger.warning(f"TTS returned an empty buffer for chunk {i + 1}: '{segment[:30]}...'")
-            if not audio_buffers:
-                Logger.error("No valid audio buffers generated. TTS synthesis failed.")
-                raise ValueError("No valid audio buffers generated.")
+            last_punctuation_mark = 0
+            i = 0
+            while len(text) > i:
+                char_count += 1
+                if text[i] in [".", "!", "?"]:
+                    last_punctuation_mark = char_count
+                if char_count >= 252:
+                    if last_punctuation_mark == 0:
+                        i += 1
+                        continue
+                    # Synthesize the text up to the last punctuation mark
+                    audio_buffers.append(self._tts_for_synthesize(text[:last_punctuation_mark], model, speaker, language))
+                    Logger.info(f" {i/len(text)}% of the text has been synthesized.")
+                    text = text[last_punctuation_mark:]
+                    char_count = 0
+                    i = 0
+                    last_punctuation_mark = 0
+                    continue
+                i += 1
+            # If the text is shorter than 252 characters, synthesize it directly
+            if len(audio_buffers) == 0:
+                audio_buffers.append(self._tts_for_synthesize(text, model, speaker, language))
 
-            Logger.info("All text chunks synthesized successfully. Merging audio buffers...")
-            combined_audio = self._combine_audio_buffers(audio_buffers)
-            Logger.info(f"Final synthesized audio size: {combined_audio.getbuffer().nbytes} bytes.")
+            Logger.debug(f"Synthesizing {len(audio_buffers)} audio chunks...")
+
+            Logger.info("Audio synthesis completed successfully.")
+
+
+            # Combine all audio buffers into one
+            combined_audio = BytesIO()
+            with wave.open(combined_audio, 'wb') as combined_wave:
+                for buffer in audio_buffers:
+                    with wave.open(buffer, 'rb') as wave_file:
+                        if combined_wave.getnframes() == 0:
+                            combined_wave.setparams(wave_file.getparams())
+                        combined_wave.writeframes(wave_file.readframes(wave_file.getnframes()))
+            combined_audio.seek(0)
             return combined_audio
 
         except Exception as e:

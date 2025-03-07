@@ -48,7 +48,7 @@ def preprocess_text(text: Union[str, List[str]]) -> str:
     Logger.info("Preprocessing: Completed normalization and special character cleanup.")
     return text
 
-def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 150) -> List[str]:
+def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 250) -> List[str]:
     """
     Splits the preprocessed text into chunks that do not exceed the specified token limit.
     The splitting is done in a sentence-aware manner so that sentences are not arbitrarily cut.

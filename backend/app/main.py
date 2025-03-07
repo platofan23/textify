@@ -1,5 +1,11 @@
 from backend.app.utils import Logger  # Import the Logger class
 Logger.info("Starting the application initialization process.")
+# Setting up Logger
+Logger.SHOW_ERRORS = True
+Logger.SHOW_WARNINGS = True
+Logger.SHOW_INFO = True
+Logger.SHOW_DEBUG = True
+
 
 from flask_restful import Api
 from backend.app.start import register_routes, preload_models, run_tests, create_app

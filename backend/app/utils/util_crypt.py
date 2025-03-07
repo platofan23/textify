@@ -359,3 +359,9 @@ class CryptoManager:
             len(encrypted_file_lib["Ciphertext"])
         )
         return total_size_bytes / (1024 * 1024)
+
+    def encrypt_orc_text(self, user, text: list[dict[str, int]]):
+        return self.encrypt_file(user, io.BytesIO(json.dumps(text).encode()))
+
+    def decrypt_ocr_text(self, username, file: dict):
+        return json.loads(self._decrypt_file(username, file))

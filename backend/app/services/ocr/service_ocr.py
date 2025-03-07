@@ -78,56 +78,148 @@ def reader_doctr(image):
             model = model.cuda()
         result = model(doc)
 
-        text_with_font_size = [
-            (word.value, word.geometry[1][1] - word.geometry[0][1], block.geometry)
-            for page in result.pages
-            for block in page.blocks
-            for line in block.lines
-            for word in line.words
-        ]
+        text_blocks = []
+        for page in result.pages:
+            for block in page.blocks:
+                # Collect words and sizes in format for _font_size_cleanup
+                words_with_sizes = [
+                    (word.value, word.geometry[1][1] - word.geometry[0][1])
+                    for line in block.lines 
+                    for word in line.words
+                ]
+                
+                # Process the words with font size grouping
+                processed_data = _font_size_cleanup(words_with_sizes)
+                
+                block_data = {
+                    "Block": {
+                        "Data": processed_data,
+                        "Block_Geometry": block.geometry
+                    }
+                }
+                text_blocks.append(block_data)
 
-        return _font_size_cleanup(text_with_font_size)
+        Logger.debug(f"OCR result: {text_blocks}")
+        Logger.debug(f"Extracted text: {extract_text_from_ocr_result(text_blocks)}")
+        return text_blocks
     except Exception as e:
         Logger.error(f"Doctr OCR failed: {e}")
         raise
 
 
-def _font_size_cleanup(text_with_font_size):
+def extract_text_from_ocr_result(ocr_result):
     """
-    Groups words based on similar font sizes.
+    Extracts all text from the OCR result JSON structure.
+    
+    Args:
+        ocr_result: List of text blocks returned by reader_doctr
+        
+    Returns:
+        str: All extracted text combined into a single string
+    """
+    all_text = []
+    
+    for block in ocr_result:
+        for text_group in block["Block"]["Data"]:
+            all_text.extend(text_group["text"])
+    
+    return " ".join(all_text)
+
+
+# TODO: Implement translation
+def update_ocr_text(ocr_result, target_language):
+    """
+    Updates text in the OCR result by translating it to the target language.
 
     Args:
-        text_with_font_size (list): A list of tuples containing word, font size, and geometry.
+        ocr_result: List of text blocks returned by reader_doctr
+        target_language: Language code to translate the text into
 
     Returns:
-        list: A list of dictionaries with grouped text and average font size.
+        List: Updated OCR result structure
+    """
+    translator = Translator()
+    updated_result = []
+
+    for block in ocr_result:
+        updated_block = {"Block": {"Block_Geometry": block["Block"]["Block_Geometry"], "Data": []}}
+
+        for text_group in block["Block"]["Data"]:
+            # Translate each word in the text list
+            translated_text = [translator.translate(word, dest=target_language).text for word in text_group["text"]]
+
+            # Create updated text group with the same size
+            updated_text_group = {
+                "text": translated_text,
+                "size": text_group["size"]
+            }
+
+            updated_block["Block"]["Data"].append(updated_text_group)
+
+        updated_result.append(updated_block)
+
+    return updated_result
+
+
+def _font_size_cleanup(text_with_font_size: list, threshold: float = None) -> list:
+    """
+    Groups text by similar font sizes to identify structural elements in the document.
+    
+    Args:
+        text_with_font_size: List of tuples containing (word, font_size)
+        threshold: Size difference threshold to consider a new font group.
+                   If None, a dynamic threshold will be calculated.
+        
+    Returns:
+        List of dictionaries with grouped text and their average font sizes
     """
     if not text_with_font_size:
         return []
-
-    font_list = []
-    size_avg = text_with_font_size[0][1]
-    text_list = []
-    text_size_list = []
-
-    for index in range(len(text_with_font_size)):
-        word, font_size = text_with_font_size[index][0], text_with_font_size[index][1]
-        text_size_list.append(font_size)
-        size_avg_new = sum(text_size_list) / len(text_size_list)
-
-        if abs(size_avg_new - font_size) > 0.02:
-            font_list.append({"text": text_list, "size": size_avg})
-            text_list = []
-            text_size_list = [font_size]
-            size_avg = font_size
-            Logger.debug("Font size change detected, grouping text.")
+        
+    # Calculate dynamic threshold if not explicitly provided
+    if threshold is None:
+        font_sizes = [size for _, size in text_with_font_size]
+        if font_sizes:
+            size_range = max(font_sizes) - min(font_sizes)
+            Logger.debug(f"Font size range: {size_range:.6f}")
+            # Use 30% of the range for small ranges, 15% for larger ranges
+            if size_range < 0.08:  # Define small range threshold
+                threshold = max(0.005, size_range * 0.3)
+                Logger.debug(f"Using 30% dynamic threshold for small range: {threshold:.6f}")
+            else:
+                threshold = max(0.005, size_range * 0.15)
+                Logger.debug(f"Using 15% dynamic threshold for larger range: {threshold:.6f}")
         else:
-            size_avg = size_avg_new
+            threshold = 0.02
+    
+    font_groups = []
+    current_words = []
+    current_sizes = []
+    
+    for word, font_size in text_with_font_size:
+        # Calculate new running average if we have sizes
+        if current_sizes:
+            current_sizes.append(font_size)
+            size_avg_new = sum(current_sizes) / len(current_sizes)
+            
+            # Check if significant font size change detected
+            if abs(size_avg_new - font_size) > threshold:
+                # Store the current group
+                font_groups.append({"text": current_words, "size": sum(current_sizes[:-1]) / len(current_sizes[:-1])})
+                Logger.debug(f"Font size change detected: {font_size:.4f}")
+                
+                # Start new group with current word
+                current_words = [word]
+                current_sizes = [font_size]
+                continue
+        else:
+            # First word in document
+            current_sizes = [font_size]
+            
+        current_words.append(word)
 
-        text_list.append(word)
+    # Add the last group
+    if current_words:
+        font_groups.append({"text": current_words, "size": sum(current_sizes) / len(current_sizes)})
 
-    # Add the last remaining group if any.
-    if text_list:
-        font_list.append({"text": text_list, "size": size_avg})
-
-    return font_list
+    return font_groups

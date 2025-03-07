@@ -2,7 +2,7 @@ import requests
 
 # Prepare the file to be uploaded
 files = {
-    'Files': ('Text.png', open('Text.png', 'rb'), 'image/png')
+    'Files': ('Text_2.png', open('Test_2.png', 'rb'), 'image/png')
 }
 
 # Prepare the headers
@@ -12,7 +12,7 @@ headers = {
 }
 
 # Make the POST request
-response = requests.post('http://localhost:5555/upload_files', files=files, headers=headers)
+response = requests.post('http://localhost:5558/upload_files', files=files, headers=headers)
 
 # Print the response
 print(response.status_code)
