@@ -6,13 +6,13 @@ services:
       context: ./Backend
       dockerfile: Dockerfile_Backend_arm64_or_CPU
     container_name: flask-api
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: all
-#              capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     environment:
       - IsDocker=True
     healthcheck:
@@ -29,7 +29,7 @@ services:
       frontend:
         ipv4_address: 172.142.3.4
     ports:
-      - "5555:5555"
+      - "5555:5558"
     restart: unless-stopped
 
   mongo:
