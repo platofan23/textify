@@ -123,17 +123,19 @@ After this, changes will be merged.
 - AI-Models: https://huggingface.co/
 - Discord Server: https://discord.gg/XzERCkFV
 - Docker: https://www.docker.com/
-- EasyOCR: https://github.com/JaidedAI/EasyOCR
-- LibreTranslate: https://de.libretranslate.com/
+- docTR: https://github.com/mindee/doctr
 - MarianMT: https://marian-nmt.github.io/
 - Material UI: https://mui.com/material-ui/
 - MongoDB: https://www.mongodb.com/de-de
 - OPUS-MT: https://github.com/Helsinki-NLP/Opus-MT
 - Python: https://www.python.org/
 - QuillJS: https://quilljs.com/
-- React JS: https://react.dev/
+- React TS: https://react.dev/
 - Vite: https://vite.dev/
-- YOLOv11: https://docs.ultralytics.com/de/models/yolo11/
+- Craft.js: https://github.com/prevwong/craft.js
+- Whisper: https://openai.com/index/whisper/
+- XTTS v2: https://huggingface.co/coqui/XTTS-v2
+- Coqui: https://huggingface.co/coqui
 
 ##  :camera: Gallery
 Pictures of your project.
