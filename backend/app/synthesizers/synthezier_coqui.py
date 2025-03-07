@@ -75,8 +75,6 @@ class TTSSynthesizer:
         try:
             Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
 
-            Logger.debug(f"{text}")
-
             Logger.info("Audio synthesis running")
 
             # Split the text into chunks of 252 characters

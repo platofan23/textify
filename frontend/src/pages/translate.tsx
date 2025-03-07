@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Alert, Box, Button, Grid2, MenuItem, Select, Typography, Slider } from "@mui/material"
-import Editor from "./component_editor_translate"
+import Editor from "../components/component_editor_translate"
 import Quill, { RangeStatic, DeltaStatic } from "quill"
-import streamText from "./text_stream"
+import streamText from "../components/text_stream"
+import { useRecorder } from "../components/recording/Recorder"
 
 const Delta = Quill.import("delta")
 
@@ -24,8 +25,16 @@ const Translate = () => {
     const [readButton, setReadButton] = useState<
         "inherit" | "error" | "primary" | "secondary" | "info" | "success" | "warning"
     >("primary")
+
+    // TTS States
     const [speaker, setSpeaker] = useState<string>("Claribel Dervla")
     const [speakers, setSpeakers] = useState<string[]>([])
+
+    // Recorder
+    const { isRecording, recordingTime, recordedAudio, handleRecordButtonClick } = useRecorder({
+        quillRefInput,
+        sourcelanguage,
+    })
 
     const Language = [
         { value: "de", label: "German" },
@@ -50,6 +59,7 @@ const Translate = () => {
         setText((prevText) => prevText + newText)
     }
 
+    // TTS
     useEffect(() => {
         fetch("http://localhost:5558/tts/speakers")
             .then((res) => res.json())
@@ -67,6 +77,7 @@ const Translate = () => {
         quillRefOutput.current?.setText(text)
     }, [text])
 
+    // Read translated text using TTS
     function readTranslatedText() {
         // If audio is currently playing, stop it
         if (readBlock) {
@@ -281,6 +292,20 @@ const Translate = () => {
                     columnSpacing={1}
                     sx={{ mt: 2, display: "flex", justifyContent: "center" }}
                 >
+                    {/*Record button */}
+                    <Button
+                        onClick={handleRecordButtonClick}
+                        variant="contained"
+                        size="large"
+                        color={isRecording ? "error" : "primary"}
+                        sx={{
+                            minWidth: 150,
+                            fontWeight: 600,
+                            textTransform: "none",
+                        }}
+                    >
+                        {isRecording ? `Recording (${recordingTime}s)` : "Record Voice"}
+                    </Button>
                     <Button
                         onClick={translateText}
                         variant="contained"
