@@ -4,7 +4,7 @@ services:
   flask:
     build:
       context: ./Backend
-      dockerfile: Dockerfile_Backend_x86_or_GPU_Small
+      dockerfile: Dockerfile_Backend_x86_or_GPU_Big
     container_name: flask-api
     deploy:
       resources:
@@ -12,11 +12,13 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [ gpu ]
     environment:
       - IsDocker=True
+      - COQUI_ACCEPT_LICENSE=True
+      - COQUI_TOS_AGREED=1
     healthcheck:
-      test: [ "CMD", "curl", "-f", "https://localhost:5555/health" ]
+      test: [ "CMD", "curl", "-f", "-k", "https://localhost:5558/health" ]
       interval: 30s
       timeout: 30s
       retries: 5
@@ -30,6 +32,9 @@ services:
         ipv4_address: 172.142.3.4
     ports:
       - "5558:5558"
+    volumes:
+      - stt_cache:/root/.cache/whisper
+      - tts_cache:/root/.cache/huggingface/
     restart: unless-stopped
 
   mongo:
@@ -64,6 +69,12 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     container_name: vite
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--no-check-certificate", "-q", "https://localhost:5173" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     networks:
       frontend:
         ipv4_address: 172.142.3.5
@@ -72,8 +83,8 @@ services:
     restart: unless-stopped
 
 volumes:
-  libretranslate_api_keys:
-  libretranslate_models:
+  stt_cache:
+  tts_cache:
   mongo-data:
 
 networks:
