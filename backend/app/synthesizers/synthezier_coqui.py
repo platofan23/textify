@@ -6,6 +6,8 @@ from TTS.api import TTS
 import soundfile as sf
 import numpy as np
 import wave
+
+from backend.app.utils import preprocess_text
 from backend.app.utils.util_logger import Logger
 
 class TTSSynthesizer:
@@ -71,7 +73,7 @@ class TTSSynthesizer:
         """
         try:
             Logger.info(f"Synthesizing text with model='{model}', speaker='{speaker}', language='{language}'...")
-
+            text = preprocess_text(text)
             # Split text into manageable chunks.
             text_segments = self._chunk_text(text)
             if not text_segments:

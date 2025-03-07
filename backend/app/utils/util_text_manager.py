@@ -1,33 +1,51 @@
+from itertools import chain
+
 import re
 import unicodedata
 from typing import Union, List
-from itertools import chain
 from backend.app.utils.util_logger import Logger
+
 
 def preprocess_text(text: Union[str, List[str]]) -> str:
     """
     Preprocesses the input text by normalizing Unicode characters, removing extra whitespace,
-    and converting a list of strings to a single string if needed. Also filters out duplicate
-    punctuation (e.g. multiple dots become an ellipsis).
+    filtering out excessive special characters, and converting a list of strings to a single string if needed.
+
+    Enhancements:
+    - Joins a list of strings into a single string.
+    - Normalizes Unicode characters (e.g., converts accented characters).
+    - Removes extra whitespace and collapses multiple spaces.
+    - Replaces multiple dots (`..`) with an ellipsis (`...`).
+    - Collapses repeated punctuation marks (`!!!` → `!`).
+    - Filters out sequences of random special characters (`#$%&*!@` → `*` if it’s meaningful).
 
     Args:
         text (Union[str, List[str]]): The raw input text.
 
     Returns:
-        str: A normalized, single string.
+        str: A cleaned and normalized string.
     """
+
     if isinstance(text, list):
         Logger.info("Preprocessing: Joining list of strings.")
         text = ' '.join(text)
-    # Normalize Unicode (e.g., combine accented characters)
+
+    # Normalize Unicode (e.g., combining accented characters)
     text = unicodedata.normalize('NFKC', text)
-    # Collapse multiple whitespaces
+
+    # Remove excessive whitespace
     text = ' '.join(text.split())
+
     # Replace multiple dots with an ellipsis
     text = re.sub(r'\.{2,}', '...', text)
-    # Collapse repeated punctuation (e.g., !!! becomes !)
-    text = re.sub(r'([!?,;:])\1+', r'\1', text)
-    Logger.info("Preprocessing: Completed normalization and punctuation cleanup.")
+
+    # Collapse repeated punctuation (e.g., "!!!" -> "!")
+    text = re.sub(r'([!?.,;:])\1+', r'\1', text)
+
+    # Remove excessive non-alphanumeric special characters (e.g., "$#@!%" → "!")
+    text = re.sub(r'[^a-zA-Z0-9\s.,!?;:()-]+', '', text)
+
+    Logger.info("Preprocessing: Completed normalization and special character cleanup.")
     return text
 
 def split_text_into_chunks(tokenizer, text: str, max_tokens: int = 150) -> List[str]:
