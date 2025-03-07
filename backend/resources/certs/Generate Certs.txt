@@ -1,0 +1,11 @@
+#Mongo
+
+openssl genrsa -out mongo-key.pem 2048
+
+openssl req -x509 -new -nodes -key mongo-key.pem -sha256 -days 365 -out mongo-cert.pem -config san.cnf
+
+cat mongo-key.pem mongo-cert.pem > mongo.pem
+
+#Server
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt
+

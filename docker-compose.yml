@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  flask:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile_Backend_arm64_or_CPU
+    container_name: flask-api
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
+    environment:
+      - IsDocker=True
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "https://localhost:5555/health" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    networks:
+      backend:
+        ipv4_address: 172.142.1.4
+      db_flask:
+        ipv4_address: 172.142.5.2
+      frontend:
+        ipv4_address: 172.142.3.4
+    ports:
+      - "5555:5555"
+    restart: unless-stopped
+
+  mongo:
+    command: >
+      mongod --auth
+             --tlsMode preferTLS
+             --tlsCertificateKeyFile /etc/ssl/mongo.pem
+             --tlsCAFile /etc/ssl/mongo.pem
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh "mongodb://root:example@172.142.5.3:27017/?tls=true&tlsCAFile=/etc/ssl/mongo.pem&tlsCertificateKeyFile=/etc/ssl/mongo.pem" --quiet
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    image: mongo:latest
+    networks:
+      db_flask:
+        ipv4_address: 172.142.5.3
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+      - ./Backend/resources/certs:/etc/ssl:ro
+
+  vite:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: vite
+    networks:
+      frontend:
+        ipv4_address: 172.142.3.5
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+volumes:
+  libretranslate_api_keys:
+  libretranslate_models:
+  mongo-data:
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.1.0/24
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.3.0/24
+  db_flask:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.142.5.0/24

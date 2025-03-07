@@ -1,0 +1,71 @@
+# Use the smaller CUDA Base Image
+FROM nvidia/cuda:12.1.1-base-ubuntu22.04
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/
+
+# Add NVIDIA repository for CUDA libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb \
+    && dpkg -i cuda-keyring_1.0-1_all.deb \
+    && apt-get update
+
+# Install Python and necessary CUDA libraries
+RUN apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    python3-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libcublas-12-1 \
+    libcublas-dev-12-1 \
+    libcurand-12-1 \
+    libcurand-dev-12-1 \
+    build-essential \
+    git \
+    libpq-dev \
+    gcc \
+    ffmpeg \
+    libc-dev \
+    curl \
+    espeak-ng \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Installiere Rust mit rustup (statt apt)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/root/.cargo/bin:$PATH" \
+    && rustup default stable \
+    && rustc --version
+
+# Set Rust environment variables
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set Python as the default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Set the working directory
+WORKDIR /backend
+
+# Copy the rest of the project files
+COPY ./ /backend
+
+# Expose the application's port
+EXPOSE 5555
+
+# Installiere Python-Abhängigkeiten
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip \
+    && python3.11 -m pip install --no-cache-dir torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121 \
+    && python3.11 -m pip install --no-cache-dir -r /backend/resources/resources.txt
+
+# Bereinigung
+RUN rm -rf /root/.cache/pip /tmp/* /var/tmp/*
+
+# Expose-Port für die Anwendung
+EXPOSE 5555
+
+# Anwendung starten
+CMD ["hypercorn", "-b", "0.0.0.0:5555", "--certfile", "./resources/certs/server.crt", "--keyfile", "./resources/certs/server.key", "backend.app.main:app"]

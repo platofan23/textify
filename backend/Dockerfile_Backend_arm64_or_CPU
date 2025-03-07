@@ -1,0 +1,45 @@
+# Verwende ein schlankes NVIDIA CUDA-Basis-Image
+FROM python:3.12-slim
+
+# Setze Umgebungsvariablen für Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/
+
+# Installiere Systemabhängigkeiten
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-dev \
+    build-essential \
+    git \
+    libpq-dev \
+    gcc \
+    ffmpeg \
+    libc-dev \
+    curl \
+    espeak-ng \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Installiere Rust mit rustup (statt apt)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/root/.cargo/bin:$PATH" \
+    && rustup default stable \
+    && rustc --version
+
+# Set Rust environment variables
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Arbeitsverzeichnis im Container
+WORKDIR /backend
+
+# Kopiere die restlichen Projektdateien
+COPY ./ /backend
+
+# Installiere Python-Abhängigkeiten
+RUN python3.12 -m pip install --no-cache-dir --upgrade pip \
+    && python3.12 -m pip install --no-cache-dir -r /backend/resources/resources.txt
+
+# Expose-Port für die Anwendung
+EXPOSE 5555
+
+# Anwendung starten
+CMD ["hypercorn", "-b", "0.0.0.0:5555", "--certfile", "./resources/certs/server.crt", "--keyfile", "./resources/certs/server.key", "backend.app.main:app"]
