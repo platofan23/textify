@@ -47,6 +47,8 @@ List of pre-requisites:
 - A code editor (e.g., **Visual Studio Code**, **PyCharm**).
 - For backend development: **Python 3.11** and a virtual environment.
 - For frontend development: **Node.js** and **npm** or **yarn**.
+- A datebase: **MongoDB**
+- Dependencies depending on the operating system
 
 ### :nut_and_bolt: Development Environment
 
@@ -63,7 +65,7 @@ cd textify
    ```
 2. Set up the virtual environment and install dependencies:
    ```
-   python3.11 -m venv venv
+   python3.12 -m venv venv
    source venv/bin/activate 
    pip install -r ressources/resources.txt
    ```
