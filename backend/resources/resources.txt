@@ -19,6 +19,7 @@ hypercorn==0.17.3
 opencv-python==4.10.0.84
 opencv-python-headless==4.10.0.84
 packaging==24.2
+debugpy==1.8.13
 pymongo==4.10.1
 PyMuPDF==1.25.1
 pytest==8.3.4

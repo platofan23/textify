@@ -36,7 +36,7 @@ class GetBookInfo(Resource):
 
             # Perform aggregation query on the specified collection to retrieve book information
             books = self.mongo_manager.aggregate_documents(
-                self.config_manager.get_mongo_config().get("user_files_collection"),
+                self.config_manager.get_mongo_config().get("user_text_collection"),
                 [
                     {"$match": {"user": user}},
                     {"$group": {"_id": "$title", "count": {"$sum": 1}}},

@@ -27,6 +27,7 @@ import { Heading } from "../components/editor/user-components/Heading.tsx"
 import { Toolbox } from "../components/editor/Toolbox.tsx"
 import { SettingsPanel } from "../components/editor/SettingsPanel.tsx"
 import { exportHtml } from "../utils/exportHtml.tsx"
+import { getTranslationLanguages, useBookTranslations } from "../components/library_functions/get_book_translations.ts"
 
 // Define prop and state types for ErrorBoundary
 interface ErrorBoundaryProps {
@@ -107,6 +108,8 @@ export function Library({
         }
     }, [])
 
+    //  Define state variables
+    const [currentLanguage, setCurrentLanguage] = useState<string>("en")
     const [selectedBook, setSelectedBook] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState<number>(1)
     const [bookPages, setBookPages] = useState<Record<string, any>>({})
@@ -119,6 +122,8 @@ export function Library({
         mouseY: number
         bookId: string | null
     } | null>(null)
+
+    const { translations, isLoading, error } = useBookTranslations(user?.Username || "", selectedBook || "")
 
     // Handle book context menu
     const handleBookContextMenu = (event: React.MouseEvent, bookId: string) => {
@@ -133,18 +138,21 @@ export function Library({
         setContextMenu(null)
     }
 
-    const handleTranslateBook = async () => {
+    const [alertMessage, setAlertMessage] = useState<string | null>(null)
+    const [alertSeverity, setAlertSeverity] = useState<"success" | "error" | "info" | "warning">("success")
+
+    const handleTranslateBook = async (targetLanguage: string) => {
         if (!contextMenu?.bookId || !user) return
 
         try {
-            const response = await fetch("http://localhost:5558/translate/page_all", {
+            const response = await fetch("https://localhost:5558/translate/page_all", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     data: {
-                        model: "Helsinki-NLP/opus-mt-en-de",
+                        model: await getTranslationLanguages(user.Username, contextMenu.bookId, targetLanguage),
                         title: contextMenu.bookId,
                         user: user.Username,
                     },
@@ -158,10 +166,44 @@ export function Library({
             const data = await response.json()
             console.log("Translation response:", data)
 
-            alert(`Book "${contextMenu.bookId}" has been queued for translation.`)
+            // Set success alert
+            setAlertSeverity("success")
+            setAlertMessage(`Book "${contextMenu.bookId}" has been queued for translation.`)
+
+            // Start polling to check when translation is complete
+            const bookId = contextMenu.bookId
+            const pollInterval = setInterval(async () => {
+                try {
+                    // Check if this language translation is now available
+                    const availableTranslations = await getTranslationLanguages(user.Username, bookId, targetLanguage)
+
+                    if (availableTranslations.includes(targetLanguage)) {
+                        clearInterval(pollInterval)
+
+                        // If this is the currently selected book, update the UI
+                        if (selectedBook === bookId) {
+                            // Update alert to indicate translation is complete
+                            setAlertSeverity("success")
+                            setAlertMessage(`Translation to ${targetLanguage} is now available!`)
+
+                            // Force refresh of available translations
+                            // This will update the language dropdown menu
+                            fetchBookPage(bookId, currentPage, targetLanguage)
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error polling for translation status:", error)
+                    clearInterval(pollInterval)
+                }
+            }, 5000) // Check every 5 seconds
+
+            // Clear the interval after 10 minutes (max wait time)
+            setTimeout(() => clearInterval(pollInterval), 5 * 60 * 1000)
         } catch (error) {
             console.error("Translation error:", error)
-            alert(`Translation failed: ${error.message}`)
+            // Set error alert
+            setAlertSeverity("error")
+            setAlertMessage(`Translation failed: ${error.message}`)
         } finally {
             handleContextMenuClose()
         }
@@ -221,19 +263,20 @@ export function Library({
     }
 
     // Fetch book page content from API
-    const fetchBookPage = async (bookId: string, pageNum: number) => {
+    const fetchBookPage = async (bookId: string, pageNum: number, lang: string) => {
         if (!user) return
 
         setLoading(true)
         setErrorMessage(null)
         try {
-            const response = await fetch("http://localhost:5558/get_book_page", {
+            const response = await fetch("https://localhost:5558/get_book_page", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     user: user.Username,
                     title: bookId,
                     page: pageNum.toString(),
+                    lang: lang || "source", // Default to "source" if lang is null or undefined
                 },
             })
 
@@ -520,6 +563,60 @@ export function Library({
         }
     }
 
+    // Handle TTS download
+    const handleTtsDownload = async () => {
+        if (!selectedBook || !user) return
+
+        try {
+            setAlertSeverity("info")
+            setAlertMessage("Generating audio file, please wait...")
+
+            // Get current language or default to original
+            const currentLang = translations && translations.includes(currentLanguage) ? currentLanguage : "en"
+
+            const response = await fetch("https://localhost:5558/tts/page", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    data: {
+                        model: "tts_models/multilingual/multi-dataset/xtts_v2",
+                        language: currentLang,
+                        speaker: "Claribel Dervla",
+                        page: currentPage,
+                        title: selectedBook,
+                        user: user.Username,
+                    },
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error(`TTS request failed: ${response.statusText}`)
+            }
+
+            // Get the blob from response
+            const blob = await response.blob()
+
+            // Create download link
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `${selectedBook}_page${currentPage}.wav`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            setAlertSeverity("success")
+            setAlertMessage("Audio file downloaded successfully!")
+        } catch (error) {
+            console.error("TTS download error:", error)
+            setAlertSeverity("error")
+            setAlertMessage(`Failed to generate audio: ${error.message}`)
+        }
+    }
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue)
     }
@@ -601,6 +698,49 @@ export function Library({
         }
     }
 
+    const handleDeleteBook = async () => {
+        if (!contextMenu?.bookId || !user) return
+
+        // Ask for confirmation before deleting
+        if (window.confirm(`Are you sure you want to delete "${contextMenu.bookId}"?`)) {
+            try {
+                const response = await fetch("https://localhost:5558/delete_book", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        user: user.Username,
+                        title: contextMenu.bookId,
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error(`Deletion failed: ${response.statusText}`)
+                }
+
+                // Remove book from the books array
+                setBooks(books.filter((book) => book._id !== contextMenu.bookId))
+
+                // If this was the selected book, clear the selection
+                if (selectedBook === contextMenu.bookId) {
+                    setSelectedBook(null)
+                }
+
+                // Set success alert
+                setAlertSeverity("success")
+                setAlertMessage(`Book "${contextMenu.bookId}" has been deleted.`)
+            } catch (error) {
+                console.error("Delete error:", error)
+                // Set error alert
+                setAlertSeverity("error")
+                setAlertMessage(`Failed to delete book: ${error.message}`)
+            } finally {
+                handleContextMenuClose()
+            }
+        } else {
+            handleContextMenuClose()
+        }
+    }
+
     const resetCurrentPage = () => {
         if (selectedBook) {
             setBookPages((prev) => ({
@@ -618,8 +758,17 @@ export function Library({
         }
     }
 
+    // Add state for menu anchor element
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
     return (
         <>
+            {/* Display Alert when message is present */}
+            {alertMessage && (
+                <Alert severity={alertSeverity} sx={{ mt: 2, mb: 2 }} onClose={() => setAlertMessage(null)}>
+                    {alertMessage}
+                </Alert>
+            )}
             <Grid2 container spacing={2} sx={{ mt: 5 }}>
                 {/* Book List */}
                 <Grid2 size={{ xs: 12 }} sx={{ md: 3 }}>
@@ -860,33 +1009,65 @@ export function Library({
                                                 <Box>
                                                     <Button
                                                         variant="outlined"
-                                                        onClick={addNewPage}
+                                                        onClick={handleTtsDownload}
                                                         color="primary"
                                                         size="small"
                                                     >
-                                                        Add Page
+                                                        Listen
                                                     </Button>
                                                 </Box>
                                                 <Box>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        size="small"
-                                                        onClick={() => {
-                                                            if (selectedBook) {
-                                                                if (
-                                                                    window.confirm(
-                                                                        "Reset this page? This will delete all content on this page."
-                                                                    )
-                                                                ) {
-                                                                    resetCurrentPage()
-                                                                }
-                                                            }
-                                                        }}
-                                                        sx={{ mr: 1 }}
-                                                    >
-                                                        Reset Page
-                                                    </Button>
+                                                    <Box sx={{ mr: 1, display: "inline-flex", alignItems: "center" }}>
+                                                        <Button
+                                                            variant="outlined"
+                                                            size="small"
+                                                            color="primary"
+                                                            endIcon={<span>▼</span>}
+                                                            onClick={(e) => {
+                                                                const target = e.currentTarget
+                                                                setAnchorEl ? setAnchorEl(target) : null
+                                                            }}
+                                                            disabled={!translations || translations.length === 0}
+                                                        >
+                                                            {isLoading ? "Loading..." : "Language"}
+                                                        </Button>
+                                                        <Menu
+                                                            anchorEl={anchorEl}
+                                                            open={Boolean(anchorEl)}
+                                                            onClose={() => setAnchorEl && setAnchorEl(null)}
+                                                        >
+                                                            <MenuItem
+                                                                onClick={() => {
+                                                                    // Original language
+                                                                    fetchBookPage(selectedBook || "", currentPage)
+                                                                    setCurrentLanguage("en")
+                                                                    setAnchorEl && setAnchorEl(null)
+                                                                }}
+                                                            >
+                                                                (Original)
+                                                            </MenuItem>
+                                                            {translations &&
+                                                                translations.map((lang, index) => (
+                                                                    <MenuItem
+                                                                        key={index}
+                                                                        onClick={() => {
+                                                                            fetchBookPage(
+                                                                                selectedBook || "",
+                                                                                currentPage,
+                                                                                lang
+                                                                            )
+                                                                            setCurrentLanguage(lang)
+                                                                            // Switch to translation
+                                                                            // Fetch translated content
+                                                                            // Implementation depends on your translation data structure
+                                                                            setAnchorEl && setAnchorEl(null)
+                                                                        }}
+                                                                    >
+                                                                        {lang}
+                                                                    </MenuItem>
+                                                                ))}
+                                                        </Menu>
+                                                    </Box>
                                                     <Button
                                                         variant="contained"
                                                         color="primary"
@@ -938,7 +1119,18 @@ export function Library({
                     contextMenu !== null ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
                 }
             >
-                <MenuItem onClick={handleTranslateBook}>Translate to German</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("de")}>Translate to German</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("fr")}>Translate to French</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("es")}>Translate to Spanish</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("it")}>Translate to Italian</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("pt")}>Translate to Portuguese</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("ja")}>Translate to Japanese</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("zh")}>Translate to Chinese</MenuItem>
+                <MenuItem onClick={() => handleTranslateBook("ru")}>Translate to Russian</MenuItem>
+                <Divider />
+                <MenuItem onClick={handleDeleteBook} sx={{ color: "error.main" }}>
+                    Delete Book
+                </MenuItem>
             </Menu>
         </>
     )

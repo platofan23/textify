@@ -128,7 +128,7 @@ export function useRecorder({ quillRefInput, sourcelanguage }: UseRecorderProps)
         formData.append("language", sourcelanguage)
 
         try {
-            const response = await fetch("http://localhost:5558/stt", {
+            const response = await fetch("https://localhost:5558/stt", {
                 method: "POST",
                 body: formData,
             })
