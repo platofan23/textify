@@ -66,7 +66,7 @@ function SignUp({ setUser, user }: SignUpProps) {
         }
         setPasswordMismatch(false)
 
-        const request = fetch("http://localhost:5558/register", {
+        const request = fetch("https://localhost:5558/register", {
             method: "POST",
             headers: {
                 Password: password,

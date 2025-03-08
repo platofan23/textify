@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Python and necessary CUDA libraries
 RUN apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
+    python3.12 \
+    python3.12-venv \
     python3-pip \
     python3-dev \
     libgl1-mesa-glx \
@@ -45,7 +45,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Set Python as the default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
 # Set the working directory
 WORKDIR /backend
@@ -57,9 +57,9 @@ COPY ./ /backend
 EXPOSE 5555
 
 # Installiere Python-Abhängigkeiten
-RUN python3.11 -m pip install --no-cache-dir --upgrade pip \
-    && python3.11 -m pip install --no-cache-dir torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121 \
-    && python3.11 -m pip install --no-cache-dir -r /backend/resources/resources.txt
+RUN python3.12 -m pip install --no-cache-dir --upgrade pip \
+    && python3.12 -m pip install --no-cache-dir torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121 \
+    && python3.12 -m pip install --no-cache-dir -r /backend/resources/resources.txt
 
 # Bereinigung
 RUN rm -rf /root/.cache/pip /tmp/* /var/tmp/*

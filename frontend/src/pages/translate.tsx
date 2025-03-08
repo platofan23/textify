@@ -61,7 +61,7 @@ const Translate = () => {
 
     // TTS
     useEffect(() => {
-        fetch("http://localhost:5558/tts/speakers")
+        fetch("https://localhost:5558/tts/speakers")
             .then((res) => res.json())
             .then((data) => {
                 if (data.speakers && Array.isArray(data.speakers)) {
@@ -113,7 +113,7 @@ const Translate = () => {
             },
         }
 
-        fetch("http://localhost:5558/tts", {
+        fetch("https://localhost:5558/tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestData),

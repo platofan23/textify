@@ -42,7 +42,7 @@ class TTSPage(Resource):
         user = data.get("user")
         page = data.get("page")
         title = data.get("title")
-        language = data.get("language", "de")
+        language = data.get("language", "en")
         model = data.get("model", "tts_models/multilingual/multi-dataset/xtts_v2")
         speaker = data.get("speaker", "Daisy Studious")
 
