@@ -70,7 +70,7 @@ class TTSPage(Resource):
                 return send_file(decrypted_audio, mimetype=self.config_manager.get_tts_mimetype(), as_attachment=self.config_manager.get_tts_as_attachment(), download_name=self.config_manager.get_tts_download_name())
 
             Logger.info("No existing TTS audio found. Retrieving source text from the database.")
-            user_files_collection = self.config_manager.get_mongo_config().get("user_files_collection", "user_files")
+            user_files_collection = self.config_manager.get_mongo_config().get("user_text_collection", "user_texts")
             source_data = self.mongo_manager.retrieve_and_decrypt_page(user, page, title, user_files_collection)
             if not source_data:
                 Logger.warning("No source text available for TTS synthesis.")
