@@ -11,7 +11,7 @@ export function useBookTranslations(user: string, title: string) {
             setError(null)
 
             try {
-                const response = await fetch("http://localhost:5558/get_book_translations", {
+                const response = await fetch("https://localhost:5558/get_book_translations", {
                     method: "GET",
                     headers: {
                         user: user,
@@ -40,7 +40,7 @@ export function useBookTranslations(user: string, title: string) {
 }
 
 export async function getTranslationLanguages(user: string, title: string, targetLanguage: string) {
-    const response = await fetch("http://localhost:5558/get_book_language", {
+    const response = await fetch("https://localhost:5558/get_book_language", {
         method: "GET",
         headers: {
             user: user,

@@ -15,7 +15,7 @@ async function streamText(
             continue
         }
 
-        await fetch("http://localhost:5558/translate/text", {
+        await fetch("https://localhost:5558/translate/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

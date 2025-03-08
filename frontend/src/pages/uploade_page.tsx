@@ -81,7 +81,7 @@ const FileUploadPage = ({ user }: { user: User | null }) => {
 
         files.forEach((file) => formData.append("Files", file))
 
-        fetch("http://localhost:5558/upload_files", {
+        fetch("https://localhost:5558/upload_files", {
             method: "POST",
             headers: {
                 // Let the browser set the correct boundary for multipart/form-data automatically

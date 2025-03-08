@@ -143,7 +143,7 @@ export function Library({
         if (!contextMenu?.bookId || !user) return
 
         try {
-            const response = await fetch("http://localhost:5558/translate/page_all", {
+            const response = await fetch("https://localhost:5558/translate/page_all", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -267,7 +267,7 @@ export function Library({
         setLoading(true)
         setErrorMessage(null)
         try {
-            const response = await fetch("http://localhost:5558/get_book_page", {
+            const response = await fetch("https://localhost:5558/get_book_page", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -648,7 +648,7 @@ export function Library({
         // Ask for confirmation before deleting
         if (window.confirm(`Are you sure you want to delete "${contextMenu.bookId}"?`)) {
             try {
-                const response = await fetch("http://localhost:5558/delete_book", {
+                const response = await fetch("https://localhost:5558/delete_book", {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json",
