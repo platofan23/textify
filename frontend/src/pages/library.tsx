@@ -108,6 +108,8 @@ export function Library({
         }
     }, [])
 
+    //  Define state variables
+    const [currentLanguage, setCurrentLanguage] = useState<string>("en")
     const [selectedBook, setSelectedBook] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState<number>(1)
     const [bookPages, setBookPages] = useState<Record<string, any>>({})
@@ -561,6 +563,60 @@ export function Library({
         }
     }
 
+    // Handle TTS download
+    const handleTtsDownload = async () => {
+        if (!selectedBook || !user) return
+
+        try {
+            setAlertSeverity("info")
+            setAlertMessage("Generating audio file, please wait...")
+
+            // Get current language or default to original
+            const currentLang = translations && translations.includes(currentLanguage) ? currentLanguage : "en"
+
+            const response = await fetch("https://localhost:5558/tts/page", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    data: {
+                        model: "tts_models/multilingual/multi-dataset/xtts_v2",
+                        language: currentLang,
+                        speaker: "Claribel Dervla",
+                        page: currentPage,
+                        title: selectedBook,
+                        user: user.Username,
+                    },
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error(`TTS request failed: ${response.statusText}`)
+            }
+
+            // Get the blob from response
+            const blob = await response.blob()
+
+            // Create download link
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `${selectedBook}_page${currentPage}.wav`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            setAlertSeverity("success")
+            setAlertMessage("Audio file downloaded successfully!")
+        } catch (error) {
+            console.error("TTS download error:", error)
+            setAlertSeverity("error")
+            setAlertMessage(`Failed to generate audio: ${error.message}`)
+        }
+    }
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue)
     }
@@ -953,11 +1009,11 @@ export function Library({
                                                 <Box>
                                                     <Button
                                                         variant="outlined"
-                                                        onClick={addNewPage}
+                                                        onClick={handleTtsDownload}
                                                         color="primary"
                                                         size="small"
                                                     >
-                                                        Add Page
+                                                        Listen
                                                     </Button>
                                                 </Box>
                                                 <Box>
@@ -984,6 +1040,7 @@ export function Library({
                                                                 onClick={() => {
                                                                     // Original language
                                                                     fetchBookPage(selectedBook || "", currentPage)
+                                                                    setCurrentLanguage("en")
                                                                     setAnchorEl && setAnchorEl(null)
                                                                 }}
                                                             >
@@ -999,6 +1056,7 @@ export function Library({
                                                                                 currentPage,
                                                                                 lang
                                                                             )
+                                                                            setCurrentLanguage(lang)
                                                                             // Switch to translation
                                                                             // Fetch translated content
                                                                             // Implementation depends on your translation data structure
