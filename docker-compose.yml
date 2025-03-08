@@ -4,7 +4,7 @@ services:
   flask:
     build:
       context: ./Backend
-      dockerfile: Dockerfile_Backend_x86_or_GPU_Big
+      dockerfile: Dockerfile_Backend_x86_or_GPU
     container_name: flask-api
     deploy:
       resources:
